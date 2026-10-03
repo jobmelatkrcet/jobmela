@@ -8,6 +8,7 @@ from .views import (
     AdminCompanyStudentsListView,
     AdminCompanyExcelExportView,
     AdminCompanyExcelUploadView,
+    AdminCompanyClearAllView,
     AdminCompanyTemplateDownloadView,
     JobMelaRequirementsPublicListView,
     AdminJobMelaRequirementListCreateView,
@@ -31,6 +32,11 @@ urlpatterns = [
         "companies/upload/",
         AdminCompanyExcelUploadView.as_view(),
         name="admin-companies-upload",
+    ),
+    path(
+        "companies/clear-all/",
+        AdminCompanyClearAllView.as_view(),
+        name="admin-companies-clear-all",
     ),
     path(
         "companies/template/",

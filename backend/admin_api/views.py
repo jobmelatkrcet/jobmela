@@ -446,20 +446,29 @@ class AdminCompanyExcelUploadView(APIView):
 
         start_row = 1 if has_header else 0
 
+        clear_existing = str(request.data.get("clear_existing", "false")).lower() in (
+            "true",
+            "1",
+            "yes",
+        )
+
         total_rows_processed = 0
         new_companies = 0
         existing_companies = 0
         duplicates_ignored = 0
         invalid_rows = 0
 
-        # Existing companies in DB mapped lower -> Company
-        existing_db_companies = {
-            c.name.strip().lower(): c for c in Company.objects.all()
-        }
-        seen_in_batch = set()
-        companies_to_create = []
-
         with transaction.atomic():
+            if clear_existing:
+                Company.objects.all().delete()
+                existing_db_companies = {}
+            else:
+                # Existing companies in DB mapped lower -> Company
+                existing_db_companies = {
+                    c.name.strip().lower(): c for c in Company.objects.all()
+                }
+            seen_in_batch = set()
+            companies_to_create = []
             for row in rows[start_row:]:
                 if not row or len(row) <= company_col_idx:
                     continue
@@ -493,13 +502,30 @@ class AdminCompanyExcelUploadView(APIView):
 
         return Response(
             {
-                "message": "Excel Upload Successful",
+                "message": (
+                    f"Successfully cleared pre-existing companies and imported {new_companies} new companies."
+                    if clear_existing
+                    else f"Successfully imported {new_companies} companies."
+                ),
                 "total_rows": total_rows_processed,
                 "new_companies": new_companies,
                 "existing_companies": existing_companies,
                 "duplicates_ignored": duplicates_ignored,
                 "invalid_rows": invalid_rows,
+                "cleared_existing": clear_existing,
             },
+            status=status.HTTP_200_OK,
+        )
+
+
+class AdminCompanyClearAllView(APIView):
+    permission_classes = [IsAdminUserRole]
+
+    def post(self, request):
+        with transaction.atomic():
+            count, _ = Company.objects.all().delete()
+        return Response(
+            {"message": f"Successfully cleared all {count} companies.", "deleted": count},
             status=status.HTTP_200_OK,
         )
 

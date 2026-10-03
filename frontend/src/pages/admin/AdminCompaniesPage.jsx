@@ -12,9 +12,11 @@ import {
   X,
   ArrowRight,
   AlertTriangle,
+  Trash2,
 } from 'lucide-react';
 import Pagination from '../../components/Pagination';
 import Alert from '../../components/Alert';
+import ConfirmModal from '../../components/ConfirmModal';
 
 const AdminCompaniesPage = () => {
   const [companies, setCompanies] = useState([]);
@@ -32,6 +34,9 @@ const AdminCompaniesPage = () => {
   const [uploading, setUploading] = useState(false);
   const [uploadResult, setUploadResult] = useState(null);
   const [uploadError, setUploadError] = useState('');
+  const [clearExisting, setClearExisting] = useState(true);
+  const [showClearConfirmModal, setShowClearConfirmModal] = useState(false);
+  const [clearing, setClearing] = useState(false);
   const [alert, setAlert] = useState(null);
 
   const fileInputRef = useRef(null);
@@ -86,10 +91,10 @@ const AdminCompaniesPage = () => {
     setUploadResult(null);
 
     try {
-      const result = await adminService.uploadCompaniesExcel(uploadFile);
+      const result = await adminService.uploadCompaniesExcel(uploadFile, clearExisting);
       setUploadResult(result);
       // Refresh list
-      loadCompanies(currentPage, search, orderBy);
+      loadCompanies(1, search, orderBy);
     } catch (err) {
       console.error('Upload error:', err);
       const errMsg =
@@ -98,6 +103,28 @@ const AdminCompaniesPage = () => {
       setUploadError(errMsg);
     } finally {
       setUploading(false);
+    }
+  };
+
+  const handleClearAllSubmit = async () => {
+    setClearing(true);
+    try {
+      const res = await adminService.clearAllCompanies();
+      setShowClearConfirmModal(false);
+      setAlert({
+        type: 'success',
+        message: res.message || 'All companies have been successfully erased.',
+      });
+      setCurrentPage(1);
+      loadCompanies(1, search, orderBy);
+    } catch (err) {
+      console.error('Failed to clear companies:', err);
+      setAlert({
+        type: 'danger',
+        message: err.response?.data?.error || 'Failed to clear companies.',
+      });
+    } finally {
+      setClearing(false);
     }
   };
 
@@ -154,6 +181,21 @@ const AdminCompaniesPage = () => {
           >
             <Download size={16} /> Sample Excel Template
           </button>
+
+          {totalCompanies > 0 && (
+            <button
+              onClick={() => setShowClearConfirmModal(true)}
+              className="btn btn-outline"
+              style={{
+                gap: '0.4rem',
+                color: 'var(--color-danger-600)',
+                borderColor: '#fca5a5',
+              }}
+              title="Erase all pre-existing sample companies"
+            >
+              <Trash2 size={16} /> Erase All Companies
+            </button>
+          )}
         </div>
       </div>
 
@@ -488,6 +530,64 @@ const AdminCompaniesPage = () => {
                   </div>
                 )}
               </div>
+
+              {/* Option to clear pre-existing companies */}
+              <div
+                style={{
+                  marginTop: '1.25rem',
+                  padding: '0.9rem 1rem',
+                  backgroundColor: clearExisting ? '#fef2f2' : 'var(--color-bg-main)',
+                  border: `1.5px solid ${clearExisting ? '#f87171' : 'var(--color-border)'}`,
+                  borderRadius: 'var(--radius-md)',
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  gap: '0.75rem',
+                  cursor: 'pointer',
+                  transition: 'all 0.15s ease',
+                }}
+                onClick={() => setClearExisting(!clearExisting)}
+              >
+                <input
+                  type="checkbox"
+                  id="clearExistingCheckbox"
+                  checked={clearExisting}
+                  onChange={(e) => setClearExisting(e.target.checked)}
+                  onClick={(e) => e.stopPropagation()}
+                  style={{
+                    marginTop: '0.2rem',
+                    width: 18,
+                    height: 18,
+                    accentColor: '#dc2626',
+                    cursor: 'pointer',
+                  }}
+                />
+                <div>
+                  <label
+                    htmlFor="clearExistingCheckbox"
+                    style={{
+                      fontWeight: 600,
+                      fontSize: '0.9rem',
+                      color: clearExisting ? '#991b1b' : 'var(--color-text-main)',
+                      cursor: 'pointer',
+                      display: 'block',
+                    }}
+                  >
+                    Erase all pre-existing companies before importing
+                  </label>
+                  <p
+                    style={{
+                      margin: '0.25rem 0 0',
+                      fontSize: '0.8rem',
+                      color: clearExisting ? '#b91c1c' : 'var(--color-text-muted)',
+                      lineHeight: 1.4,
+                    }}
+                  >
+                    {clearExisting
+                      ? 'Recommended for fresh Jobmela roster: All existing sample/test companies will be erased so only your new Excel companies appear.'
+                      : 'Unchecked: New companies will be merged into the existing company list.'}
+                  </p>
+                </div>
+              </div>
             </div>
 
             <div className="modal-footer">
@@ -520,6 +620,19 @@ const AdminCompaniesPage = () => {
           </div>
         </div>
       )}
+
+      {/* Confirm Clear All Companies Modal */}
+      <ConfirmModal
+        isOpen={showClearConfirmModal}
+        title="Erase All Pre-existing Companies?"
+        message={`Are you sure you want to permanently erase all ${totalCompanies} pre-existing companies from the database? This will clear all sample companies so you can start with a fresh roster. This action cannot be undone.`}
+        confirmText="Yes, Erase All Companies"
+        cancelText="Keep Companies"
+        variant="danger"
+        loading={clearing}
+        onConfirm={handleClearAllSubmit}
+        onCancel={() => setShowClearConfirmModal(false)}
+      />
     </div>
   );
 };

@@ -41,14 +41,22 @@ export const adminService = {
     return res.data;
   },
 
-  async uploadCompaniesExcel(file) {
+  async uploadCompaniesExcel(file, clearExisting = false) {
     const formData = new FormData();
     formData.append('file', file);
+    if (clearExisting) {
+      formData.append('clear_existing', 'true');
+    }
     const res = await api.post('/admin/companies/upload/', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
     });
+    return res.data;
+  },
+
+  async clearAllCompanies() {
+    const res = await api.post('/admin/companies/clear-all/');
     return res.data;
   },
 
