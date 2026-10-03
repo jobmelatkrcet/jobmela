@@ -183,15 +183,6 @@ const AdminCompaniesPage = ({ onTabChange }) => {
     }
   };
 
-  const handleDownloadTemplate = async () => {
-    try {
-      await adminService.downloadTemplate();
-    } catch (err) {
-      console.error('Failed to download template:', err);
-      setAlert({ type: 'danger', message: 'Failed to download Excel template.' });
-    }
-  };
-
   return (
     <div className="app-container">
       {/* Header */}
@@ -222,14 +213,6 @@ const AdminCompaniesPage = ({ onTabChange }) => {
             style={{ gap: '0.5rem', boxShadow: '0 4px 10px rgba(37, 99, 235, 0.25)' }}
           >
             <Upload size={17} /> UPLOAD COMPANIES EXCEL
-          </button>
-
-          <button
-            onClick={handleDownloadTemplate}
-            className="btn btn-outline"
-            style={{ gap: '0.4rem' }}
-          >
-            <Download size={16} /> Sample Excel Template
           </button>
 
           {onTabChange ? (

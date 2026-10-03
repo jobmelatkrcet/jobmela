@@ -4,7 +4,6 @@ import roomService from '../../services/roomService';
 import {
   DoorClosed,
   Upload,
-  Download,
   Building2,
   CheckCircle2,
   AlertCircle,
@@ -124,18 +123,6 @@ const AdminRoomAllocationPage = ({ onTabChange }) => {
     }
   };
 
-  const handleDownloadTemplate = async () => {
-    try {
-      await roomService.downloadRoomTemplate();
-    } catch (err) {
-      console.error('Template download error:', err);
-      setAlert({
-        type: 'danger',
-        message: 'Failed to download Room Numbers template spreadsheet.',
-      });
-    }
-  };
-
   const handleViewQR = async (roomId) => {
     setLoadingQR(true);
     try {
@@ -229,14 +216,6 @@ const AdminRoomAllocationPage = ({ onTabChange }) => {
             style={{ gap: '0.5rem', boxShadow: '0 4px 10px rgba(37, 99, 235, 0.25)' }}
           >
             <Upload size={17} /> Upload Room Numbers Excel
-          </button>
-
-          <button
-            onClick={handleDownloadTemplate}
-            className="btn btn-outline"
-            style={{ gap: '0.4rem' }}
-          >
-            <Download size={16} /> Sample Room Template
           </button>
 
           {onTabChange ? (
