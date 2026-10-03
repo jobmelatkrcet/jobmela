@@ -31,7 +31,7 @@ const hasValue = (val) => {
   return !['', 'n/a', 'na', 'nil', '-', '--', 'null', 'none', 'unknown', 'not available'].includes(s);
 };
 
-const AdminCompaniesPage = () => {
+const AdminCompaniesPage = ({ onTabChange }) => {
   const [companies, setCompanies] = useState([]);
   const [totalCompanies, setTotalCompanies] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
@@ -232,13 +232,24 @@ const AdminCompaniesPage = () => {
             <Download size={16} /> Sample Excel Template
           </button>
 
-          <Link
-            to="/admin/rooms"
-            className="btn btn-outline"
-            style={{ gap: '0.4rem', color: '#6d28d9', borderColor: '#c4b5fd' }}
-          >
-            <DoorClosed size={16} /> Room Allocation
-          </Link>
+          {onTabChange ? (
+            <button
+              type="button"
+              onClick={() => onTabChange('rooms')}
+              className="btn btn-outline"
+              style={{ gap: '0.4rem', color: '#6d28d9', borderColor: '#c4b5fd' }}
+            >
+              <DoorClosed size={16} /> Room Allocation
+            </button>
+          ) : (
+            <Link
+              to="/admin?tab=rooms"
+              className="btn btn-outline"
+              style={{ gap: '0.4rem', color: '#6d28d9', borderColor: '#c4b5fd' }}
+            >
+              <DoorClosed size={16} /> Room Allocation
+            </Link>
+          )}
 
           {totalCompanies > 0 && (
             <button

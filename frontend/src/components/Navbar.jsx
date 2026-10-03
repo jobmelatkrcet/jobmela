@@ -123,20 +123,8 @@ const Navbar = () => {
             {/* ADMIN PORTAL */}
             {isAuthenticated && isAdmin && (
               <>
-                <NavLink to="/admin/dashboard" end className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
-                  <LayoutDashboard size={16} /> Dashboard
-                </NavLink>
-                <NavLink to="/admin/students" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
-                  <Users size={16} /> Students
-                </NavLink>
-                <NavLink to="/admin/companies" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
-                  <Building2 size={16} /> Companies
-                </NavLink>
-                <NavLink to="/admin/rooms" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
-                  <DoorClosed size={16} /> Room Allocation
-                </NavLink>
-                <NavLink to="/admin/requirements" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
-                  <ClipboardList size={16} /> Requirements
+                <NavLink to="/admin" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+                  <ShieldCheck size={16} /> Admin Panel
                 </NavLink>
               </>
             )}
@@ -263,21 +251,23 @@ const Navbar = () => {
               <div className="badge badge-amber" style={{ width: 'fit-content', marginBottom: '0.5rem' }}>
                 <ShieldCheck size={14} /> Organizer Admin Panel
               </div>
-              <Link to="/admin/dashboard" onClick={closeMenu} className="mobile-link">
-                <LayoutDashboard size={18} /> Dashboard
+              <Link to="/admin" onClick={closeMenu} className="mobile-link" style={{ fontWeight: 700, color: 'var(--color-primary-900)' }}>
+                <ShieldCheck size={18} /> Admin Panel (All Options)
               </Link>
-              <Link to="/admin/students" onClick={closeMenu} className="mobile-link">
-                <Users size={18} /> Students Directory
-              </Link>
-              <Link to="/admin/companies" onClick={closeMenu} className="mobile-link">
-                <Building2 size={18} /> Manage Companies
-              </Link>
-              <Link to="/admin/rooms" onClick={closeMenu} className="mobile-link">
-                <DoorClosed size={18} /> Room Allocation
-              </Link>
-              <Link to="/admin/requirements" onClick={closeMenu} className="mobile-link">
-                <ClipboardList size={18} /> Manage Requirements
-              </Link>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.4rem', margin: '0.25rem 0 0.5rem' }}>
+                <Link to="/admin?tab=overview" onClick={closeMenu} className="btn btn-outline btn-sm" style={{ fontSize: '0.78rem', padding: '0.35rem' }}>
+                  📊 Overview
+                </Link>
+                <Link to="/admin?tab=companies" onClick={closeMenu} className="btn btn-outline btn-sm" style={{ fontSize: '0.78rem', padding: '0.35rem' }}>
+                  🏢 Companies
+                </Link>
+                <Link to="/admin?tab=rooms" onClick={closeMenu} className="btn btn-outline btn-sm" style={{ fontSize: '0.78rem', padding: '0.35rem' }}>
+                  🚪 Room Alloc
+                </Link>
+                <Link to="/admin?tab=students" onClick={closeMenu} className="btn btn-outline btn-sm" style={{ fontSize: '0.78rem', padding: '0.35rem' }}>
+                  🎓 Students
+                </Link>
+              </div>
               <button onClick={handleLogout} className="btn btn-danger" style={{ width: '100%', marginTop: '0.75rem' }}>
                 <LogOut size={16} /> Logout
               </button>

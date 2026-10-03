@@ -36,7 +36,7 @@ const AdminLoginPage = () => {
       }
 
       login(response.token, user);
-      navigate('/admin/dashboard');
+      navigate('/admin');
     } catch (err) {
       console.error('Admin login error:', err);
       const msg =

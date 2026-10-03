@@ -32,7 +32,7 @@ const StudentLoginPage = () => {
       login(response.token, response.user);
 
       if (response.user.role === 'admin' || response.user.is_staff) {
-        navigate('/admin/dashboard');
+        navigate('/admin');
       } else {
         navigate('/dashboard');
       }

@@ -131,7 +131,7 @@ const HomePage = () => {
                   </Link>
                 </>
               ) : (
-                <Link to="/admin/dashboard" className="btn btn-primary btn-lg" style={{ backgroundColor: '#f59e0b', color: '#0f172a' }}>
+                <Link to="/admin" className="btn btn-primary btn-lg" style={{ backgroundColor: '#f59e0b', color: '#0f172a' }}>
                   Open Admin Command Center <ArrowRight size={18} />
                 </Link>
               )}

@@ -24,12 +24,8 @@ import StudentApplicationsPage from './pages/student/StudentApplicationsPage';
 
 // Admin Pages
 import AdminLoginPage from './pages/admin/AdminLoginPage';
-import AdminDashboardPage from './pages/admin/AdminDashboardPage';
-import AdminStudentsPage from './pages/admin/AdminStudentsPage';
-import AdminCompaniesPage from './pages/admin/AdminCompaniesPage';
+import AdminUnifiedPanelPage from './pages/admin/AdminUnifiedPanelPage';
 import AdminCompanyStudentsPage from './pages/admin/AdminCompanyStudentsPage';
-import AdminRequirementsPage from './pages/admin/AdminRequirementsPage';
-import AdminRoomAllocationPage from './pages/admin/AdminRoomAllocationPage';
 import StudentCheckInPage from './pages/student/StudentCheckInPage';
 
 function App() {
@@ -70,12 +66,13 @@ function App() {
               </ProtectedRoute>
             }
           >
-            <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
-            <Route path="/admin/students" element={<AdminStudentsPage />} />
-            <Route path="/admin/companies" element={<AdminCompaniesPage />} />
+            <Route path="/admin" element={<AdminUnifiedPanelPage />} />
+            <Route path="/admin/dashboard" element={<AdminUnifiedPanelPage initialTab="overview" />} />
+            <Route path="/admin/companies" element={<AdminUnifiedPanelPage initialTab="companies" />} />
+            <Route path="/admin/rooms" element={<AdminUnifiedPanelPage initialTab="rooms" />} />
+            <Route path="/admin/students" element={<AdminUnifiedPanelPage initialTab="students" />} />
+            <Route path="/admin/requirements" element={<AdminUnifiedPanelPage initialTab="requirements" />} />
             <Route path="/admin/companies/:id" element={<AdminCompanyStudentsPage />} />
-            <Route path="/admin/rooms" element={<AdminRoomAllocationPage />} />
-            <Route path="/admin/requirements" element={<AdminRequirementsPage />} />
           </Route>
 
           {/* Fallback route */}

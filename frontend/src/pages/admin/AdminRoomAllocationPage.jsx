@@ -20,7 +20,7 @@ import {
 } from 'lucide-react';
 import Alert from '../../components/Alert';
 
-const AdminRoomAllocationPage = () => {
+const AdminRoomAllocationPage = ({ onTabChange }) => {
   const [loading, setLoading] = useState(true);
   const [summaryData, setSummaryData] = useState(null);
   const [search, setSearch] = useState('');
@@ -239,9 +239,20 @@ const AdminRoomAllocationPage = () => {
             <Download size={16} /> Sample Room Template
           </button>
 
-          <Link to="/admin/companies" className="btn btn-outline" style={{ gap: '0.4rem' }}>
-            <Building2 size={16} /> View Companies
-          </Link>
+          {onTabChange ? (
+            <button
+              type="button"
+              onClick={() => onTabChange('companies')}
+              className="btn btn-outline"
+              style={{ gap: '0.4rem' }}
+            >
+              <Building2 size={16} /> View Companies
+            </button>
+          ) : (
+            <Link to="/admin?tab=companies" className="btn btn-outline" style={{ gap: '0.4rem' }}>
+              <Building2 size={16} /> View Companies
+            </Link>
+          )}
         </div>
       </div>
 

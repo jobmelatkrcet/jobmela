@@ -17,7 +17,7 @@ import {
 import StatsCard from '../../components/StatsCard';
 import Alert from '../../components/Alert';
 
-const AdminDashboardPage = () => {
+const AdminDashboardPage = ({ onTabChange }) => {
   const [dashboard, setDashboard] = useState(null);
   const [loading, setLoading] = useState(true);
   const [alert, setAlert] = useState(null);
@@ -62,18 +62,53 @@ const AdminDashboardPage = () => {
         </div>
 
         <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-          <Link to="/admin/requirements" className="btn btn-outline btn-sm">
-            <ClipboardList size={15} /> Candidate Requirements
-          </Link>
-          <Link to="/admin/companies" className="btn btn-primary btn-sm">
-            <Upload size={15} /> Upload Companies Excel
-          </Link>
-          <Link to="/admin/rooms" className="btn btn-outline btn-sm">
-            <DoorClosed size={15} /> Room Allocation
-          </Link>
-          <Link to="/admin/students" className="btn btn-outline btn-sm">
-            <Users size={15} /> Manage Students
-          </Link>
+          {onTabChange ? (
+            <>
+              <button
+                type="button"
+                onClick={() => onTabChange('requirements')}
+                className="btn btn-outline btn-sm"
+              >
+                <ClipboardList size={15} /> Candidate Requirements
+              </button>
+              <button
+                type="button"
+                onClick={() => onTabChange('companies')}
+                className="btn btn-primary btn-sm"
+              >
+                <Upload size={15} /> Upload Companies Excel
+              </button>
+              <button
+                type="button"
+                onClick={() => onTabChange('rooms')}
+                className="btn btn-outline btn-sm"
+              >
+                <DoorClosed size={15} /> Room Allocation
+              </button>
+              <button
+                type="button"
+                onClick={() => onTabChange('students')}
+                className="btn btn-outline btn-sm"
+              >
+                <Users size={15} /> Manage Students
+              </button>
+            </>
+          ) : (
+            <>
+              <Link to="/admin?tab=requirements" className="btn btn-outline btn-sm">
+                <ClipboardList size={15} /> Candidate Requirements
+              </Link>
+              <Link to="/admin?tab=companies" className="btn btn-primary btn-sm">
+                <Upload size={15} /> Upload Companies Excel
+              </Link>
+              <Link to="/admin?tab=rooms" className="btn btn-outline btn-sm">
+                <DoorClosed size={15} /> Room Allocation
+              </Link>
+              <Link to="/admin?tab=students" className="btn btn-outline btn-sm">
+                <Users size={15} /> Manage Students
+              </Link>
+            </>
+          )}
         </div>
       </div>
 
@@ -148,9 +183,27 @@ const AdminDashboardPage = () => {
                   <TrendingUp size={20} color="var(--color-brand-600)" />
                   <h3 style={{ fontSize: '1.25rem' }}>Top Companies by Student Interest</h3>
                 </div>
-                <Link to="/admin/companies" style={{ fontSize: '0.85rem', color: 'var(--color-brand-600)', fontWeight: 600 }}>
-                  View All →
-                </Link>
+                {onTabChange ? (
+                  <button
+                    type="button"
+                    onClick={() => onTabChange('companies')}
+                    style={{
+                      fontSize: '0.85rem',
+                      color: 'var(--color-brand-600)',
+                      fontWeight: 600,
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer',
+                      padding: 0,
+                    }}
+                  >
+                    View All →
+                  </button>
+                ) : (
+                  <Link to="/admin?tab=companies" style={{ fontSize: '0.85rem', color: 'var(--color-brand-600)', fontWeight: 600 }}>
+                    View All →
+                  </Link>
+                )}
               </div>
 
               {dashboard?.top_companies?.length === 0 ? (
