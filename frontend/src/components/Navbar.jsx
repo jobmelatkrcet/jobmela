@@ -17,6 +17,7 @@ import {
   Award,
   ChevronDown,
   ClipboardList,
+  DoorClosed,
 } from 'lucide-react';
 
 const Navbar = () => {
@@ -130,6 +131,9 @@ const Navbar = () => {
                 </NavLink>
                 <NavLink to="/admin/companies" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
                   <Building2 size={16} /> Companies
+                </NavLink>
+                <NavLink to="/admin/rooms" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+                  <DoorClosed size={16} /> Room Allocation
                 </NavLink>
                 <NavLink to="/admin/requirements" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
                   <ClipboardList size={16} /> Requirements
@@ -267,6 +271,9 @@ const Navbar = () => {
               </Link>
               <Link to="/admin/companies" onClick={closeMenu} className="mobile-link">
                 <Building2 size={18} /> Manage Companies
+              </Link>
+              <Link to="/admin/rooms" onClick={closeMenu} className="mobile-link">
+                <DoorClosed size={18} /> Room Allocation
               </Link>
               <Link to="/admin/requirements" onClick={closeMenu} className="mobile-link">
                 <ClipboardList size={18} /> Manage Requirements

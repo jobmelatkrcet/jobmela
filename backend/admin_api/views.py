@@ -5,6 +5,7 @@ from openpyxl import Workbook, load_workbook
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 from openpyxl.utils import get_column_letter
 
+from django.conf import settings
 from django.db import transaction
 from django.db.models import Count, Q
 from django.http import HttpResponse
@@ -14,15 +15,19 @@ from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.parsers import MultiPartParser, FormParser
 
+import base64
+import qrcode
 from accounts.models import User
-from companies.models import Company
+from companies.models import Company, Room, RoomCheckIn
 from applications.models import Application
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from .permissions import IsAdminUserRole
 from .serializers import (
     AdminStudentListSerializer,
     AdminStudentDetailSerializer,
     AdminCompanyListSerializer,
     AdminCompanyStudentSerializer,
+    RoomSerializer,
 )
 
 
@@ -1188,4 +1193,567 @@ class AdminJobMelaRequirementDetailView(APIView):
             {"message": "Requirement deleted successfully."},
             status=status.HTTP_200_OK,
         )
+
+
+# =====================================================================
+# AUTOMATIC ROOM ALLOCATION SYSTEM & QR CODE MANAGEMENT
+# =====================================================================
+
+import qrcode.image.svg
+
+
+def generate_qr_svg(data_text: str) -> str:
+    """Generate high-contrast vector SVG QR code (pure Python, Pillow not required)."""
+    qr = qrcode.QRCode(
+        version=1,
+        error_correction=qrcode.constants.ERROR_CORRECT_M,
+        box_size=10,
+        border=2,
+    )
+    qr.add_data(data_text)
+    qr.make(fit=True)
+    img = qr.make_image(image_factory=qrcode.image.svg.SvgPathImage)
+    buf = io.BytesIO()
+    img.save(buf)
+    return buf.getvalue().decode("utf-8")
+
+
+def parse_room_excel(uploaded_file):
+    """
+    Parses Room Numbers from uploaded Excel.
+    Supports columns: Room No, Room Number, Room, Room ID, etc.
+    Extracts rooms sequentially, tracks duplicates and blank cells.
+    """
+    try:
+        wb = load_workbook(uploaded_file, data_only=True)
+        ws = wb.active
+    except Exception as e:
+        raise ValueError(f"Failed to read the Excel spreadsheet: {str(e)}")
+
+    rows = list(ws.iter_rows(values_only=True))
+    if not rows:
+        raise ValueError("The uploaded Excel file contains no data.")
+
+    room_col_patterns = [
+        "room no",
+        "room number",
+        "room",
+        "room id",
+        "room_no",
+        "roomno",
+        "room #",
+        "room_id",
+        "cabin",
+        "hall",
+        "venue",
+    ]
+
+    target_col = None
+    start_row = 0
+
+    # Scan first 10 rows for a matching room header
+    for r_idx, row in enumerate(rows[:10]):
+        if not row:
+            continue
+        for c_idx, cell in enumerate(row):
+            if cell is not None:
+                val = str(cell).strip().lower()
+                val_norm = re.sub(r"[^a-z0-9]", " ", val).strip()
+                val_single = re.sub(r"\s+", " ", val_norm)
+                for pat in room_col_patterns:
+                    if pat == val_single or pat == val_norm or val_single.startswith(pat):
+                        target_col = c_idx
+                        start_row = r_idx + 1
+                        break
+            if target_col is not None:
+                break
+        if target_col is not None:
+            break
+
+    # If no header was found, fallback to column 0
+    if target_col is None:
+        target_col = 0
+        first_val = str(rows[0][0]).strip().lower() if rows[0] and rows[0][0] is not None else ""
+        if any(p in first_val for p in ["room", "no", "id", "s.no"]):
+            start_row = 1
+        else:
+            start_row = 0
+
+    seen_set = set()
+    unique_rooms = []
+    duplicates_detected = []
+    blank_rows = 0
+
+    for row in rows[start_row:]:
+        if not row or target_col >= len(row) or row[target_col] is None:
+            blank_rows += 1
+            continue
+
+        raw_val = row[target_col]
+        # Clean number representation
+        if isinstance(raw_val, float) and raw_val.is_integer():
+            rm_str = str(int(raw_val)).strip()
+        else:
+            rm_str = str(raw_val).strip()
+
+        if not rm_str or rm_str.lower() in ["", "none", "null", "nan", "-", "--"]:
+            blank_rows += 1
+            continue
+
+        rm_key = rm_str.lower()
+        if rm_key in seen_set:
+            if rm_str not in duplicates_detected:
+                duplicates_detected.append(rm_str)
+        else:
+            seen_set.add(rm_key)
+            unique_rooms.append(rm_str)
+
+    return {
+        "unique_rooms": unique_rooms,
+        "duplicates_detected": duplicates_detected,
+        "blank_rows": blank_rows,
+        "total_rows_scanned": len(rows),
+    }
+
+
+class AdminRoomsSummaryView(APIView):
+    """
+    Returns complete room allocation overview, company counts, room counts,
+    and the list of current company -> room pairings.
+    """
+    permission_classes = [IsAdminUserRole]
+
+    def get(self, request):
+        companies = (
+            Company.objects.select_related("assigned_room")
+            .annotate(checkins_cnt=Count("assigned_room__checkins"))
+            .order_by("id")
+        )
+        total_companies = len(companies)
+        rooms = Room.objects.all().order_by("room_number")
+        total_rooms = rooms.count()
+
+        allocated_companies_count = sum(1 for c in companies if c.assigned_room_id is not None)
+        unallocated_companies_count = total_companies - allocated_companies_count
+
+        assigned_room_ids = {c.assigned_room_id for c in companies if c.assigned_room_id is not None}
+        available_rooms_count = rooms.exclude(id__in=assigned_room_ids).count()
+
+        allocations = []
+        for c in companies:
+            allocations.append({
+                "company_id": c.id,
+                "company_name": c.name,
+                "sector": c.sector,
+                "job_position": c.job_position,
+                "room_id": c.assigned_room_id,
+                "room_number": c.assigned_room.room_number if c.assigned_room else (c.room_no or "Unallocated"),
+                "unique_room_token": c.assigned_room.unique_room_token if c.assigned_room else None,
+                "qr_status": c.assigned_room.qr_status if c.assigned_room else "inactive",
+                "checkins_count": c.checkins_cnt,
+            })
+
+        return Response({
+            "total_companies": total_companies,
+            "total_rooms": total_rooms,
+            "allocated_companies_count": allocated_companies_count,
+            "unallocated_companies_count": unallocated_companies_count,
+            "available_rooms_count": available_rooms_count,
+            "allocations": allocations,
+        }, status=status.HTTP_200_OK)
+
+
+class AdminRoomExcelPreviewView(APIView):
+    """
+    Uploads a Room Numbers Excel file, validates column formatting,
+    detects duplicates, compares Total Companies vs Available Rooms,
+    and returns a preview of the sequential Company -> Room allocation.
+    """
+    permission_classes = [IsAdminUserRole]
+    parser_classes = [MultiPartParser, FormParser]
+
+    def post(self, request):
+        uploaded_file = request.FILES.get("file")
+        if not uploaded_file:
+            return Response(
+                {"error": "No file uploaded. Please select a Room Numbers Excel file (.xlsx or .xls)."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        filename = uploaded_file.name.lower()
+        if not (filename.endswith(".xlsx") or filename.endswith(".xls")):
+            return Response(
+                {"error": "Invalid file format. Please upload an Excel spreadsheet (.xlsx or .xls)."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            parsed = parse_room_excel(uploaded_file)
+        except Exception as e:
+            return Response(
+                {"error": str(e)},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        available_rooms = parsed["unique_rooms"]
+        if not available_rooms:
+            return Response(
+                {"error": "No valid room numbers found in the uploaded Excel file. Please ensure a 'Room No' column exists with valid room values."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        companies = list(Company.objects.all().order_by("id"))
+        total_companies = len(companies)
+
+        if total_companies == 0:
+            return Response(
+                {"error": "No companies found in the database. Please upload your Company Excel list first before allocating rooms."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        total_available_rooms = len(available_rooms)
+
+        # Requirement 3: Compare Total Companies vs Total Available Rooms
+        if total_available_rooms < total_companies:
+            return Response(
+                {
+                    "error": f"Insufficient rooms. {total_companies} companies require {total_companies} rooms, but only {total_available_rooms} rooms are available in the uploaded file.",
+                    "total_companies": total_companies,
+                    "available_rooms_count": total_available_rooms,
+                    "rooms_required": total_companies,
+                    "duplicates_detected": parsed["duplicates_detected"],
+                    "blank_rows": parsed["blank_rows"],
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Requirement 4: Preview Before Confirmation
+        preview_pairs = []
+        for i in range(total_companies):
+            c = companies[i]
+            preview_pairs.append({
+                "company_id": c.id,
+                "company_name": c.name,
+                "sector": c.sector,
+                "job_position": c.job_position,
+                "current_room": c.room_no or "Unallocated",
+                "new_room": available_rooms[i],
+            })
+
+        unused_rooms = available_rooms[total_companies:]
+
+        return Response(
+            {
+                "valid": True,
+                "filename": uploaded_file.name,
+                "total_companies": total_companies,
+                "available_rooms_count": total_available_rooms,
+                "rooms_required": total_companies,
+                "rooms_used": total_companies,
+                "unused_rooms_count": len(unused_rooms),
+                "unused_rooms": unused_rooms[:20],
+                "duplicates_detected": parsed["duplicates_detected"],
+                "blank_rows": parsed["blank_rows"],
+                "preview_pairs": preview_pairs,
+                "rooms_sequence": available_rooms,
+            },
+            status=status.HTTP_200_OK,
+        )
+
+
+class AdminRoomConfirmAllocationView(APIView):
+    """
+    Transactional confirmation of automatic room allocation.
+    Saves Company -> Room relationships and ensures Room QR identities
+    are permanently preserved.
+    """
+    permission_classes = [IsAdminUserRole]
+
+    def post(self, request):
+        rooms = request.data.get("rooms", [])
+        if not rooms or not isinstance(rooms, list):
+            return Response(
+                {"error": "No rooms list provided for allocation."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        companies = list(Company.objects.all().order_by("id"))
+        total_companies = len(companies)
+
+        if total_companies == 0:
+            return Response(
+                {"error": "No companies found in database."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if len(rooms) < total_companies:
+            return Response(
+                {"error": f"Insufficient rooms. {total_companies} companies require {total_companies} rooms, but only {len(rooms)} were supplied."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Requirement 5 & 6: Transactional allocation preserving Room QR identities
+        try:
+            with transaction.atomic():
+                import uuid
+                clean_room_numbers = [str(r).strip() for r in rooms]
+                existing_rooms = {r.room_number: r for r in Room.objects.filter(room_number__in=clean_room_numbers)}
+
+                new_room_objs = []
+                seen_new = set()
+                for r_num in clean_room_numbers:
+                    if r_num not in existing_rooms and r_num not in seen_new:
+                        clean_n = "".join(c for c in r_num if c.isalnum())
+                        tok = f"RM_{clean_n}_{uuid.uuid4().hex[:8].upper()}"
+                        new_room_objs.append(Room(room_number=r_num, unique_room_token=tok))
+                        seen_new.add(r_num)
+
+                if new_room_objs:
+                    Room.objects.bulk_create(new_room_objs, ignore_conflicts=True)
+                    room_map = {r.room_number: r for r in Room.objects.filter(room_number__in=clean_room_numbers)}
+                else:
+                    room_map = existing_rooms
+
+                Company.objects.update(assigned_room=None, room_no="")
+
+                for i in range(total_companies):
+                    c = companies[i]
+                    target_rm_no = str(rooms[i]).strip()
+                    target_room = room_map[target_rm_no]
+                    c.assigned_room = target_room
+                    c.room_no = target_room.room_number
+
+                Company.objects.bulk_update(companies, ["assigned_room", "room_no"])
+
+            return Response(
+                {
+                    "success": True,
+                    "message": f"Successfully allocated {total_companies} companies to {total_companies} rooms.",
+                    "allocated_count": total_companies,
+                    "unused_rooms_count": len(rooms) - total_companies,
+                },
+                status=status.HTTP_200_OK,
+            )
+        except Exception as e:
+            return Response(
+                {"error": f"Failed to save allocation: {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+
+class AdminRoomTemplateDownloadView(APIView):
+    """
+    Downloads standard Excel template for Room Numbers upload.
+    """
+    permission_classes = [IsAdminUserRole]
+
+    def get(self, request):
+        wb = Workbook()
+        ws = wb.active
+        ws.title = "Room Numbers"
+
+        navy_header = PatternFill(
+            start_color="1E3A8A", end_color="1E3A8A", fill_type="solid"
+        )
+        accent_fill = PatternFill(
+            start_color="F8FAFC", end_color="F8FAFC", fill_type="solid"
+        )
+        title_font = Font(name="Calibri", size=14, bold=True, color="1E3A8A")
+        sub_font = Font(name="Calibri", size=10, italic=True, color="475569")
+        white_bold = Font(name="Calibri", size=11, bold=True, color="FFFFFF")
+        data_font = Font(name="Calibri", size=11, color="0F172A")
+        thin_border = Border(
+            left=Side(style="thin", color="CBD5E1"),
+            right=Side(style="thin", color="CBD5E1"),
+            top=Side(style="thin", color="CBD5E1"),
+            bottom=Side(style="thin", color="CBD5E1"),
+        )
+
+        ws.merge_cells("A1:B1")
+        ws.cell(row=1, column=1, value="TKRCET JOB MELA 2026 — ROOM NUMBERS TEMPLATE").font = title_font
+        ws.merge_cells("A2:B2")
+        ws.cell(row=2, column=1, value="Fill column 'Room No' with your interview room numbers in sequence. Only 'Room No' is required.").font = sub_font
+
+        ws.cell(row=4, column=1, value="S.No").font = white_bold
+        ws.cell(row=4, column=1).fill = navy_header
+        ws.cell(row=4, column=1).alignment = Alignment(horizontal="center", vertical="center")
+        ws.cell(row=4, column=1).border = thin_border
+
+        ws.cell(row=4, column=2, value="Room No").font = white_bold
+        ws.cell(row=4, column=2).fill = navy_header
+        ws.cell(row=4, column=2).alignment = Alignment(horizontal="center", vertical="center")
+        ws.cell(row=4, column=2).border = thin_border
+
+        sample_rooms = [
+            "101", "102", "103", "104", "105",
+            "201", "202", "203", "204", "205",
+            "CF-01", "CF-02", "CF-03", "SF-01", "SF-02"
+        ]
+
+        for idx, rm in enumerate(sample_rooms, start=1):
+            curr_row = 4 + idx
+            ws.cell(row=curr_row, column=1, value=idx).alignment = Alignment(horizontal="center", vertical="center")
+            ws.cell(row=curr_row, column=1).border = thin_border
+            ws.cell(row=curr_row, column=1).font = data_font
+
+            ws.cell(row=curr_row, column=2, value=rm).alignment = Alignment(horizontal="center", vertical="center")
+            ws.cell(row=curr_row, column=2).border = thin_border
+            ws.cell(row=curr_row, column=2).font = data_font
+
+            if idx % 2 == 0:
+                ws.cell(row=curr_row, column=1).fill = accent_fill
+                ws.cell(row=curr_row, column=2).fill = accent_fill
+
+        ws.column_dimensions["A"].width = 10
+        ws.column_dimensions["B"].width = 25
+
+        output = io.BytesIO()
+        wb.save(output)
+        output.seek(0)
+
+        response = HttpResponse(
+            output.getvalue(),
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        )
+        response["Content-Disposition"] = 'attachment; filename="Room_Numbers_Template.xlsx"'
+        return response
+
+
+class AdminRoomQRDetailView(APIView):
+    """
+    Returns room details along with a high-resolution base64 PNG QR code
+    and direct candidate check-in link.
+    """
+    permission_classes = [IsAdminUserRole]
+
+    def get(self, request, pk):
+        try:
+            room = Room.objects.get(pk=pk)
+        except Room.DoesNotExist:
+            return Response({"error": "Room not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        company = room.companies.first()
+        frontend_url = getattr(settings, "FRONTEND_URL", "https://jobmela.vercel.app").rstrip("/")
+        checkin_url = f"{frontend_url}/checkin/{room.unique_room_token}"
+        qr_svg = generate_qr_svg(checkin_url)
+
+        return Response({
+            "id": room.id,
+            "room_number": room.room_number,
+            "unique_room_token": room.unique_room_token,
+            "qr_status": room.qr_status,
+            "active": room.active,
+            "checkin_url": checkin_url,
+            "qr_svg": qr_svg,
+            "assigned_company": {
+                "id": company.id,
+                "name": company.name,
+                "sector": company.sector,
+                "job_position": company.job_position,
+            } if company else None,
+            "checkins_count": room.checkins.count(),
+        }, status=status.HTTP_200_OK)
+
+
+class AdminRoomToggleStatusView(APIView):
+    """
+    Toggles room QR code status between 'active' and 'inactive'.
+    """
+    permission_classes = [IsAdminUserRole]
+
+    def post(self, request, pk):
+        try:
+            room = Room.objects.get(pk=pk)
+        except Room.DoesNotExist:
+            return Response({"error": "Room not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        new_status = request.data.get("qr_status")
+        if new_status in ["active", "inactive"]:
+            room.qr_status = new_status
+        else:
+            room.qr_status = "inactive" if room.qr_status == "active" else "active"
+
+        room.save(update_fields=["qr_status"])
+        return Response({
+            "id": room.id,
+            "room_number": room.room_number,
+            "qr_status": room.qr_status,
+            "message": f"Room {room.room_number} QR status updated to {room.qr_status}."
+        }, status=status.HTTP_200_OK)
+
+
+class StudentRoomCheckInView(APIView):
+    """
+    Student QR scan & interview check-in endpoint.
+    GET: Resolves room & assigned company information for candidate display.
+    POST: Records candidate check-in to that room/company.
+    """
+    permission_classes = [AllowAny]
+    def get(self, request, token):
+        try:
+            room = Room.objects.get(unique_room_token=token)
+        except Room.DoesNotExist:
+            return Response({"error": "Invalid room QR code or room not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        company = room.companies.first()
+        already_checked_in = False
+        checked_in_at = None
+
+        if request.user and request.user.is_authenticated:
+            existing = RoomCheckIn.objects.filter(student=request.user, room=room).first()
+            if existing:
+                already_checked_in = True
+                checked_in_at = existing.checked_in_at.strftime("%I:%M %p, %d %b %Y")
+
+        return Response({
+            "room_id": room.id,
+            "room_number": room.room_number,
+            "qr_status": room.qr_status,
+            "company": {
+                "id": company.id,
+                "name": company.name,
+                "sector": company.sector,
+                "job_position": company.job_position,
+                "location": company.location,
+                "salary_ctc": company.salary_ctc,
+            } if company else None,
+            "already_checked_in": already_checked_in,
+            "checked_in_at": checked_in_at,
+        }, status=status.HTTP_200_OK)
+
+    def post(self, request, token):
+        if not request.user or not request.user.is_authenticated:
+            return Response(
+                {"error": "Please login to your candidate account to complete interview check-in."},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+
+        try:
+            room = Room.objects.get(unique_room_token=token)
+        except Room.DoesNotExist:
+            return Response({"error": "Invalid room QR code."}, status=status.HTTP_404_NOT_FOUND)
+
+        if room.qr_status != "active":
+            return Response(
+                {"error": f"Room {room.room_number} QR check-in is currently inactive. Please contact the help desk."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        company = room.companies.first()
+
+        checkin, created = RoomCheckIn.objects.get_or_create(
+            student=request.user,
+            room=room,
+            defaults={"company": company},
+        )
+
+        return Response({
+            "success": True,
+            "already_checked_in": not created,
+            "message": f"Successfully checked in to Room {room.room_number}" + (f" for {company.name}!" if company else "!"),
+            "room_number": room.room_number,
+            "company_name": company.name if company else None,
+            "checked_in_at": checkin.checked_in_at.strftime("%I:%M %p, %d %b %Y"),
+        }, status=status.HTTP_200_OK)
+
 

@@ -4,6 +4,9 @@ from .models import Company
 
 class CompanySerializer(serializers.ModelSerializer):
     has_applied = serializers.SerializerMethodField()
+    assigned_room_id = serializers.IntegerField(source="assigned_room.id", read_only=True, allow_null=True)
+    unique_room_token = serializers.CharField(source="assigned_room.unique_room_token", read_only=True, allow_null=True)
+    qr_status = serializers.CharField(source="assigned_room.qr_status", read_only=True, allow_null=True)
 
     class Meta:
         model = Company
@@ -20,6 +23,9 @@ class CompanySerializer(serializers.ModelSerializer):
             "eligibility",
             "facilities",
             "room_no",
+            "assigned_room_id",
+            "unique_room_token",
+            "qr_status",
             "created_at",
             "updated_at",
             "has_applied",

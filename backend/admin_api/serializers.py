@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from accounts.models import User
-from companies.models import Company
+from companies.models import Company, Room, RoomCheckIn
 from applications.models import Application
 
 
@@ -51,6 +51,9 @@ class AdminStudentDetailSerializer(serializers.ModelSerializer):
 
 class AdminCompanyListSerializer(serializers.ModelSerializer):
     registered_students_count = serializers.IntegerField(read_only=True)
+    assigned_room_id = serializers.IntegerField(source="assigned_room.id", read_only=True, allow_null=True)
+    unique_room_token = serializers.CharField(source="assigned_room.unique_room_token", read_only=True, allow_null=True)
+    qr_status = serializers.CharField(source="assigned_room.qr_status", read_only=True, allow_null=True)
 
     class Meta:
         model = Company
@@ -67,10 +70,58 @@ class AdminCompanyListSerializer(serializers.ModelSerializer):
             "eligibility",
             "facilities",
             "room_no",
+            "assigned_room_id",
+            "unique_room_token",
+            "qr_status",
             "created_at",
             "updated_at",
             "registered_students_count",
         ]
+
+
+class RoomSerializer(serializers.ModelSerializer):
+    assigned_company_name = serializers.SerializerMethodField()
+    assigned_company_id = serializers.SerializerMethodField()
+    assigned_company_sector = serializers.SerializerMethodField()
+    assigned_company_position = serializers.SerializerMethodField()
+    checkins_count = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Room
+        fields = [
+            "id",
+            "room_number",
+            "unique_room_token",
+            "qr_status",
+            "active",
+            "assigned_company_id",
+            "assigned_company_name",
+            "assigned_company_sector",
+            "assigned_company_position",
+            "checkins_count",
+            "created_at",
+            "updated_at",
+        ]
+
+    def get_assigned_company_name(self, obj):
+        comp = obj.companies.first()
+        return comp.name if comp else None
+
+    def get_assigned_company_id(self, obj):
+        comp = obj.companies.first()
+        return comp.id if comp else None
+
+    def get_assigned_company_sector(self, obj):
+        comp = obj.companies.first()
+        return comp.sector if comp else None
+
+    def get_assigned_company_position(self, obj):
+        comp = obj.companies.first()
+        return comp.job_position if comp else None
+
+    def get_checkins_count(self, obj):
+        return obj.checkins.count()
+
 
 
 class AdminCompanyStudentSerializer(serializers.ModelSerializer):

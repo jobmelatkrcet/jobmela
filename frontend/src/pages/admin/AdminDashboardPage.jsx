@@ -12,6 +12,7 @@ import {
   Download,
   AlertCircle,
   ClipboardList,
+  DoorClosed,
 } from 'lucide-react';
 import StatsCard from '../../components/StatsCard';
 import Alert from '../../components/Alert';
@@ -66,6 +67,9 @@ const AdminDashboardPage = () => {
           </Link>
           <Link to="/admin/companies" className="btn btn-primary btn-sm">
             <Upload size={15} /> Upload Companies Excel
+          </Link>
+          <Link to="/admin/rooms" className="btn btn-outline btn-sm">
+            <DoorClosed size={15} /> Room Allocation
           </Link>
           <Link to="/admin/students" className="btn btn-outline btn-sm">
             <Users size={15} /> Manage Students

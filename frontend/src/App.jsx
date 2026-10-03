@@ -29,6 +29,8 @@ import AdminStudentsPage from './pages/admin/AdminStudentsPage';
 import AdminCompaniesPage from './pages/admin/AdminCompaniesPage';
 import AdminCompanyStudentsPage from './pages/admin/AdminCompanyStudentsPage';
 import AdminRequirementsPage from './pages/admin/AdminRequirementsPage';
+import AdminRoomAllocationPage from './pages/admin/AdminRoomAllocationPage';
+import StudentCheckInPage from './pages/student/StudentCheckInPage';
 
 function App() {
   return (
@@ -44,6 +46,7 @@ function App() {
             <Route path="/login" element={<StudentLoginPage />} />
             <Route path="/register" element={<StudentRegisterPage />} />
             <Route path="/admin/login" element={<AdminLoginPage />} />
+            <Route path="/checkin/:token" element={<StudentCheckInPage />} />
           </Route>
 
           {/* Student Protected Routes */}
@@ -71,6 +74,7 @@ function App() {
             <Route path="/admin/students" element={<AdminStudentsPage />} />
             <Route path="/admin/companies" element={<AdminCompaniesPage />} />
             <Route path="/admin/companies/:id" element={<AdminCompanyStudentsPage />} />
+            <Route path="/admin/rooms" element={<AdminRoomAllocationPage />} />
             <Route path="/admin/requirements" element={<AdminRequirementsPage />} />
           </Route>
 

@@ -10,6 +10,12 @@ from .views import (
     AdminCompanyExcelUploadView,
     AdminCompanyClearAllView,
     AdminCompanyTemplateDownloadView,
+    AdminRoomsSummaryView,
+    AdminRoomExcelPreviewView,
+    AdminRoomConfirmAllocationView,
+    AdminRoomTemplateDownloadView,
+    AdminRoomQRDetailView,
+    AdminRoomToggleStatusView,
     JobMelaRequirementsPublicListView,
     AdminJobMelaRequirementListCreateView,
     AdminJobMelaRequirementDetailView,
@@ -58,6 +64,14 @@ urlpatterns = [
         AdminCompanyExcelExportView.as_view(),
         name="admin-company-export",
     ),
+    # Room Allocation endpoints
+    path("rooms/summary/", AdminRoomsSummaryView.as_view(), name="admin-rooms-summary"),
+    path("rooms/upload-preview/", AdminRoomExcelPreviewView.as_view(), name="admin-rooms-upload-preview"),
+    path("rooms/confirm-allocation/", AdminRoomConfirmAllocationView.as_view(), name="admin-rooms-confirm-allocation"),
+    path("rooms/template/", AdminRoomTemplateDownloadView.as_view(), name="admin-rooms-template"),
+    path("rooms/<int:pk>/qr/", AdminRoomQRDetailView.as_view(), name="admin-rooms-qr"),
+    path("rooms/<int:pk>/toggle-status/", AdminRoomToggleStatusView.as_view(), name="admin-rooms-toggle-status"),
+
     # Requirements endpoints
     path(
         "requirements/",

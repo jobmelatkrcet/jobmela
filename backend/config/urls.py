@@ -1,7 +1,10 @@
 from django.contrib import admin
 from django.urls import path, include
 from django.http import JsonResponse
-from admin_api.views import JobMelaRequirementsPublicListView
+from admin_api.views import (
+    JobMelaRequirementsPublicListView,
+    StudentRoomCheckInView,
+)
 
 
 def root_health_check(request):
@@ -28,5 +31,10 @@ urlpatterns = [
         "api/requirements/",
         JobMelaRequirementsPublicListView.as_view(),
         name="public-requirements",
+    ),
+    path(
+        "api/rooms/checkin/<str:token>/",
+        StudentRoomCheckInView.as_view(),
+        name="student-room-checkin",
     ),
 ]

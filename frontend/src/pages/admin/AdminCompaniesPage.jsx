@@ -232,6 +232,14 @@ const AdminCompaniesPage = () => {
             <Download size={16} /> Sample Excel Template
           </button>
 
+          <Link
+            to="/admin/rooms"
+            className="btn btn-outline"
+            style={{ gap: '0.4rem', color: '#6d28d9', borderColor: '#c4b5fd' }}
+          >
+            <DoorClosed size={16} /> Room Allocation
+          </Link>
+
           {totalCompanies > 0 && (
             <button
               onClick={() => setShowClearConfirmModal(true)}
