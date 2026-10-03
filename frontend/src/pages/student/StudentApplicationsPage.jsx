@@ -125,7 +125,7 @@ const StudentApplicationsPage = () => {
           </Link>
         </div>
       ) : (
-        <div className="card" style={{ padding: '1.5rem', backgroundColor: '#ffffff' }}>
+        <div className="card" style={{ backgroundColor: '#ffffff' }}>
           <div
             style={{
               display: 'flex',
@@ -134,6 +134,8 @@ const StudentApplicationsPage = () => {
               marginBottom: '1.25rem',
               paddingBottom: '1rem',
               borderBottom: '1px solid var(--color-border)',
+              flexWrap: 'wrap',
+              gap: '0.75rem',
             }}
           >
             <span style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--color-primary-800)' }}>

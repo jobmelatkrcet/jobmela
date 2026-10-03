@@ -27,6 +27,7 @@ const Navbar = () => {
 
   const handleLogout = async () => {
     setUserDropdownOpen(false);
+    setMobileMenuOpen(false);
     await logout();
     navigate('/');
   };

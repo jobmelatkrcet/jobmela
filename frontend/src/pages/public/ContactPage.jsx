@@ -22,7 +22,7 @@ const ContactPage = () => {
         <div
           style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))',
             gap: '2rem',
             marginBottom: '3.5rem',
           }}
@@ -31,7 +31,6 @@ const ContactPage = () => {
           <div
             className="card card-hover"
             style={{
-              padding: '2.5rem',
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
@@ -68,7 +67,7 @@ const ContactPage = () => {
             </div>
             <h3 style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>Srinivas Reddy</h3>
             <p style={{ color: 'var(--color-text-muted)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
-              TKR College of Engineering & Technology
+              TKR College of Engineering &amp; Technology
             </p>
 
             <a
@@ -84,7 +83,6 @@ const ContactPage = () => {
           <div
             className="card card-hover"
             style={{
-              padding: '2.5rem',
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',

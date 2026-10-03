@@ -92,9 +92,9 @@ const AdminDashboardPage = () => {
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
-              gap: '1.5rem',
-              marginBottom: '2.5rem',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 260px), 1fr))',
+              gap: '1.25rem',
+              marginBottom: '2rem',
             }}
           >
             <StatsCard
@@ -126,12 +126,12 @@ const AdminDashboardPage = () => {
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))',
-              gap: '2rem',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 320px), 1fr))',
+              gap: '1.75rem',
             }}
           >
             {/* Top Companies by Registrations */}
-            <div className="card" style={{ padding: '2rem' }}>
+            <div className="card">
               <div
                 style={{
                   display: 'flex',
@@ -203,7 +203,7 @@ const AdminDashboardPage = () => {
             </div>
 
             {/* Recent Submissions Feed */}
-            <div className="card" style={{ padding: '2rem' }}>
+            <div className="card">
               <div
                 style={{
                   display: 'flex',

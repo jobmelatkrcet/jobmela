@@ -432,7 +432,7 @@ const AdminCompaniesPage = () => {
                   <div
                     style={{
                       display: 'grid',
-                      gridTemplateColumns: 'repeat(2, 1fr)',
+                      gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))',
                       gap: '0.75rem',
                       fontSize: '0.88rem',
                     }}

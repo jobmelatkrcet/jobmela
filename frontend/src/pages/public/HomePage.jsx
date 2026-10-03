@@ -48,182 +48,62 @@ const HomePage = () => {
   return (
     <div>
       {/* Hero Section */}
-      <section
-        style={{
-          background: 'radial-gradient(ellipse at top, #1e3a8a 0%, #0f172a 100%)',
-          color: '#ffffff',
-          padding: '5rem 0 4.5rem',
-          position: 'relative',
-          overflow: 'hidden',
-          borderBottom: '1px solid rgba(255,255,255,0.1)',
-        }}
-      >
+      <section className="hero-section">
         <div className="app-container" style={{ position: 'relative', zIndex: 2 }}>
           <div style={{ maxWidth: 860, margin: '0 auto', textAlign: 'center' }}>
             {/* Official Logo & Accreditation */}
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '1.25rem' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
               <img
                 src="/tkrcet-official-logo.png"
                 alt="TKRCET Logo"
-                style={{
-                  width: 90,
-                  height: 90,
-                  objectFit: 'contain',
-                  marginBottom: '1rem',
-                  filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.3))',
-                }}
+                className="hero-logo-img"
               />
-              <div
-                style={{
-                  fontSize: '0.85rem',
-                  fontWeight: 700,
-                  color: '#93c5fd',
-                  letterSpacing: '0.06em',
-                  textTransform: 'uppercase',
-                  marginBottom: '0.25rem',
-                }}
-              >
+              <div className="hero-institution-title">
                 TKR College of Engineering &amp; Technology (Autonomous)
               </div>
-              <div
-                style={{
-                  fontSize: '0.78rem',
-                  color: '#fef08a',
-                  fontStyle: 'italic',
-                  marginBottom: '1rem',
-                }}
-              >
+              <div className="hero-institution-motto">
                 "Indian in Character, International in Excellence" • Approved by AICTE • Affiliated to JNTUH
               </div>
-              <div
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '0.5rem',
-                  backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                  backdropFilter: 'blur(10px)',
-                  border: '1px solid rgba(255, 255, 255, 0.2)',
-                  padding: '0.4rem 1.15rem',
-                  borderRadius: 'var(--radius-full)',
-                  fontSize: '0.82rem',
-                  fontWeight: 700,
-                  color: '#fcd34d',
-                }}
-              >
-                <Award size={15} /> NAAC "A+" Grade Accredited • NBA Tier-1 Accredited
+              <div className="hero-accreditation-pill">
+                <Award size={14} /> NAAC "A+" Grade Accredited • NBA Tier-1 Accredited
               </div>
             </div>
 
-            <h1
-              style={{
-                fontSize: 'clamp(2.4rem, 5vw, 3.8rem)',
-                fontWeight: 800,
-                letterSpacing: '-0.03em',
-                lineHeight: 1.15,
-                marginBottom: '1.5rem',
-                color: '#ffffff',
-              }}
-            >
+            <h1 className="hero-main-title">
               TKRCET JOB MELA <span style={{ color: '#60a5fa' }}>2026</span>
             </h1>
 
-            <p
-              style={{
-                fontSize: 'clamp(1.05rem, 2vw, 1.25rem)',
-                color: '#cbd5e1',
-                lineHeight: 1.6,
-                marginBottom: '2.25rem',
-                maxWidth: 720,
-                margin: '0 auto 2.25rem',
-              }}
-            >
-              Organized by <strong>TKR College of Engineering & Technology</strong> to provide
+            <p className="hero-description">
+              Organized by <strong>TKR College of Engineering &amp; Technology</strong> to provide
               employment opportunities for students from diverse educational backgrounds.
             </p>
 
             {/* Event Highlights Badges */}
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                flexWrap: 'wrap',
-                gap: '1rem',
-                marginBottom: '2.75rem',
-              }}
-            >
-              <div
-                style={{
-                  backgroundColor: 'rgba(255, 255, 255, 0.08)',
-                  border: '1px solid rgba(255, 255, 255, 0.15)',
-                  padding: '0.75rem 1.25rem',
-                  borderRadius: 'var(--radius-md)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.6rem',
-                }}
-              >
-                <Calendar size={20} color="#38bdf8" />
-                <span style={{ fontWeight: 700, fontSize: '1rem', color: '#f8fafc' }}>
-                  31 OCTOBER 2026
-                </span>
+            <div className="hero-highlights-grid">
+              <div className="hero-highlight-chip">
+                <Calendar size={18} color="#38bdf8" />
+                <span>31 OCTOBER 2026</span>
               </div>
 
-              <div
-                style={{
-                  backgroundColor: 'rgba(255, 255, 255, 0.08)',
-                  border: '1px solid rgba(255, 255, 255, 0.15)',
-                  padding: '0.75rem 1.25rem',
-                  borderRadius: 'var(--radius-md)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.6rem',
-                }}
-              >
-                <Building2 size={20} color="#4ade80" />
-                <span style={{ fontWeight: 700, fontSize: '1rem', color: '#f8fafc' }}>
-                  100+ Companies Expected
-                </span>
+              <div className="hero-highlight-chip">
+                <Building2 size={18} color="#4ade80" />
+                <span>100+ Companies Expected</span>
               </div>
 
-              <div
-                style={{
-                  backgroundColor: 'rgba(255, 255, 255, 0.08)',
-                  border: '1px solid rgba(255, 255, 255, 0.15)',
-                  padding: '0.75rem 1.25rem',
-                  borderRadius: 'var(--radius-md)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.6rem',
-                }}
-              >
-                <Users size={20} color="#fcd34d" />
-                <span style={{ fontWeight: 700, fontSize: '1rem', color: '#f8fafc' }}>
-                  10,000+ Students Expected
-                </span>
+              <div className="hero-highlight-chip">
+                <Users size={18} color="#fcd34d" />
+                <span>10,000+ Students Expected</span>
               </div>
             </div>
 
             {/* CTAs */}
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                flexWrap: 'wrap',
-                gap: '1rem',
-              }}
-            >
+            <div className="hero-ctas-container">
               {!isAuthenticated ? (
                 <>
                   <Link
                     to="/register"
                     className="btn btn-primary btn-lg"
                     style={{
-                      backgroundColor: '#2563eb',
-                      padding: '0.95rem 2.25rem',
-                      fontSize: '1.1rem',
-                      fontWeight: 700,
                       boxShadow: '0 8px 20px rgba(37, 99, 235, 0.4)',
                     }}
                   >
@@ -236,8 +116,6 @@ const HomePage = () => {
                       backgroundColor: 'rgba(255, 255, 255, 0.12)',
                       border: '1px solid rgba(255, 255, 255, 0.3)',
                       color: '#ffffff',
-                      padding: '0.95rem 2.25rem',
-                      fontSize: '1.1rem',
                     }}
                   >
                     STUDENT LOGIN
@@ -259,18 +137,8 @@ const HomePage = () => {
               )}
             </div>
 
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '0.5rem',
-                marginTop: '1.75rem',
-                fontSize: '0.9rem',
-                color: '#94a3b8',
-              }}
-            >
-              <MapPin size={16} color="#38bdf8" /> Venue: TKR College of Engineering & Technology, Medbowli, Meerpet, Hyderabad
+            <div className="hero-venue-row">
+              <MapPin size={16} color="#38bdf8" /> Venue: TKR College of Engineering &amp; Technology, Medbowli, Meerpet, Hyderabad
             </div>
           </div>
         </div>
@@ -288,13 +156,7 @@ const HomePage = () => {
             </p>
           </div>
 
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-              gap: '1.5rem',
-            }}
-          >
+          <div className="grid-4col-responsive">
             {[
               {
                 title: 'B.Tech / B.E.',
@@ -434,7 +296,7 @@ const HomePage = () => {
               <div
                 style={{
                   display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+                  gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 260px), 1fr))',
                   gap: '1.25rem',
                 }}
               >
@@ -533,8 +395,8 @@ const HomePage = () => {
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
-              gap: '3rem',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))',
+              gap: '2.5rem',
               alignItems: 'center',
             }}
           >
@@ -620,7 +482,6 @@ const HomePage = () => {
                 backgroundColor: '#0f172a',
                 color: '#ffffff',
                 border: 'none',
-                padding: '2.5rem',
                 borderRadius: 'var(--radius-xl)',
                 boxShadow: 'var(--shadow-xl)',
               }}

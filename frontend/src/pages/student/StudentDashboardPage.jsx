@@ -91,11 +91,11 @@ const StudentDashboardPage = () => {
         />
       )}
 
-      {/* 3 Metric Cards (Exact layout from previous UI without repetitive host institution text) */}
+      {/* 3 Metric Cards */}
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 260px), 1fr))',
           gap: '1.25rem',
           marginBottom: '2rem',
         }}
@@ -129,13 +129,13 @@ const StudentDashboardPage = () => {
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))',
-          gap: '2rem',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 320px), 1fr))',
+          gap: '1.75rem',
           alignItems: 'start',
         }}
       >
         {/* Left Column: Applied Companies Overview */}
-        <div className="card" style={{ padding: '1.75rem' }}>
+        <div className="card">
           <div
             style={{
               display: 'flex',
@@ -199,6 +199,8 @@ const StudentDashboardPage = () => {
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'space-between',
+                    flexWrap: 'wrap',
+                    gap: '0.65rem',
                     padding: '0.85rem 1rem',
                     backgroundColor: 'var(--color-bg-main)',
                     borderRadius: 'var(--radius-md)',
@@ -218,6 +220,7 @@ const StudentDashboardPage = () => {
                         justifyContent: 'center',
                         fontWeight: 700,
                         fontSize: '0.85rem',
+                        flexShrink: 0,
                       }}
                     >
                       {index + 1}
@@ -243,7 +246,7 @@ const StudentDashboardPage = () => {
         </div>
 
         {/* Right Column: Featured Participating Companies */}
-        <div className="card" style={{ padding: '1.75rem' }}>
+        <div className="card">
           <div
             style={{
               display: 'flex',
@@ -252,6 +255,8 @@ const StudentDashboardPage = () => {
               marginBottom: '1.25rem',
               paddingBottom: '0.85rem',
               borderBottom: '1px solid var(--color-border)',
+              flexWrap: 'wrap',
+              gap: '0.5rem',
             }}
           >
             <div>
@@ -276,6 +281,8 @@ const StudentDashboardPage = () => {
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'space-between',
+                  flexWrap: 'wrap',
+                  gap: '0.65rem',
                   padding: '0.85rem 1rem',
                   backgroundColor: comp.has_applied ? '#f0fdf4' : '#ffffff',
                   border: comp.has_applied ? '1px solid #bbf7d0' : '1px solid var(--color-border)',

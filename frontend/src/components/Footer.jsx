@@ -17,7 +17,7 @@ const Footer = () => {
         <div
           style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 240px), 1fr))',
             gap: '2.5rem',
             marginBottom: '3rem',
           }}
@@ -209,7 +209,7 @@ const Footer = () => {
           <div>
             © 2026 TKR College of Engineering &amp; Technology (TKRCET). All Rights Reserved.
           </div>
-          <div style={{ display: 'flex', gap: '1.5rem', color: '#cbd5e1' }}>
+          <div style={{ display: 'flex', gap: '1rem', color: '#cbd5e1', flexWrap: 'wrap' }}>
             <span>EAMCET Code: <strong>TKRC</strong></span>
             <span>Date: <strong>31 October 2026</strong></span>
             <span>Hyderabad, Telangana</span>

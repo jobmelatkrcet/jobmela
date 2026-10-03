@@ -61,7 +61,7 @@ const StudentProfilePage = () => {
         />
       )}
 
-      <div className="card" style={{ padding: '2.5rem', marginBottom: '2rem' }}>
+      <div className="card" style={{ marginBottom: '2rem' }}>
         <div
           style={{
             display: 'flex',
@@ -125,7 +125,7 @@ const StudentProfilePage = () => {
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 260px), 1fr))',
               gap: '1.75rem',
             }}
           >

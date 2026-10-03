@@ -53,7 +53,7 @@ const StudentLoginPage = () => {
   };
 
   return (
-    <div style={{ padding: '4rem 0 6rem', backgroundColor: '#f8fafc' }}>
+    <div style={{ padding: '2.5rem 0 4rem', backgroundColor: '#f8fafc' }}>
       <div className="app-container" style={{ maxWidth: 480 }}>
         <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
           <div
@@ -62,10 +62,10 @@ const StudentLoginPage = () => {
           >
             Candidate Portal
           </div>
-          <h1 style={{ fontSize: '2.2rem', marginBottom: '0.5rem' }}>
+          <h1 style={{ fontSize: 'clamp(1.75rem, 4vw, 2.2rem)', marginBottom: '0.5rem' }}>
             Student Login
           </h1>
-          <p style={{ color: 'var(--color-text-muted)', fontSize: '0.98rem' }}>
+          <p style={{ color: 'var(--color-text-muted)', fontSize: '0.95rem' }}>
             Access your applications and explore participating companies.
           </p>
         </div>
@@ -78,7 +78,7 @@ const StudentLoginPage = () => {
           <Alert type="danger" message={error} onClose={() => setError('')} />
         )}
 
-        <div className="card" style={{ padding: '2.5rem' }}>
+        <div className="card">
           <form onSubmit={handleSubmit}>
             {/* Email */}
             <div className="form-group">

@@ -106,7 +106,7 @@ const StudentRegisterPage = () => {
   };
 
   return (
-    <div style={{ padding: '3.5rem 0 5rem', backgroundColor: '#f8fafc' }}>
+    <div style={{ padding: '2rem 0 4rem', backgroundColor: '#f8fafc' }}>
       <div className="app-container" style={{ maxWidth: 640 }}>
         <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
           <div
@@ -115,10 +115,10 @@ const StudentRegisterPage = () => {
           >
             Candidate Portal
           </div>
-          <h1 style={{ fontSize: '2.2rem', marginBottom: '0.5rem' }}>
+          <h1 style={{ fontSize: 'clamp(1.75rem, 4vw, 2.2rem)', marginBottom: '0.5rem' }}>
             Student Registration
           </h1>
-          <p style={{ color: 'var(--color-text-muted)', fontSize: '0.98rem' }}>
+          <p style={{ color: 'var(--color-text-muted)', fontSize: '0.95rem' }}>
             Register to participate and apply for 100+ participating companies at TKRCET Job Mela 2026.
           </p>
         </div>
@@ -127,7 +127,7 @@ const StudentRegisterPage = () => {
           <Alert type="danger" message={generalError} onClose={() => setGeneralError('')} />
         )}
 
-        <div className="card" style={{ padding: '2.5rem' }}>
+        <div className="card">
           <form onSubmit={handleSubmit} noValidate>
             {/* Full Name */}
             <div className="form-group">

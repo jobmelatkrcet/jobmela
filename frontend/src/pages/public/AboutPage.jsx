@@ -27,12 +27,12 @@ const AboutPage = () => {
         <div
           style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))',
             gap: '2rem',
-            marginBottom: '4rem',
+            marginBottom: '3rem',
           }}
         >
-          <div className="card" style={{ padding: '2.5rem' }}>
+          <div className="card">
             <div
               style={{
                 width: 48,
@@ -57,7 +57,7 @@ const AboutPage = () => {
             </p>
           </div>
 
-          <div className="card" style={{ padding: '2.5rem' }}>
+          <div className="card">
             <div
               style={{
                 width: 48,
@@ -73,7 +73,7 @@ const AboutPage = () => {
             >
               <Award size={24} />
             </div>
-            <h3 style={{ fontSize: '1.4rem', marginBottom: '1rem' }}>Scope & Participation</h3>
+            <h3 style={{ fontSize: '1.4rem', marginBottom: '1rem' }}>Scope &amp; Participation</h3>
             <p style={{ color: 'var(--color-primary-700)', lineHeight: '1.7', fontSize: '0.98rem' }}>
               Expected participation includes <strong>100+ recruiting companies/campuses</strong> and
               up to <strong>10,000 enthusiastic students</strong>. Through this unified digital portal,
@@ -89,20 +89,13 @@ const AboutPage = () => {
           style={{
             backgroundColor: 'var(--color-bg-surface)',
             border: '1px solid var(--color-border)',
-            padding: '2.5rem',
             marginBottom: '4rem',
           }}
         >
           <h3 style={{ fontSize: '1.5rem', marginBottom: '1.5rem', textAlign: 'center' }}>
             Participating Educational Backgrounds
           </h3>
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-              gap: '1.5rem',
-            }}
-          >
+          <div className="grid-4col-responsive">
             {[
               {
                 title: 'B.Tech / Engineering',
