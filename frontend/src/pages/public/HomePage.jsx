@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Calendar,
@@ -12,9 +12,35 @@ import {
   Phone,
   ShieldCheck,
   Award,
+  Landmark,
+  Laptop,
+  Factory,
+  HeartPulse,
+  Cpu,
+  Plane,
+  Briefcase,
+  Layers,
+  IndianRupee,
+  DoorClosed,
+  Grid,
+  ListFilter,
+  Sparkles,
 } from 'lucide-react';
 import { companyService } from '../../services/companyService';
 import { useAuth } from '../../context/AuthContext';
+import { CATEGORIES, getCompanyCategory } from '../../utils/companyCategories';
+
+const CATEGORY_ICONS = {
+  all: Building2,
+  banking: Landmark,
+  it_product: Laptop,
+  manufacturing: Factory,
+  bpo_services: Briefcase,
+  healthcare: HeartPulse,
+  core_engineering: Cpu,
+  logistics: Plane,
+  general: Layers,
+};
 
 const HomePage = () => {
   const { isAuthenticated, isStudent, isAdmin } = useAuth();
@@ -22,6 +48,8 @@ const HomePage = () => {
   const [totalCompanies, setTotalCompanies] = useState(0);
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
+  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [viewMode, setViewMode] = useState('segregated'); // 'segregated' or 'grid'
 
   useEffect(() => {
     fetchFeaturedCompanies();
@@ -30,7 +58,7 @@ const HomePage = () => {
   const fetchFeaturedCompanies = async (query = '') => {
     setLoading(true);
     try {
-      const data = await companyService.getCompanies({ page: 1, search: query, page_size: 12 });
+      const data = await companyService.getCompanies({ page: 1, search: query, page_size: 200 });
       setCompanies(data.results || []);
       setTotalCompanies(data.count || 0);
     } catch (err) {
@@ -44,6 +72,39 @@ const HomePage = () => {
     e.preventDefault();
     fetchFeaturedCompanies(search);
   };
+
+  // Group companies by category
+  const categorizedData = useMemo(() => {
+    const groups = {};
+    CATEGORIES.forEach((cat) => {
+      if (cat.id !== 'all') groups[cat.id] = [];
+    });
+
+    companies.forEach((comp) => {
+      const cat = getCompanyCategory(comp);
+      const catId = groups[cat.id] ? cat.id : 'general';
+      groups[catId].push(comp);
+    });
+
+    return groups;
+  }, [companies]);
+
+  // Real company count per category
+  const categoryCounts = useMemo(() => {
+    const counts = { all: companies.length };
+    CATEGORIES.forEach((cat) => {
+      if (cat.id !== 'all') {
+        counts[cat.id] = (categorizedData[cat.id] || []).length;
+      }
+    });
+    return counts;
+  }, [companies, categorizedData]);
+
+  // Filtered companies based on active pill
+  const filteredCompanies = useMemo(() => {
+    if (selectedCategory === 'all') return companies;
+    return categorizedData[selectedCategory] || [];
+  }, [selectedCategory, companies, categorizedData]);
 
   return (
     <div>
@@ -87,12 +148,12 @@ const HomePage = () => {
 
               <div className="hero-highlight-chip">
                 <Building2 size={18} color="#4ade80" />
-                <span>100+ Companies Expected</span>
+                <span>100+ Participating Companies</span>
               </div>
 
               <div className="hero-highlight-chip">
                 <Users size={18} color="#fcd34d" />
-                <span>10,000+ Students Expected</span>
+                <span>10,000+ Registered Candidates</span>
               </div>
             </div>
 
@@ -207,7 +268,7 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* Participating Companies Preview */}
+      {/* Participating Companies Section (Category Segregated) */}
       <section style={{ padding: '4rem 0', backgroundColor: '#f8fafc' }}>
         <div className="app-container">
           <div
@@ -217,7 +278,7 @@ const HomePage = () => {
               justifyContent: 'space-between',
               flexWrap: 'wrap',
               gap: '1.5rem',
-              marginBottom: '2.5rem',
+              marginBottom: '1.75rem',
             }}
           >
             <div>
@@ -231,46 +292,113 @@ const HomePage = () => {
                   marginBottom: '0.35rem',
                 }}
               >
-                Recruiting Campuses & Organizations
+                Recruiting Campuses &amp; Organizations
               </div>
-              <h2 style={{ fontSize: '2rem' }}>Participating Companies</h2>
+              <h2 style={{ fontSize: '2rem' }}>Participating Companies by Sector</h2>
               <p style={{ color: 'var(--color-text-muted)', fontSize: '0.95rem', marginTop: '0.25rem' }}>
-                Currently displaying verified participating companies from our central database.
+                Explore <strong>{totalCompanies || companies.length} verified companies</strong> segregated category-wise across Banking, Product-Based IT, Manufacturing, Core Engineering and more.
               </p>
             </div>
 
-            {/* Quick search input */}
-            <form onSubmit={handleSearch} style={{ display: 'flex', gap: '0.5rem', width: '100%', maxWidth: 360 }}>
-              <div style={{ position: 'relative', flex: 1 }}>
-                <input
-                  type="text"
-                  className="form-control"
-                  placeholder="Search company name..."
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  style={{ paddingLeft: '2.5rem' }}
-                />
-                <Search
-                  size={18}
+            {/* Quick search & View Mode Toggle */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+              <form onSubmit={handleSearch} style={{ display: 'flex', gap: '0.5rem', width: '100%', maxWidth: 320 }}>
+                <div style={{ position: 'relative', flex: 1 }}>
+                  <input
+                    type="text"
+                    className="form-control"
+                    placeholder="Search company or role..."
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    style={{ paddingLeft: '2.5rem' }}
+                  />
+                  <Search
+                    size={18}
+                    style={{
+                      position: 'absolute',
+                      left: 12,
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      color: 'var(--color-text-light)',
+                    }}
+                  />
+                </div>
+                <button type="submit" className="btn btn-primary btn-sm">
+                  Search
+                </button>
+              </form>
+
+              {/* View Mode Toggle */}
+              <div
+                style={{
+                  display: 'inline-flex',
+                  backgroundColor: '#ffffff',
+                  padding: '0.25rem',
+                  borderRadius: 'var(--radius-md)',
+                  border: '1px solid #e2e8f0',
+                  boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
+                }}
+              >
+                <button
+                  type="button"
+                  onClick={() => setViewMode('segregated')}
+                  className={`btn btn-sm ${viewMode === 'segregated' ? 'btn-primary' : 'btn-outline'}`}
                   style={{
-                    position: 'absolute',
-                    left: 12,
-                    top: '50%',
-                    transform: 'translateY(-50%)',
-                    color: 'var(--color-text-light)',
+                    padding: '0.35rem 0.65rem',
+                    fontSize: '0.8rem',
+                    gap: '0.35rem',
+                    border: 'none',
+                    boxShadow: 'none',
                   }}
-                />
+                  title="Grouped by Sector"
+                >
+                  <ListFilter size={14} /> Category Sections
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setViewMode('grid')}
+                  className={`btn btn-sm ${viewMode === 'grid' ? 'btn-primary' : 'btn-outline'}`}
+                  style={{
+                    padding: '0.35rem 0.65rem',
+                    fontSize: '0.8rem',
+                    gap: '0.35rem',
+                    border: 'none',
+                    boxShadow: 'none',
+                  }}
+                  title="Unified Grid"
+                >
+                  <Grid size={14} /> Grid
+                </button>
               </div>
-              <button type="submit" className="btn btn-primary btn-sm">
-                Search
-              </button>
-            </form>
+            </div>
+          </div>
+
+          {/* Interactive Category Filter Pills Bar */}
+          <div className="category-pills-bar" role="tablist" aria-label="Company Categories">
+            {CATEGORIES.map((cat) => {
+              const Icon = CATEGORY_ICONS[cat.id] || Building2;
+              const count = categoryCounts[cat.id] || 0;
+              const isActive = selectedCategory === cat.id;
+
+              return (
+                <button
+                  key={cat.id}
+                  type="button"
+                  onClick={() => setSelectedCategory(cat.id)}
+                  className={`category-pill-btn ${isActive ? 'active' : ''}`}
+                >
+                  <Icon size={16} />
+                  <span>{cat.shortLabel}</span>
+                  <span className="category-pill-count">{count}</span>
+                </button>
+              );
+            })}
           </div>
 
           {loading ? (
-            <div style={{ textAlign: 'center', padding: '3rem 0' }}>
-              <div className="spinner spinner-primary" style={{ margin: '0 auto 1rem' }} />
-              <p style={{ color: 'var(--color-text-muted)' }}>Loading participating companies...</p>
+            <div style={{ textAlign: 'center', padding: '3.5rem 0' }}>
+              <div className="spinner spinner-primary" style={{ margin: '0 auto 1rem', width: 34, height: 34 }} />
+              <p style={{ color: 'var(--color-text-muted)' }}>Organizing companies category-wise...</p>
             </div>
           ) : companies.length === 0 ? (
             <div
@@ -279,109 +407,391 @@ const HomePage = () => {
             >
               <Building2 size={40} style={{ margin: '0 auto 1rem', opacity: 0.5 }} />
               <h3>No companies found matching "{search}"</h3>
-              <p style={{ marginTop: '0.5rem' }}>Try clearing your search query or check back soon.</p>
+              <p style={{ marginTop: '0.5rem' }}>Try clearing your search query or choose another category.</p>
               <button
                 className="btn btn-outline btn-sm"
                 onClick={() => {
                   setSearch('');
+                  setSelectedCategory('all');
                   fetchFeaturedCompanies('');
                 }}
                 style={{ marginTop: '1rem' }}
               >
-                Clear Search
+                Reset Search
               </button>
             </div>
+          ) : viewMode === 'segregated' && selectedCategory === 'all' ? (
+            /* SEGREGATED SECTIONS: Categorized groups with headers and cards */
+            <div>
+              {CATEGORIES.filter((c) => c.id !== 'all').map((cat) => {
+                const comps = categorizedData[cat.id] || [];
+                if (comps.length === 0) return null;
+                const Icon = CATEGORY_ICONS[cat.id] || Building2;
+
+                return (
+                  <div key={cat.id} className="category-section-container">
+                    {/* Category Header */}
+                    <div className="category-section-header">
+                      <div className="category-header-title-box">
+                        <div
+                          className="category-header-icon"
+                          style={{
+                            backgroundColor: cat.bg,
+                            border: `1.5px solid ${cat.border}`,
+                            color: cat.color,
+                          }}
+                        >
+                          <Icon size={22} />
+                        </div>
+                        <div>
+                          <h3 style={{ fontSize: '1.25rem', color: 'var(--color-primary-900)', margin: 0, fontWeight: 700 }}>
+                            {cat.label}
+                          </h3>
+                          <p style={{ fontSize: '0.84rem', color: 'var(--color-text-muted)', margin: '0.15rem 0 0' }}>
+                            {cat.description}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                        <span
+                          className="badge"
+                          style={{
+                            backgroundColor: cat.bg,
+                            color: cat.color,
+                            border: `1px solid ${cat.border}`,
+                            fontWeight: 700,
+                            padding: '0.35rem 0.75rem',
+                            fontSize: '0.82rem',
+                          }}
+                        >
+                          {comps.length} {comps.length === 1 ? 'Company' : 'Companies'}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => setSelectedCategory(cat.id)}
+                          className="btn btn-outline btn-sm"
+                          style={{ fontSize: '0.78rem', padding: '0.3rem 0.6rem' }}
+                        >
+                          View Only {cat.shortLabel} →
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Company Cards Grid for this category */}
+                    <div
+                      style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 270px), 1fr))',
+                        gap: '1.15rem',
+                      }}
+                    >
+                      {comps.map((comp) => (
+                        <div
+                          key={comp.id}
+                          className="card card-hover"
+                          style={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            justifyContent: 'space-between',
+                            padding: '1.25rem',
+                            border: '1px solid #e2e8f0',
+                            borderRadius: 'var(--radius-md)',
+                            position: 'relative',
+                          }}
+                        >
+                          <div>
+                            {/* Top row: Avatar & Sector Badge */}
+                            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '0.5rem', marginBottom: '0.75rem' }}>
+                              <div
+                                style={{
+                                  width: 40,
+                                  height: 40,
+                                  borderRadius: 'var(--radius-md)',
+                                  backgroundColor: cat.bg,
+                                  color: cat.color,
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  fontWeight: 800,
+                                  fontSize: '1.05rem',
+                                  border: `1px solid ${cat.border}`,
+                                  flexShrink: 0,
+                                }}
+                              >
+                                {comp.name.charAt(0).toUpperCase()}
+                              </div>
+
+                              <span
+                                style={{
+                                  fontSize: '0.72rem',
+                                  fontWeight: 700,
+                                  padding: '0.2rem 0.55rem',
+                                  borderRadius: '9999px',
+                                  backgroundColor: cat.bg,
+                                  color: cat.color,
+                                  border: `1px solid ${cat.border}`,
+                                  whiteSpace: 'nowrap',
+                                }}
+                              >
+                                {comp.sector || cat.shortLabel}
+                              </span>
+                            </div>
+
+                            <h4
+                              style={{
+                                fontSize: '1.02rem',
+                                fontWeight: 700,
+                                color: 'var(--color-primary-900)',
+                                lineHeight: 1.3,
+                                marginBottom: '0.4rem',
+                              }}
+                            >
+                              {comp.name}
+                            </h4>
+
+                            {comp.job_position && (
+                              <div style={{ fontSize: '0.82rem', color: 'var(--color-brand-700)', fontWeight: 600, marginBottom: '0.35rem' }}>
+                                Role: {comp.job_position}
+                              </div>
+                            )}
+
+                            {comp.salary_ctc && (
+                              <div style={{ fontSize: '0.78rem', color: '#059669', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                                <IndianRupee size={12} /> {comp.salary_ctc}
+                              </div>
+                            )}
+                          </div>
+
+                          <div
+                            style={{
+                              marginTop: '1rem',
+                              paddingTop: '0.75rem',
+                              borderTop: '1px solid #f1f5f9',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'space-between',
+                            }}
+                          >
+                            {comp.room_no ? (
+                              <span
+                                style={{
+                                  fontSize: '0.75rem',
+                                  fontWeight: 700,
+                                  color: '#1e3a8a',
+                                  backgroundColor: '#eff6ff',
+                                  padding: '0.2rem 0.55rem',
+                                  borderRadius: 'var(--radius-sm)',
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '0.3rem',
+                                }}
+                              >
+                                <DoorClosed size={13} /> Room {comp.room_no}
+                              </span>
+                            ) : (
+                              <span style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>
+                                {comp.location || 'On-Campus'}
+                              </span>
+                            )}
+
+                            {isAuthenticated && isStudent ? (
+                              comp.has_applied ? (
+                                <span className="badge badge-applied" style={{ fontSize: '0.75rem' }}>✓ Applied</span>
+                              ) : (
+                                <Link to="/companies" className="btn btn-outline btn-sm" style={{ padding: '0.25rem 0.55rem', fontSize: '0.78rem' }}>
+                                  Apply
+                                </Link>
+                              )
+                            ) : (
+                              <Link to="/login" className="btn btn-outline btn-sm" style={{ padding: '0.25rem 0.55rem', fontSize: '0.78rem' }}>
+                                Apply
+                              </Link>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+
+              <div style={{ textAlign: 'center', marginTop: '1.5rem' }}>
+                <Link to="/companies" className="btn btn-primary btn-lg">
+                  Browse All {totalCompanies || companies.length} Companies <ArrowRight size={17} />
+                </Link>
+              </div>
+            </div>
           ) : (
+            /* FILTERED CATEGORY OR GRID VIEW */
             <>
+              {selectedCategory !== 'all' && (
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    marginBottom: '1.25rem',
+                    padding: '0.85rem 1.25rem',
+                    backgroundColor: '#ffffff',
+                    borderRadius: 'var(--radius-md)',
+                    border: '1px solid #e2e8f0',
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                    <span style={{ fontWeight: 700, color: 'var(--color-primary-900)' }}>
+                      Filtered Sector: {CATEGORIES.find((c) => c.id === selectedCategory)?.label}
+                    </span>
+                    <span className="badge badge-blue">
+                      {filteredCompanies.length} Companies
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedCategory('all')}
+                    className="btn btn-outline btn-sm"
+                    style={{ fontSize: '0.78rem', padding: '0.25rem 0.55rem' }}
+                  >
+                    Clear Filter (Show All)
+                  </button>
+                </div>
+              )}
+
               <div
                 style={{
                   display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 260px), 1fr))',
+                  gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 270px), 1fr))',
                   gap: '1.25rem',
                 }}
               >
-                {companies.map((comp) => (
-                  <div
-                    key={comp.id}
-                    className="card card-hover"
-                    style={{
-                      display: 'flex',
-                      flexDirection: 'column',
-                      justifyContent: 'space-between',
-                      padding: '1.35rem',
-                    }}
-                  >
-                    <div>
-                      <div
-                        style={{
-                          width: 44,
-                          height: 44,
-                          borderRadius: 'var(--radius-md)',
-                          backgroundColor: 'var(--color-brand-50)',
-                          color: 'var(--color-brand-600)',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          fontWeight: 800,
-                          fontSize: '1.1rem',
-                          marginBottom: '1rem',
-                        }}
-                      >
-                        {comp.name.charAt(0).toUpperCase()}
-                      </div>
-                      <h4
-                        style={{
-                          fontSize: '1.1rem',
-                          fontWeight: 700,
-                          color: 'var(--color-primary-900)',
-                          lineHeight: 1.3,
-                        }}
-                      >
-                        {comp.name}
-                      </h4>
-                    </div>
-
+                {filteredCompanies.map((comp) => {
+                  const cat = getCompanyCategory(comp);
+                  return (
                     <div
+                      key={comp.id}
+                      className="card card-hover"
                       style={{
-                        marginTop: '1.25rem',
-                        paddingTop: '0.85rem',
-                        borderTop: '1px solid var(--color-border)',
                         display: 'flex',
-                        alignItems: 'center',
+                        flexDirection: 'column',
                         justifyContent: 'space-between',
+                        padding: '1.35rem',
+                        border: '1px solid #e2e8f0',
                       }}
                     >
-                      <span
+                      <div>
+                        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '0.5rem', marginBottom: '0.85rem' }}>
+                          <div
+                            style={{
+                              width: 42,
+                              height: 42,
+                              borderRadius: 'var(--radius-md)',
+                              backgroundColor: cat.bg,
+                              color: cat.color,
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              fontWeight: 800,
+                              fontSize: '1.1rem',
+                              border: `1px solid ${cat.border}`,
+                            }}
+                          >
+                            {comp.name.charAt(0).toUpperCase()}
+                          </div>
+
+                          <span
+                            style={{
+                              fontSize: '0.72rem',
+                              fontWeight: 700,
+                              padding: '0.2rem 0.55rem',
+                              borderRadius: '9999px',
+                              backgroundColor: cat.bg,
+                              color: cat.color,
+                              border: `1px solid ${cat.border}`,
+                            }}
+                          >
+                            {comp.sector || cat.shortLabel}
+                          </span>
+                        </div>
+
+                        <h4
+                          style={{
+                            fontSize: '1.05rem',
+                            fontWeight: 700,
+                            color: 'var(--color-primary-900)',
+                            lineHeight: 1.3,
+                            marginBottom: '0.4rem',
+                          }}
+                        >
+                          {comp.name}
+                        </h4>
+
+                        {comp.job_position && (
+                          <div style={{ fontSize: '0.82rem', color: 'var(--color-brand-700)', fontWeight: 600, marginBottom: '0.35rem' }}>
+                            Role: {comp.job_position}
+                          </div>
+                        )}
+
+                        {comp.salary_ctc && (
+                          <div style={{ fontSize: '0.78rem', color: '#059669', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                            <IndianRupee size={12} /> {comp.salary_ctc}
+                          </div>
+                        )}
+                      </div>
+
+                      <div
                         style={{
-                          fontSize: '0.78rem',
-                          color: 'var(--color-text-muted)',
-                          fontWeight: 600,
+                          marginTop: '1.15rem',
+                          paddingTop: '0.75rem',
+                          borderTop: '1px solid #f1f5f9',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
                         }}
                       >
-                        Participating Recruiter
-                      </span>
-
-                      {isAuthenticated && isStudent ? (
-                        comp.has_applied ? (
-                          <span className="badge badge-applied">✓ Applied</span>
+                        {comp.room_no ? (
+                          <span
+                            style={{
+                              fontSize: '0.75rem',
+                              fontWeight: 700,
+                              color: '#1e3a8a',
+                              backgroundColor: '#eff6ff',
+                              padding: '0.2rem 0.55rem',
+                              borderRadius: 'var(--radius-sm)',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '0.3rem',
+                            }}
+                          >
+                            <DoorClosed size={13} /> Room {comp.room_no}
+                          </span>
                         ) : (
-                          <Link to="/companies" className="btn btn-outline btn-sm">
+                          <span style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>
+                            {comp.location || 'On-Campus'}
+                          </span>
+                        )}
+
+                        {isAuthenticated && isStudent ? (
+                          comp.has_applied ? (
+                            <span className="badge badge-applied" style={{ fontSize: '0.75rem' }}>✓ Applied</span>
+                          ) : (
+                            <Link to="/companies" className="btn btn-outline btn-sm">
+                              Apply
+                            </Link>
+                          )
+                        ) : (
+                          <Link to="/login" className="btn btn-outline btn-sm">
                             Apply
                           </Link>
-                        )
-                      ) : (
-                        <Link to="/login" className="btn btn-outline btn-sm">
-                          Register to Apply
-                        </Link>
-                      )}
+                        )}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
 
               <div style={{ textAlign: 'center', marginTop: '2.5rem' }}>
                 <Link to="/companies" className="btn btn-primary">
-                  View All Companies ({totalCompanies}) <ArrowRight size={16} />
+                  View Full Companies Directory ({totalCompanies || companies.length}) <ArrowRight size={16} />
                 </Link>
               </div>
             </>

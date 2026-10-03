@@ -75,7 +75,7 @@ const AboutPage = () => {
             </div>
             <h3 style={{ fontSize: '1.4rem', marginBottom: '1rem' }}>Scope &amp; Participation</h3>
             <p style={{ color: 'var(--color-primary-700)', lineHeight: '1.7', fontSize: '0.98rem' }}>
-              Expected participation includes <strong>100+ recruiting companies/campuses</strong> and
+              Participation includes <strong>100+ recruiting companies/campuses</strong> and
               up to <strong>10,000 enthusiastic students</strong>. Through this unified digital portal,
               students can view registered companies, submit multiple applications with one click,
               and track their application status seamlessly.

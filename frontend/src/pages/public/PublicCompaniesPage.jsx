@@ -20,6 +20,7 @@ import { useAuth } from '../../context/AuthContext';
 import ConfirmModal from '../../components/ConfirmModal';
 import Pagination from '../../components/Pagination';
 import Alert from '../../components/Alert';
+import { getCompanyCategory } from '../../utils/companyCategories';
 
 const hasValue = (val) => {
   if (!val) return false;
@@ -275,19 +276,25 @@ const PublicCompaniesPage = () => {
                         {company.name.charAt(0).toUpperCase()}
                       </div>
 
-                      {hasValue(company.sector) && (
-                        <span
-                          className="badge badge-blue"
-                          style={{
-                            fontSize: '0.75rem',
-                            padding: '0.25rem 0.6rem',
-                            fontWeight: 600,
-                            textTransform: 'none',
-                          }}
-                        >
-                          {company.sector}
-                        </span>
-                      )}
+                      {(() => {
+                        const cat = getCompanyCategory(company);
+                        return (
+                          <span
+                            style={{
+                              fontSize: '0.74rem',
+                              padding: '0.2rem 0.6rem',
+                              fontWeight: 700,
+                              borderRadius: '9999px',
+                              backgroundColor: cat.bg,
+                              color: cat.color,
+                              border: `1px solid ${cat.border}`,
+                              whiteSpace: 'nowrap',
+                            }}
+                          >
+                            {company.sector || cat.shortLabel}
+                          </span>
+                        );
+                      })()}
                     </div>
 
                     <h3
