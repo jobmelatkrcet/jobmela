@@ -1,3 +1,4 @@
+from django.db.models import Q
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
@@ -22,7 +23,14 @@ class CompanyListView(APIView):
         queryset = Company.objects.all().order_by("name")
 
         if search_query:
-            queryset = queryset.filter(name__icontains=search_query)
+            queryset = queryset.filter(
+                Q(name__icontains=search_query)
+                | Q(sector__icontains=search_query)
+                | Q(job_position__icontains=search_query)
+                | Q(location__icontains=search_query)
+                | Q(qualification__icontains=search_query)
+                | Q(room_no__icontains=search_query)
+            )
 
         paginator = StandardResultsPagination()
         page = paginator.paginate_queryset(queryset, request)

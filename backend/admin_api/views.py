@@ -135,7 +135,14 @@ class AdminCompaniesListView(APIView):
         )
 
         if search_query:
-            queryset = queryset.filter(name__icontains=search_query)
+            queryset = queryset.filter(
+                Q(name__icontains=search_query)
+                | Q(sector__icontains=search_query)
+                | Q(job_position__icontains=search_query)
+                | Q(location__icontains=search_query)
+                | Q(qualification__icontains=search_query)
+                | Q(room_no__icontains=search_query)
+            )
 
         if order_by == "applications_desc":
             queryset = queryset.order_by("-registered_students_count", "name")
@@ -376,6 +383,336 @@ class AdminCompanyExcelExportView(APIView):
         return response
 
 
+def normalize_header_text(header_val):
+    if header_val is None:
+        return ""
+    s = str(header_val).strip().lower()
+    s = re.sub(r"[._/\\()#:\-]", " ", s)
+    s = re.sub(r"\s+", " ", s).strip()
+    return s
+
+
+def normalize_company_name_key(name: str) -> str:
+    if not name:
+        return ""
+    s = str(name).lower().strip()
+    s = re.sub(r"[^\w\s]", " ", s)
+    s = re.sub(r"\bprivate\s+limited\b", " ", s)
+    s = re.sub(r"\bpvt\s+ltd\b", " ", s)
+    s = re.sub(r"\bpvt\b", " ", s)
+    s = re.sub(r"\blimited\b", " ", s)
+    s = re.sub(r"\bltd\b", " ", s)
+    s = re.sub(r"\bcorporation\b", " ", s)
+    s = re.sub(r"\bcorp\b", " ", s)
+    s = re.sub(r"\btechnologies\b", " ", s)
+    s = re.sub(r"\btechnology\b", " ", s)
+    s = re.sub(r"\bsolutions\b", " ", s)
+    s = re.sub(r"\bservices\b", " ", s)
+    s = re.sub(r"\binc\b", " ", s)
+    s = re.sub(r"\bllc\b", " ", s)
+    return re.sub(r"\s+", "", s)
+
+
+def get_company_lookup_keys(name: str):
+    keys = set()
+    raw = str(name).strip()
+    if not raw:
+        return keys
+    k_main = normalize_company_name_key(raw)
+    if k_main:
+        keys.add(k_main)
+    without_parens = re.sub(r"\(.*?\)", " ", raw)
+    k_no_parens = normalize_company_name_key(without_parens)
+    if k_no_parens:
+        keys.add(k_no_parens)
+    for p in re.findall(r"\((.*?)\)", raw):
+        kp = normalize_company_name_key(p)
+        if kp:
+            keys.add(kp)
+    return keys
+
+
+INVALID_CELL_VALUES = {
+    "",
+    "-",
+    "--",
+    "---",
+    "n/a",
+    "na",
+    "n.a.",
+    "nil",
+    "none",
+    "null",
+    "nan",
+    "not available",
+    "unknown",
+}
+
+
+def clean_cell_text(val):
+    if val is None:
+        return ""
+    if isinstance(val, float) and val.is_integer():
+        val = int(val)
+    s = str(val).strip()
+    if s.lower() in INVALID_CELL_VALUES:
+        return ""
+    return s
+
+
+FIELD_HEADER_PATTERNS = {
+    "name": [
+        "company name",
+        "company_name",
+        "company",
+        "organization name",
+        "organisation name",
+        "organization",
+        "organisation",
+        "employer",
+        "recruiter",
+        "client",
+        "firm",
+        "name of the company",
+        "name of company",
+        "companyname",
+    ],
+    "sector": [
+        "sector",
+        "industry",
+        "domain",
+        "business sector",
+        "industry sector",
+        "company sector",
+        "category",
+    ],
+    "job_position": [
+        "job position",
+        "job title",
+        "position",
+        "job role",
+        "role",
+        "designation",
+        "profile",
+        "job profile",
+        "post",
+        "job post",
+        "title",
+    ],
+    "openings": [
+        "openings",
+        "opening",
+        "no of openings",
+        "number of openings",
+        "vacancies",
+        "vacancy",
+        "no of vacancies",
+        "number of vacancies",
+        "total openings",
+        "total vacancies",
+        "no of posts",
+        "number of posts",
+        "seats",
+    ],
+    "salary_ctc": [
+        "salary",
+        "ctc",
+        "salary ctc",
+        "salary/ctc",
+        "package",
+        "annual package",
+        "stipend",
+        "remuneration",
+        "pay",
+        "lpa",
+        "compensation",
+        "fixed ctc",
+        "take home",
+    ],
+    "qualification": [
+        "qualification",
+        "qualifications",
+        "degree",
+        "education",
+        "educational qualification",
+        "eligible branch",
+        "eligible branches",
+        "branch",
+        "branches",
+        "course",
+        "courses",
+        "eligible course",
+        "stream",
+        "specialization",
+    ],
+    "location": [
+        "location",
+        "job location",
+        "work location",
+        "place of posting",
+        "posting location",
+        "city",
+        "job city",
+        "workplace",
+        "base location",
+        "office location",
+        "posting",
+    ],
+    "gender": [
+        "gender",
+        "gender criteria",
+        "gender preference",
+        "sex",
+        "eligible gender",
+        "male female",
+    ],
+    "eligibility": [
+        "eligibility",
+        "eligibility criteria",
+        "criteria",
+        "percentage",
+        "cutoff",
+        "cut off",
+        "aggregate",
+        "min percentage",
+        "minimum percentage",
+        "cgpa",
+        "backlogs",
+        "active backlogs",
+        "academic criteria",
+    ],
+    "facilities": [
+        "facilities",
+        "facility",
+        "perks",
+        "benefits",
+        "other benefits",
+        "perks benefits",
+        "accommodation",
+        "transport",
+        "food",
+        "allowance",
+        "allowances",
+    ],
+    "room_no": [
+        "room",
+        "room no",
+        "room number",
+        "venue",
+        "cabin",
+        "interview room",
+        "desk",
+        "stall",
+        "stall no",
+        "stall number",
+        "table",
+        "table no",
+        "interview venue",
+        "room details",
+    ],
+}
+
+FIELD_DISPLAY_LABELS = {
+    "name": "Company Name",
+    "sector": "Sector",
+    "job_position": "Job Position",
+    "openings": "Openings",
+    "salary_ctc": "Salary / CTC",
+    "qualification": "Qualification",
+    "location": "Location",
+    "gender": "Gender",
+    "eligibility": "Eligibility",
+    "facilities": "Facilities",
+    "room_no": "Room No.",
+}
+
+
+def identify_header_and_mappings(rows):
+    best_header_row_idx = 0
+    best_mappings = {}
+    best_field_count = 0
+    has_name_in_best = False
+
+    for row_idx, row in enumerate(rows[:6]):
+        if not row:
+            continue
+        mappings = {}
+        used_fields = set()
+
+        for col_idx, cell in enumerate(row):
+            norm_header = normalize_header_text(cell)
+            if not norm_header:
+                continue
+
+            if norm_header in (
+                "s no",
+                "sno",
+                "sl no",
+                "slno",
+                "sr no",
+                "srno",
+                "id",
+                "serial no",
+                "no",
+            ):
+                continue
+
+            matched_field = None
+            if norm_header == "name":
+                matched_field = "name"
+            else:
+                for field_name, patterns in FIELD_HEADER_PATTERNS.items():
+                    if field_name in used_fields:
+                        continue
+                    for pat in patterns:
+                        if (
+                            norm_header == pat
+                            or norm_header.startswith(pat + " ")
+                            or norm_header.endswith(" " + pat)
+                            or pat in norm_header
+                        ):
+                            matched_field = field_name
+                            break
+                    if matched_field:
+                        break
+
+            if matched_field and matched_field not in used_fields:
+                mappings[col_idx] = matched_field
+                used_fields.add(matched_field)
+
+        has_name = "name" in used_fields
+        field_count = len(used_fields)
+
+        if has_name and (not has_name_in_best or field_count > best_field_count):
+            best_header_row_idx = row_idx
+            best_mappings = mappings
+            best_field_count = field_count
+            has_name_in_best = True
+        elif not has_name_in_best and field_count > best_field_count:
+            best_header_row_idx = row_idx
+            best_mappings = mappings
+            best_field_count = field_count
+
+    if "name" not in best_mappings.values():
+        first_row = rows[0] if rows else []
+        if len(first_row) >= 2:
+            first_cell_str = str(first_row[0] or "").strip().lower()
+            if (
+                first_cell_str in ("s.no", "sno", "1", "sl.no", "#")
+                or first_cell_str.isdigit()
+            ):
+                best_mappings[1] = "name"
+                best_header_row_idx = 1 if not first_cell_str.isdigit() else 0
+            else:
+                best_mappings[0] = "name"
+                best_header_row_idx = 0
+        else:
+            best_mappings[0] = "name"
+            best_header_row_idx = 0
+
+    return best_header_row_idx, best_mappings
+
+
 class AdminCompanyExcelUploadView(APIView):
     permission_classes = [IsAdminUserRole]
     parser_classes = [MultiPartParser, FormParser]
@@ -388,7 +725,6 @@ class AdminCompanyExcelUploadView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        # Validate file extension
         filename = uploaded_file.name.lower()
         if not (filename.endswith(".xlsx") or filename.endswith(".xls")):
             return Response(
@@ -409,10 +745,6 @@ class AdminCompanyExcelUploadView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        # Extract company names
-        # Format can be:
-        # Row 1: S.No | Company Name (or Company)
-        # OR Single column: Company Name
         rows = list(ws.iter_rows(values_only=True))
         if not rows:
             return Response(
@@ -420,31 +752,8 @@ class AdminCompanyExcelUploadView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        # Find which column contains the company name
-        first_row = [str(c).strip().lower() if c is not None else "" for c in rows[0]]
-        company_col_idx = None
-        has_header = False
-
-        for idx, col_val in enumerate(first_row):
-            if "company" in col_val or "name" in col_val or "organization" in col_val:
-                company_col_idx = idx
-                has_header = True
-                break
-
-        # If header wasn't explicitly found, infer:
-        # If row has 2 columns and 1st is number/S.No, col 1 is company name
-        if company_col_idx is None:
-            if len(first_row) >= 2:
-                # check if first cell is S.No or digit
-                if first_row[0] in ("s.no", "sno", "sl.no", "#", "id", "1"):
-                    company_col_idx = 1
-                    has_header = not first_row[0].isdigit()
-                else:
-                    company_col_idx = 0
-            else:
-                company_col_idx = 0
-
-        start_row = 1 if has_header else 0
+        header_row_idx, col_mappings = identify_header_and_mappings(rows)
+        start_row = header_row_idx + 1
 
         clear_existing = str(request.data.get("clear_existing", "false")).lower() in (
             "true",
@@ -454,64 +763,113 @@ class AdminCompanyExcelUploadView(APIView):
 
         total_rows_processed = 0
         new_companies = 0
-        existing_companies = 0
-        duplicates_ignored = 0
+        updated_companies = 0
+        existing_unchanged = 0
         invalid_rows = 0
+
+        exact_lower_map = {}
+        norm_key_map = {}
 
         with transaction.atomic():
             if clear_existing:
                 Company.objects.all().delete()
-                existing_db_companies = {}
             else:
-                # Existing companies in DB mapped lower -> Company
-                existing_db_companies = {
-                    c.name.strip().lower(): c for c in Company.objects.all()
-                }
-            seen_in_batch = set()
-            companies_to_create = []
+                for c in Company.objects.all():
+                    clean_name = c.name.strip()
+                    exact_lower_map[clean_name.lower()] = c
+                    for k in get_company_lookup_keys(clean_name):
+                        norm_key_map[k] = c
+
             for row in rows[start_row:]:
-                if not row or len(row) <= company_col_idx:
+                if not row or not any(c is not None and str(c).strip() for c in row):
                     continue
 
-                cell_value = row[company_col_idx]
-                if cell_value is None:
-                    continue
+                row_data = {}
+                for col_idx, field_name in col_mappings.items():
+                    if col_idx < len(row):
+                        cell_val = clean_cell_text(row[col_idx])
+                        if cell_val:
+                            row_data[field_name] = cell_val
 
-                company_name = str(cell_value).strip()
+                company_name = row_data.get("name", "").strip()
                 if not company_name:
+                    invalid_rows += 1
                     continue
 
                 total_rows_processed += 1
-                norm_name = company_name.lower()
+                norm_lower = company_name.lower()
 
-                # Check duplicate within this uploaded file
-                if norm_name in seen_in_batch:
-                    duplicates_ignored += 1
-                    continue
-                seen_in_batch.add(norm_name)
+                existing_company = exact_lower_map.get(norm_lower)
+                if not existing_company:
+                    for k in get_company_lookup_keys(company_name):
+                        if k in norm_key_map:
+                            existing_company = norm_key_map[k]
+                            break
 
-                # Check if exists in DB
-                if norm_name in existing_db_companies:
-                    existing_companies += 1
+                if existing_company:
+                    is_changed = False
+                    for f in [
+                        "sector",
+                        "job_position",
+                        "openings",
+                        "salary_ctc",
+                        "qualification",
+                        "location",
+                        "gender",
+                        "eligibility",
+                        "facilities",
+                        "room_no",
+                    ]:
+                        new_val = row_data.get(f, "")
+                        if new_val:
+                            curr_val = getattr(existing_company, f, "")
+                            if curr_val != new_val:
+                                setattr(existing_company, f, new_val)
+                                is_changed = True
+
+                    if is_changed:
+                        existing_company.save()
+                        updated_companies += 1
+                    else:
+                        existing_unchanged += 1
                 else:
-                    companies_to_create.append(Company(name=company_name))
+                    new_company = Company(
+                        name=company_name,
+                        sector=row_data.get("sector", ""),
+                        job_position=row_data.get("job_position", ""),
+                        openings=row_data.get("openings", ""),
+                        salary_ctc=row_data.get("salary_ctc", ""),
+                        qualification=row_data.get("qualification", ""),
+                        location=row_data.get("location", ""),
+                        gender=row_data.get("gender", ""),
+                        eligibility=row_data.get("eligibility", ""),
+                        facilities=row_data.get("facilities", ""),
+                        room_no=row_data.get("room_no", ""),
+                    )
+                    new_company.save()
                     new_companies += 1
 
-            if companies_to_create:
-                Company.objects.bulk_create(companies_to_create)
+                    exact_lower_map[norm_lower] = new_company
+                    for k in get_company_lookup_keys(company_name):
+                        norm_key_map[k] = new_company
+
+        detected_columns = [
+            FIELD_DISPLAY_LABELS.get(f, f) for f in col_mappings.values()
+        ]
 
         return Response(
             {
                 "message": (
-                    f"Successfully cleared pre-existing companies and imported {new_companies} new companies."
-                    if clear_existing
-                    else f"Successfully imported {new_companies} companies."
+                    f"Import Complete: {new_companies} new companies added, {updated_companies} updated."
+                    if not clear_existing
+                    else f"Reset & Import Complete: {new_companies} companies added."
                 ),
                 "total_rows": total_rows_processed,
                 "new_companies": new_companies,
-                "existing_companies": existing_companies,
-                "duplicates_ignored": duplicates_ignored,
+                "updated_companies": updated_companies,
+                "existing_companies": existing_unchanged,
                 "invalid_rows": invalid_rows,
+                "columns_detected": detected_columns,
                 "cleared_existing": clear_existing,
             },
             status=status.HTTP_200_OK,
@@ -536,36 +894,125 @@ class AdminCompanyTemplateDownloadView(APIView):
     def get(self, request):
         wb = Workbook()
         ws = wb.active
-        ws.title = "Company List Template"
+        ws.title = "Company Roster Template"
 
-        # Headers
-        ws.cell(row=1, column=1, value="S.No")
-        ws.cell(row=1, column=2, value="Company Name")
+        headers = [
+            "S.No",
+            "Company Name",
+            "Sector",
+            "Job Position",
+            "Openings",
+            "Salary / CTC",
+            "Qualification",
+            "Location",
+            "Gender",
+            "Eligibility",
+            "Facilities",
+            "Room No.",
+        ]
 
-        # Styling
-        header_font = Font(name="Arial", size=11, bold=True, color="FFFFFF")
+        header_font = Font(name="Arial", size=10, bold=True, color="FFFFFF")
         header_fill = PatternFill(
             start_color="1E3A8A", end_color="1E3A8A", fill_type="solid"
         )
-        for col_idx in (1, 2):
-            cell = ws.cell(row=1, column=col_idx)
+        for col_idx, h_text in enumerate(headers, start=1):
+            cell = ws.cell(row=1, column=col_idx, value=h_text)
             cell.font = header_font
             cell.fill = header_fill
 
-        # Sample rows
-        sample_companies = [
-            (1, "Tata Consultancy Services (TCS)"),
-            (2, "Infosys"),
-            (3, "HCLTech"),
-            (4, "Wipro"),
-            (5, "Tech Mahindra"),
+        sample_rows = [
+            (
+                1,
+                "Tata Consultancy Services (TCS)",
+                "IT / Software",
+                "Software Trainee",
+                "25",
+                "4.0 LPA",
+                "B.Tech (CSE, IT, ECE), MCA",
+                "Hyderabad",
+                "Any",
+                "60% in B.Tech, No active backlogs",
+                "Cab facility, Subsidized food",
+                "CF-01",
+            ),
+            (
+                2,
+                "Infosys Limited",
+                "IT Services",
+                "Systems Engineer",
+                "20",
+                "3.6 LPA",
+                "B.Tech / MCA",
+                "Hyderabad / Bengaluru",
+                "Any",
+                "65% Throughout",
+                "Transport provided",
+                "CF-02",
+            ),
+            (
+                3,
+                "BOSCH Global Software",
+                "Embedded & Auto",
+                "Graduate Trainee Engineer",
+                "10",
+                "5.5 LPA",
+                "B.Tech (ECE, EEE, CSE)",
+                "Hyderabad",
+                "Any",
+                "70% or 7.0 CGPA",
+                "Health Insurance, Free Food",
+                "Room 204",
+            ),
+            (
+                4,
+                "Cyient Technologies",
+                "Engineering Solutions",
+                "Design Trainee",
+                "15",
+                "3.2 LPA",
+                "B.Tech (Mechanical, Civil, EEE)",
+                "Hyderabad",
+                "Male / Female",
+                "60% Aggregate",
+                "Bus Facility",
+                "Stall 08",
+            ),
+            (
+                5,
+                "HCLTech",
+                "Cloud & Infrastructure",
+                "Analyst",
+                "12",
+                "4.25 LPA",
+                "Any Graduate / B.Tech",
+                "Hyderabad",
+                "Any",
+                "No standing arrears",
+                "Shift Allowance",
+                "Room 208",
+            ),
         ]
-        for row_idx, (sno, comp_name) in enumerate(sample_companies, start=2):
-            ws.cell(row=row_idx, column=1, value=sno)
-            ws.cell(row=row_idx, column=2, value=comp_name)
 
-        ws.column_dimensions["A"].width = 10
-        ws.column_dimensions["B"].width = 40
+        for row_idx, row_values in enumerate(sample_rows, start=2):
+            for col_idx, val in enumerate(row_values, start=1):
+                ws.cell(row=row_idx, column=col_idx, value=val)
+
+        col_widths = {
+            "A": 8,
+            "B": 32,
+            "C": 18,
+            "D": 24,
+            "E": 12,
+            "F": 15,
+            "G": 28,
+            "H": 20,
+            "I": 14,
+            "J": 30,
+            "K": 28,
+            "L": 14,
+        }
+        for col_letter, width in col_widths.items():
+            ws.column_dimensions[col_letter].width = width
 
         output = io.BytesIO()
         wb.save(output)
@@ -576,8 +1023,9 @@ class AdminCompanyTemplateDownloadView(APIView):
             content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         )
         response["Content-Disposition"] = (
-            'attachment; filename="Company_Upload_Template.xlsx"'
+            'attachment; filename="JobMela_Company_Upload_Template.xlsx"'
         )
+        response["Access-Control-Expose-Headers"] = "Content-Disposition"
         return response
 
 

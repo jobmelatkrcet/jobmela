@@ -11,12 +11,24 @@ import {
   FileSpreadsheet,
   X,
   ArrowRight,
-  AlertTriangle,
   Trash2,
+  Briefcase,
+  MapPin,
+  IndianRupee,
+  GraduationCap,
+  DoorClosed,
+  ShieldCheck,
+  Gift,
 } from 'lucide-react';
 import Pagination from '../../components/Pagination';
 import Alert from '../../components/Alert';
 import ConfirmModal from '../../components/ConfirmModal';
+
+const hasValue = (val) => {
+  if (!val) return false;
+  const s = String(val).trim().toLowerCase();
+  return !['', 'n/a', 'na', 'nil', '-', '--', 'null', 'none', 'unknown', 'not available'].includes(s);
+};
 
 const AdminCompaniesPage = () => {
   const [companies, setCompanies] = useState([]);
@@ -34,7 +46,7 @@ const AdminCompaniesPage = () => {
   const [uploading, setUploading] = useState(false);
   const [uploadResult, setUploadResult] = useState(null);
   const [uploadError, setUploadError] = useState('');
-  const [clearExisting, setClearExisting] = useState(true);
+  const [clearExisting, setClearExisting] = useState(false);
   const [showClearConfirmModal, setShowClearConfirmModal] = useState(false);
   const [clearing, setClearing] = useState(false);
   const [alert, setAlert] = useState(null);
@@ -337,18 +349,65 @@ const AdminCompaniesPage = () => {
                   </div>
 
                   <div>
-                    <h3
-                      style={{
-                        fontSize: '1.25rem',
-                        fontWeight: 700,
-                        color: 'var(--color-primary-900)',
-                        marginBottom: '0.2rem',
-                      }}
-                    >
-                      {company.name}
-                    </h3>
-                    <div style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)' }}>
-                      TKRCET Job Mela 2026 Recruiter
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap', marginBottom: '0.25rem' }}>
+                      <h3
+                        style={{
+                          fontSize: '1.25rem',
+                          fontWeight: 700,
+                          color: 'var(--color-primary-900)',
+                          margin: 0,
+                        }}
+                      >
+                        {company.name}
+                      </h3>
+                      {hasValue(company.sector) && (
+                        <span
+                          className="badge badge-blue"
+                          style={{ fontSize: '0.72rem', padding: '0.2rem 0.55rem', textTransform: 'none' }}
+                        >
+                          {company.sector}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Available details only (Requirement 5) */}
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.85rem', marginTop: '0.45rem', fontSize: '0.82rem' }}>
+                      {hasValue(company.job_position) && (
+                        <span style={{ color: 'var(--color-text-muted)', display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}>
+                          <Briefcase size={13} color="var(--color-brand-600)" />
+                          <strong style={{ color: 'var(--color-primary-800)' }}>{company.job_position}</strong>
+                        </span>
+                      )}
+                      {hasValue(company.salary_ctc) && (
+                        <span style={{ color: '#059669', display: 'inline-flex', alignItems: 'center', gap: '0.3rem', fontWeight: 700 }}>
+                          <IndianRupee size={13} color="#059669" />
+                          {company.salary_ctc}
+                        </span>
+                      )}
+                      {hasValue(company.location) && (
+                        <span style={{ color: 'var(--color-text-muted)', display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}>
+                          <MapPin size={13} color="var(--color-brand-600)" />
+                          {company.location}
+                        </span>
+                      )}
+                      {hasValue(company.room_no) && (
+                        <span style={{ color: '#7c3aed', display: 'inline-flex', alignItems: 'center', gap: '0.3rem', fontWeight: 700 }}>
+                          <DoorClosed size={13} color="#7c3aed" />
+                          Room {company.room_no}
+                        </span>
+                      )}
+                      {hasValue(company.openings) && (
+                        <span style={{ color: 'var(--color-text-muted)', display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}>
+                          <Users size={13} color="var(--color-brand-600)" />
+                          {company.openings} Openings
+                        </span>
+                      )}
+                      {hasValue(company.qualification) && (
+                        <span style={{ color: 'var(--color-text-muted)', display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}>
+                          <GraduationCap size={13} color="var(--color-brand-600)" />
+                          {company.qualification}
+                        </span>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -432,23 +491,23 @@ const AdminCompaniesPage = () => {
                   padding: '1rem',
                   backgroundColor: 'var(--color-bg-main)',
                   borderRadius: 'var(--radius-md)',
-                  marginBottom: '1.5rem',
+                  marginBottom: '1.25rem',
                   border: '1px solid var(--color-border)',
                   fontSize: '0.85rem',
                 }}
               >
-                <div style={{ fontWeight: 700, marginBottom: '0.4rem', color: 'var(--color-primary-900)' }}>
-                  Expected Excel Format:
+                <div style={{ fontWeight: 700, marginBottom: '0.35rem', color: 'var(--color-primary-900)' }}>
+                  Smart Dynamic Excel Importer:
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '80px 1fr', gap: '0.5rem', fontFamily: 'monospace' }}>
-                  <span style={{ fontWeight: 700 }}>S.No</span>
-                  <span style={{ fontWeight: 700 }}>Company Name</span>
-                  <span>1</span>
-                  <span>Tata Consultancy Services (TCS)</span>
-                  <span>2</span>
-                  <span>Infosys</span>
-                  <span>3</span>
-                  <span>HCLTech</span>
+                <p style={{ margin: '0 0 0.5rem', color: 'var(--color-text-muted)', fontSize: '0.82rem', lineHeight: 1.4 }}>
+                  Upload your original organizer spreadsheet directly. The system automatically detects and maps columns:
+                </p>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem' }}>
+                  {['Company Name', 'Sector', 'Job Position', 'Openings', 'Salary / CTC', 'Qualification', 'Location', 'Gender', 'Eligibility', 'Facilities', 'Room No.'].map((col, idx) => (
+                    <span key={idx} style={{ fontSize: '0.74rem', padding: '0.15rem 0.45rem', backgroundColor: '#e2e8f0', borderRadius: 'var(--radius-sm)', fontWeight: 600 }}>
+                      {col}
+                    </span>
+                  ))}
                 </div>
               </div>
 
@@ -456,7 +515,7 @@ const AdminCompaniesPage = () => {
                 <Alert type="danger" message={uploadError} onClose={() => setUploadError('')} />
               )}
 
-              {/* Upload Result (Requirement 26) */}
+              {/* Upload Result (Requirements 8 & 26) */}
               {uploadResult && (
                 <div
                   style={{
@@ -468,7 +527,7 @@ const AdminCompaniesPage = () => {
                   }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--color-success-700)', fontWeight: 700, marginBottom: '0.75rem' }}>
-                    <CheckCircle2 size={18} /> {uploadResult.message || 'Excel Upload Successful'}
+                    <CheckCircle2 size={18} /> {uploadResult.message || 'Import Complete'}
                   </div>
 
                   <div
@@ -479,12 +538,37 @@ const AdminCompaniesPage = () => {
                       fontSize: '0.88rem',
                     }}
                   >
-                    <div>Total Rows: <strong>{uploadResult.total_rows}</strong></div>
+                    <div>Companies Processed: <strong>{uploadResult.total_rows}</strong></div>
                     <div>New Companies: <strong style={{ color: 'var(--color-success-700)' }}>+{uploadResult.new_companies}</strong></div>
-                    <div>Existing Companies: <strong>{uploadResult.existing_companies}</strong></div>
-                    <div>Duplicates Ignored: <strong>{uploadResult.duplicates_ignored}</strong></div>
-                    <div>Invalid Rows: <strong>{uploadResult.invalid_rows}</strong></div>
+                    <div>Updated Companies: <strong style={{ color: '#2563eb' }}>{uploadResult.updated_companies || 0}</strong></div>
+                    <div>Invalid Rows: <strong style={{ color: uploadResult.invalid_rows ? '#dc2626' : 'inherit' }}>{uploadResult.invalid_rows || 0}</strong></div>
                   </div>
+
+                  {uploadResult.columns_detected && uploadResult.columns_detected.length > 0 && (
+                    <div style={{ marginTop: '0.85rem', paddingTop: '0.75rem', borderTop: '1px solid #d1fae5' }}>
+                      <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--color-text-muted)', marginBottom: '0.4rem', textTransform: 'uppercase' }}>
+                        Recognized Columns ({uploadResult.columns_detected.length}):
+                      </div>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem' }}>
+                        {uploadResult.columns_detected.map((col, idx) => (
+                          <span
+                            key={idx}
+                            style={{
+                              fontSize: '0.76rem',
+                              padding: '0.2rem 0.55rem',
+                              borderRadius: 'var(--radius-sm)',
+                              backgroundColor: '#ffffff',
+                              border: '1px solid #a7f3d0',
+                              fontWeight: 600,
+                              color: 'var(--color-primary-900)',
+                            }}
+                          >
+                            {col}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
 

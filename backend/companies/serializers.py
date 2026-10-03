@@ -7,7 +7,23 @@ class CompanySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Company
-        fields = ["id", "name", "created_at", "updated_at", "has_applied"]
+        fields = [
+            "id",
+            "name",
+            "sector",
+            "job_position",
+            "openings",
+            "salary_ctc",
+            "qualification",
+            "location",
+            "gender",
+            "eligibility",
+            "facilities",
+            "room_no",
+            "created_at",
+            "updated_at",
+            "has_applied",
+        ]
 
     def get_has_applied(self, obj):
         request = self.context.get("request")

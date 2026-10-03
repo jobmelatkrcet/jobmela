@@ -8,12 +8,24 @@ import {
   ArrowLeft,
   Search,
   Calendar,
-  Clock,
   CheckCircle2,
   FileSpreadsheet,
+  Briefcase,
+  MapPin,
+  IndianRupee,
+  GraduationCap,
+  DoorClosed,
+  ShieldCheck,
+  Gift,
 } from 'lucide-react';
 import Pagination from '../../components/Pagination';
 import Alert from '../../components/Alert';
+
+const hasValue = (val) => {
+  if (!val) return false;
+  const s = String(val).trim().toLowerCase();
+  return !['', 'n/a', 'na', 'nil', '-', '--', 'null', 'none', 'unknown', 'not available'].includes(s);
+};
 
 const AdminCompanyStudentsPage = () => {
   const { id } = useParams();
@@ -217,6 +229,90 @@ const AdminCompanyStudentsPage = () => {
               Downloads: {company?.name ? company.name.replace(/[^a-zA-Z0-9_-]/g, '_') : 'Company'}_Registered_Students.xlsx
             </div>
           </div>
+
+          {/* Dynamic Company Details Grid (Requirement 5) */}
+          {company && (hasValue(company.sector) || hasValue(company.job_position) || hasValue(company.salary_ctc) || hasValue(company.location) || hasValue(company.room_no) || hasValue(company.openings) || hasValue(company.qualification) || hasValue(company.gender) || hasValue(company.eligibility) || hasValue(company.facilities)) && (
+            <div
+              style={{
+                marginTop: '1.5rem',
+                paddingTop: '1.25rem',
+                borderTop: '1px solid var(--color-border)',
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                gap: '1rem',
+                fontSize: '0.88rem',
+              }}
+            >
+              {hasValue(company.sector) && (
+                <div>
+                  <span style={{ fontSize: '0.72rem', color: 'var(--color-text-muted)', textTransform: 'uppercase', fontWeight: 700, display: 'block' }}>Sector</span>
+                  <span style={{ fontWeight: 600, color: 'var(--color-primary-900)' }}>{company.sector}</span>
+                </div>
+              )}
+              {hasValue(company.job_position) && (
+                <div>
+                  <span style={{ fontSize: '0.72rem', color: 'var(--color-text-muted)', textTransform: 'uppercase', fontWeight: 700, display: 'block' }}>Job Position</span>
+                  <span style={{ fontWeight: 600, color: 'var(--color-primary-900)', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
+                    <Briefcase size={14} color="var(--color-brand-600)" /> {company.job_position}
+                  </span>
+                </div>
+              )}
+              {hasValue(company.salary_ctc) && (
+                <div>
+                  <span style={{ fontSize: '0.72rem', color: 'var(--color-text-muted)', textTransform: 'uppercase', fontWeight: 700, display: 'block' }}>Salary / CTC</span>
+                  <span style={{ fontWeight: 700, color: '#059669', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
+                    <IndianRupee size={14} color="#059669" /> {company.salary_ctc}
+                  </span>
+                </div>
+              )}
+              {hasValue(company.location) && (
+                <div>
+                  <span style={{ fontSize: '0.72rem', color: 'var(--color-text-muted)', textTransform: 'uppercase', fontWeight: 700, display: 'block' }}>Location</span>
+                  <span style={{ fontWeight: 500, color: 'var(--color-primary-900)', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
+                    <MapPin size={14} color="var(--color-brand-600)" /> {company.location}
+                  </span>
+                </div>
+              )}
+              {hasValue(company.room_no) && (
+                <div>
+                  <span style={{ fontSize: '0.72rem', color: 'var(--color-text-muted)', textTransform: 'uppercase', fontWeight: 700, display: 'block' }}>Room / Venue</span>
+                  <span style={{ fontWeight: 700, color: '#6d28d9', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
+                    <DoorClosed size={14} color="#7c3aed" /> Room {company.room_no}
+                  </span>
+                </div>
+              )}
+              {hasValue(company.openings) && (
+                <div>
+                  <span style={{ fontSize: '0.72rem', color: 'var(--color-text-muted)', textTransform: 'uppercase', fontWeight: 700, display: 'block' }}>Openings</span>
+                  <span style={{ fontWeight: 600, color: 'var(--color-primary-900)' }}>{company.openings}</span>
+                </div>
+              )}
+              {hasValue(company.qualification) && (
+                <div>
+                  <span style={{ fontSize: '0.72rem', color: 'var(--color-text-muted)', textTransform: 'uppercase', fontWeight: 700, display: 'block' }}>Qualification</span>
+                  <span style={{ fontWeight: 500, color: 'var(--color-primary-900)' }}>{company.qualification}</span>
+                </div>
+              )}
+              {hasValue(company.gender) && (
+                <div>
+                  <span style={{ fontSize: '0.72rem', color: 'var(--color-text-muted)', textTransform: 'uppercase', fontWeight: 700, display: 'block' }}>Gender</span>
+                  <span style={{ fontWeight: 500, color: 'var(--color-primary-900)' }}>{company.gender}</span>
+                </div>
+              )}
+              {hasValue(company.eligibility) && (
+                <div style={{ gridColumn: '1 / -1' }}>
+                  <span style={{ fontSize: '0.72rem', color: 'var(--color-text-muted)', textTransform: 'uppercase', fontWeight: 700, display: 'block' }}>Eligibility</span>
+                  <span style={{ fontWeight: 500, color: 'var(--color-primary-900)' }}>{company.eligibility}</span>
+                </div>
+              )}
+              {hasValue(company.facilities) && (
+                <div style={{ gridColumn: '1 / -1' }}>
+                  <span style={{ fontSize: '0.72rem', color: 'var(--color-text-muted)', textTransform: 'uppercase', fontWeight: 700, display: 'block' }}>Facilities</span>
+                  <span style={{ fontWeight: 500, color: 'var(--color-primary-900)' }}>{company.facilities}</span>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
 

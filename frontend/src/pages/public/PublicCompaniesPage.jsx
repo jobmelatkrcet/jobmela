@@ -1,12 +1,31 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Search, Building2, CheckCircle2, ArrowRight } from 'lucide-react';
+import {
+  Search,
+  Building2,
+  CheckCircle2,
+  ArrowRight,
+  Briefcase,
+  MapPin,
+  IndianRupee,
+  GraduationCap,
+  DoorClosed,
+  Users,
+  ShieldCheck,
+  Gift,
+} from 'lucide-react';
 import { companyService } from '../../services/companyService';
 import { applicationService } from '../../services/applicationService';
 import { useAuth } from '../../context/AuthContext';
 import ConfirmModal from '../../components/ConfirmModal';
 import Pagination from '../../components/Pagination';
 import Alert from '../../components/Alert';
+
+const hasValue = (val) => {
+  if (!val) return false;
+  const s = String(val).trim().toLowerCase();
+  return !['', 'n/a', 'na', 'nil', '-', '--', 'null', 'none', 'unknown', 'not available'].includes(s);
+};
 
 const PublicCompaniesPage = () => {
   const { isAuthenticated, isStudent } = useAuth();
@@ -213,7 +232,7 @@ const PublicCompaniesPage = () => {
             <div
               style={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 260px), 1fr))',
+                gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 300px), 1fr))',
                 gap: '1.25rem',
               }}
             >
@@ -231,33 +250,177 @@ const PublicCompaniesPage = () => {
                   <div>
                     <div
                       style={{
-                        width: 48,
-                        height: 48,
-                        borderRadius: 'var(--radius-md)',
-                        backgroundColor: 'var(--color-brand-50)',
-                        color: 'var(--color-brand-600)',
                         display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        fontWeight: 800,
-                        fontSize: '1.2rem',
-                        marginBottom: '1.15rem',
+                        alignItems: 'flex-start',
+                        justifyContent: 'space-between',
+                        gap: '0.75rem',
+                        marginBottom: '1rem',
                       }}
                     >
-                      {company.name.charAt(0).toUpperCase()}
+                      <div
+                        style={{
+                          width: 44,
+                          height: 44,
+                          borderRadius: 'var(--radius-md)',
+                          backgroundColor: 'var(--color-brand-50)',
+                          color: 'var(--color-brand-600)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontWeight: 800,
+                          fontSize: '1.15rem',
+                          flexShrink: 0,
+                        }}
+                      >
+                        {company.name.charAt(0).toUpperCase()}
+                      </div>
+
+                      {hasValue(company.sector) && (
+                        <span
+                          className="badge badge-blue"
+                          style={{
+                            fontSize: '0.75rem',
+                            padding: '0.25rem 0.6rem',
+                            fontWeight: 600,
+                            textTransform: 'none',
+                          }}
+                        >
+                          {company.sector}
+                        </span>
+                      )}
                     </div>
 
                     <h3
                       style={{
-                        fontSize: '1.15rem',
+                        fontSize: '1.18rem',
                         fontWeight: 700,
                         color: 'var(--color-primary-900)',
                         lineHeight: 1.3,
-                        marginBottom: '0.4rem',
+                        marginBottom: '0.6rem',
                       }}
                     >
                       {company.name}
                     </h3>
+
+                    {/* Dynamic Fields: ONLY render if data exists (Requirement 5) */}
+                    <div
+                      style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '0.55rem',
+                        fontSize: '0.85rem',
+                        color: 'var(--color-text-main)',
+                        marginTop: '1rem',
+                      }}
+                    >
+                      {hasValue(company.job_position) && (
+                        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem' }}>
+                          <Briefcase size={15} color="var(--color-brand-600)" style={{ marginTop: '0.15rem', flexShrink: 0 }} />
+                          <div>
+                            <span style={{ color: 'var(--color-text-muted)', fontSize: '0.72rem', display: 'block', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                              Job Position
+                            </span>
+                            <span style={{ fontWeight: 600, color: 'var(--color-primary-900)' }}>{company.job_position}</span>
+                          </div>
+                        </div>
+                      )}
+
+                      {hasValue(company.salary_ctc) && (
+                        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem' }}>
+                          <IndianRupee size={15} color="#059669" style={{ marginTop: '0.15rem', flexShrink: 0 }} />
+                          <div>
+                            <span style={{ color: 'var(--color-text-muted)', fontSize: '0.72rem', display: 'block', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                              Salary / CTC
+                            </span>
+                            <span style={{ fontWeight: 700, color: '#059669' }}>{company.salary_ctc}</span>
+                          </div>
+                        </div>
+                      )}
+
+                      {hasValue(company.location) && (
+                        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem' }}>
+                          <MapPin size={15} color="var(--color-brand-600)" style={{ marginTop: '0.15rem', flexShrink: 0 }} />
+                          <div>
+                            <span style={{ color: 'var(--color-text-muted)', fontSize: '0.72rem', display: 'block', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                              Location
+                            </span>
+                            <span style={{ fontWeight: 500 }}>{company.location}</span>
+                          </div>
+                        </div>
+                      )}
+
+                      {hasValue(company.room_no) && (
+                        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem' }}>
+                          <DoorClosed size={15} color="#7c3aed" style={{ marginTop: '0.15rem', flexShrink: 0 }} />
+                          <div>
+                            <span style={{ color: 'var(--color-text-muted)', fontSize: '0.72rem', display: 'block', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                              Room / Venue
+                            </span>
+                            <span style={{ fontWeight: 700, color: '#6d28d9' }}>{company.room_no}</span>
+                          </div>
+                        </div>
+                      )}
+
+                      {hasValue(company.openings) && (
+                        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem' }}>
+                          <Users size={15} color="var(--color-brand-600)" style={{ marginTop: '0.15rem', flexShrink: 0 }} />
+                          <div>
+                            <span style={{ color: 'var(--color-text-muted)', fontSize: '0.72rem', display: 'block', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                              Openings
+                            </span>
+                            <span style={{ fontWeight: 600 }}>{company.openings}</span>
+                          </div>
+                        </div>
+                      )}
+
+                      {hasValue(company.qualification) && (
+                        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem' }}>
+                          <GraduationCap size={15} color="var(--color-brand-600)" style={{ marginTop: '0.15rem', flexShrink: 0 }} />
+                          <div>
+                            <span style={{ color: 'var(--color-text-muted)', fontSize: '0.72rem', display: 'block', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                              Qualification
+                            </span>
+                            <span style={{ fontWeight: 500, fontSize: '0.82rem' }}>{company.qualification}</span>
+                          </div>
+                        </div>
+                      )}
+
+                      {hasValue(company.eligibility) && (
+                        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem' }}>
+                          <CheckCircle2 size={15} color="#2563eb" style={{ marginTop: '0.15rem', flexShrink: 0 }} />
+                          <div>
+                            <span style={{ color: 'var(--color-text-muted)', fontSize: '0.72rem', display: 'block', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                              Eligibility
+                            </span>
+                            <span style={{ fontWeight: 500, fontSize: '0.82rem' }}>{company.eligibility}</span>
+                          </div>
+                        </div>
+                      )}
+
+                      {hasValue(company.gender) && (
+                        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem' }}>
+                          <ShieldCheck size={15} color="var(--color-brand-600)" style={{ marginTop: '0.15rem', flexShrink: 0 }} />
+                          <div>
+                            <span style={{ color: 'var(--color-text-muted)', fontSize: '0.72rem', display: 'block', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                              Gender
+                            </span>
+                            <span style={{ fontWeight: 500 }}>{company.gender}</span>
+                          </div>
+                        </div>
+                      )}
+
+                      {hasValue(company.facilities) && (
+                        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem' }}>
+                          <Gift size={15} color="#ea580c" style={{ marginTop: '0.15rem', flexShrink: 0 }} />
+                          <div>
+                            <span style={{ color: 'var(--color-text-muted)', fontSize: '0.72rem', display: 'block', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                              Facilities
+                            </span>
+                            <span style={{ fontWeight: 500, fontSize: '0.82rem' }}>{company.facilities}</span>
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   </div>
 
                   <div
@@ -311,26 +474,45 @@ const PublicCompaniesPage = () => {
         {/* Confirmation Modal */}
         <ConfirmModal
           isOpen={isModalOpen}
-          title="Confirm Application"
+          title="Confirm Company Registration"
           message={
             <div>
-              <p style={{ marginBottom: '0.75rem' }}>
-                Are you sure you want to register/apply for:
+              <p style={{ marginBottom: '1rem', fontSize: '0.95rem' }}>
+                You are registering your application for:
               </p>
               <div
                 style={{
-                  padding: '0.85rem 1.15rem',
+                  padding: '1rem 1.15rem',
                   backgroundColor: 'var(--color-bg-main)',
                   borderRadius: 'var(--radius-md)',
-                  fontWeight: 700,
-                  fontSize: '1.1rem',
-                  color: 'var(--color-primary-900)',
                   border: '1px solid var(--color-border)',
                 }}
               >
-                {selectedCompany?.name}
+                <div style={{ fontWeight: 800, fontSize: '1.15rem', color: 'var(--color-primary-900)', marginBottom: '0.35rem' }}>
+                  {selectedCompany?.name}
+                </div>
+                {selectedCompany && hasValue(selectedCompany.job_position) && (
+                  <div style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)' }}>
+                    Role: <strong style={{ color: 'var(--color-primary-800)' }}>{selectedCompany.job_position}</strong>
+                  </div>
+                )}
+                {selectedCompany && hasValue(selectedCompany.salary_ctc) && (
+                  <div style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)' }}>
+                    Salary / CTC: <strong style={{ color: '#059669' }}>{selectedCompany.salary_ctc}</strong>
+                  </div>
+                )}
+                {selectedCompany && hasValue(selectedCompany.location) && (
+                  <div style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)' }}>
+                    Location: <strong style={{ color: 'var(--color-primary-800)' }}>{selectedCompany.location}</strong>
+                  </div>
+                )}
+                {selectedCompany && hasValue(selectedCompany.room_no) && (
+                  <div style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)' }}>
+                    Room No: <strong style={{ color: '#6d28d9' }}>{selectedCompany.room_no}</strong>
+                  </div>
+                )}
               </div>
-              <p style={{ marginTop: '0.75rem', fontSize: '0.88rem', color: 'var(--color-text-muted)' }}>
+              <p style={{ marginTop: '0.85rem', fontSize: '0.85rem', color: 'var(--color-text-muted)' }}>
                 You can apply to multiple participating companies for TKRCET Job Mela 2026.
               </p>
             </div>
