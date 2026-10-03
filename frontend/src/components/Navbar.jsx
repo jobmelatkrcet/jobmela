@@ -76,11 +76,10 @@ const Navbar = () => {
               <div className="college-name">
                 TKR College of Engineering &amp; Technology
               </div>
-              <div className="motto-text">
-                (Autonomous) • Indian in Character, International in Excellence
-              </div>
-              <div className="event-badge-title">
-                JOB MELA 2026
+              <div className="college-subline">
+                <span className="college-autonomous">(Autonomous)</span>
+                <span className="subline-dot">•</span>
+                <span className="subline-event">JOB MELA 2026</span>
               </div>
             </div>
           </Link>

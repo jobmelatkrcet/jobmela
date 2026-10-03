@@ -119,7 +119,7 @@ const StudentRegisterPage = () => {
             Student Registration
           </h1>
           <p style={{ color: 'var(--color-text-muted)', fontSize: '0.95rem' }}>
-            Register to participate and apply for 100+ participating companies at TKRCET Job Mela 2026.
+            Register to participate and apply for 150+ participating companies at TKRCET Job Mela 2026.
           </p>
         </div>
 

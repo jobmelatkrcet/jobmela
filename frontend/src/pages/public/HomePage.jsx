@@ -148,7 +148,7 @@ const HomePage = () => {
 
               <div className="hero-highlight-chip">
                 <Building2 size={18} color="#4ade80" />
-                <span>100+ Participating Companies</span>
+                <span>150+ Participating Companies</span>
               </div>
 
               <div className="hero-highlight-chip">
@@ -272,13 +272,14 @@ const HomePage = () => {
       <section style={{ padding: '4rem 0', backgroundColor: '#f8fafc' }}>
         <div className="app-container">
           <div
+            className="companies-header-wrapper"
             style={{
               display: 'flex',
-              alignItems: 'flex-end',
+              alignItems: 'flex-start',
               justifyContent: 'space-between',
               flexWrap: 'wrap',
-              gap: '1.5rem',
-              marginBottom: '1.75rem',
+              gap: '1.25rem',
+              marginBottom: '1.5rem',
             }}
           >
             <div>
@@ -294,15 +295,15 @@ const HomePage = () => {
               >
                 Recruiting Campuses &amp; Organizations
               </div>
-              <h2 style={{ fontSize: '2rem' }}>Participating Companies by Sector</h2>
-              <p style={{ color: 'var(--color-text-muted)', fontSize: '0.95rem', marginTop: '0.25rem' }}>
+              <h2 className="companies-section-title">Participating Companies by Sector</h2>
+              <p className="companies-section-subtitle">
                 Explore <strong>{totalCompanies || companies.length} verified companies</strong> segregated category-wise across Banking, Product-Based IT, Manufacturing, Core Engineering and more.
               </p>
             </div>
 
             {/* Quick search & View Mode Toggle */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
-              <form onSubmit={handleSearch} style={{ display: 'flex', gap: '0.5rem', width: '100%', maxWidth: 320 }}>
+            <div className="companies-filter-controls-wrapper">
+              <form onSubmit={handleSearch} className="companies-search-form" style={{ display: 'flex', gap: '0.5rem', width: '100%', maxWidth: 320 }}>
                 <div style={{ position: 'relative', flex: 1 }}>
                   <input
                     type="text"
@@ -330,6 +331,7 @@ const HomePage = () => {
 
               {/* View Mode Toggle */}
               <div
+                className="companies-view-mode-toggle"
                 style={{
                   display: 'inline-flex',
                   backgroundColor: '#ffffff',
@@ -453,7 +455,7 @@ const HomePage = () => {
                         </div>
                       </div>
 
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                      <div className="category-header-actions">
                         <span
                           className="badge"
                           style={{
@@ -470,35 +472,19 @@ const HomePage = () => {
                         <button
                           type="button"
                           onClick={() => setSelectedCategory(cat.id)}
-                          className="btn btn-outline btn-sm"
-                          style={{ fontSize: '0.78rem', padding: '0.3rem 0.6rem' }}
+                          className="btn btn-outline btn-sm category-view-only-btn"
                         >
-                          View Only {cat.shortLabel} →
+                          View {cat.shortLabel} →
                         </button>
                       </div>
                     </div>
 
                     {/* Company Cards Grid for this category */}
-                    <div
-                      style={{
-                        display: 'grid',
-                        gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 270px), 1fr))',
-                        gap: '1.15rem',
-                      }}
-                    >
+                    <div className="category-companies-grid">
                       {comps.map((comp) => (
                         <div
                           key={comp.id}
-                          className="card card-hover"
-                          style={{
-                            display: 'flex',
-                            flexDirection: 'column',
-                            justifyContent: 'space-between',
-                            padding: '1.25rem',
-                            border: '1px solid #e2e8f0',
-                            borderRadius: 'var(--radius-md)',
-                            position: 'relative',
-                          }}
+                          className="card card-hover category-company-card"
                         >
                           <div>
                             {/* Top row: Avatar & Sector Badge */}
@@ -523,15 +509,11 @@ const HomePage = () => {
                               </div>
 
                               <span
+                                className="category-company-sector-badge"
                                 style={{
-                                  fontSize: '0.72rem',
-                                  fontWeight: 700,
-                                  padding: '0.2rem 0.55rem',
-                                  borderRadius: '9999px',
                                   backgroundColor: cat.bg,
                                   color: cat.color,
                                   border: `1px solid ${cat.border}`,
-                                  whiteSpace: 'nowrap',
                                 }}
                               >
                                 {comp.sector || cat.shortLabel}
@@ -545,6 +527,7 @@ const HomePage = () => {
                                 color: 'var(--color-primary-900)',
                                 lineHeight: 1.3,
                                 marginBottom: '0.4rem',
+                                wordBreak: 'break-word',
                               }}
                             >
                               {comp.name}
@@ -657,26 +640,13 @@ const HomePage = () => {
                 </div>
               )}
 
-              <div
-                style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 270px), 1fr))',
-                  gap: '1.25rem',
-                }}
-              >
+              <div className="category-companies-grid">
                 {filteredCompanies.map((comp) => {
                   const cat = getCompanyCategory(comp);
                   return (
                     <div
                       key={comp.id}
-                      className="card card-hover"
-                      style={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                        justifyContent: 'space-between',
-                        padding: '1.35rem',
-                        border: '1px solid #e2e8f0',
-                      }}
+                      className="card card-hover category-company-card"
                     >
                       <div>
                         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '0.5rem', marginBottom: '0.85rem' }}>
@@ -699,11 +669,8 @@ const HomePage = () => {
                           </div>
 
                           <span
+                            className="category-company-sector-badge"
                             style={{
-                              fontSize: '0.72rem',
-                              fontWeight: 700,
-                              padding: '0.2rem 0.55rem',
-                              borderRadius: '9999px',
                               backgroundColor: cat.bg,
                               color: cat.color,
                               border: `1px solid ${cat.border}`,
@@ -720,6 +687,7 @@ const HomePage = () => {
                             color: 'var(--color-primary-900)',
                             lineHeight: 1.3,
                             marginBottom: '0.4rem',
+                            wordBreak: 'break-word',
                           }}
                         >
                           {comp.name}
