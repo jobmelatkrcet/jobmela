@@ -755,6 +755,81 @@ class AdminCompanyExcelUploadView(APIView):
         header_row_idx, col_mappings = identify_header_and_mappings(rows)
         start_row = header_row_idx + 1
 
+        is_preview = (
+            str(request.data.get("preview", "false")).lower() in ("true", "1", "yes")
+            or request.query_params.get("preview", "").lower() in ("true", "1", "yes")
+        )
+
+        detected_columns = [
+            FIELD_DISPLAY_LABELS.get(f, f) for f in col_mappings.values()
+        ]
+
+        if is_preview:
+            exact_lower_map = {}
+            norm_key_map = {}
+            for c in Company.objects.all():
+                clean_name = c.name.strip()
+                exact_lower_map[clean_name.lower()] = c.name
+                for k in get_company_lookup_keys(clean_name):
+                    norm_key_map[k] = c.name
+
+            preview_companies = []
+            duplicate_matches = []
+            seen_in_file = set()
+            invalid_count = 0
+            sample_rows = []
+
+            for row in rows[start_row:]:
+                if not row or not any(c is not None and str(c).strip() for c in row):
+                    continue
+
+                row_data = {}
+                for col_idx, field_name in col_mappings.items():
+                    if col_idx < len(row):
+                        cell_val = clean_cell_text(row[col_idx])
+                        if cell_val:
+                            row_data[field_name] = cell_val
+
+                company_name = row_data.get("name", "").strip()
+                if not company_name:
+                    invalid_count += 1
+                    continue
+
+                norm_lower = company_name.lower()
+                existing_match = exact_lower_map.get(norm_lower)
+                if not existing_match:
+                    for k in get_company_lookup_keys(company_name):
+                        if k in norm_key_map:
+                            existing_match = norm_key_map[k]
+                            break
+
+                if existing_match:
+                    if existing_match not in duplicate_matches:
+                        duplicate_matches.append(existing_match)
+                elif norm_lower in seen_in_file:
+                    if company_name not in duplicate_matches:
+                        duplicate_matches.append(company_name)
+
+                seen_in_file.add(norm_lower)
+                preview_companies.append(company_name)
+                if len(sample_rows) < 5:
+                    sample_rows.append(row_data)
+
+            return Response(
+                {
+                    "preview": True,
+                    "filename": uploaded_file.name,
+                    "total_rows": len(preview_companies) + invalid_count,
+                    "companies_detected": len(preview_companies),
+                    "invalid_rows": invalid_count,
+                    "columns_detected": detected_columns,
+                    "possible_duplicates_count": len(duplicate_matches),
+                    "possible_duplicates": duplicate_matches[:10],
+                    "sample_rows": sample_rows,
+                },
+                status=status.HTTP_200_OK,
+            )
+
         clear_existing = str(request.data.get("clear_existing", "false")).lower() in (
             "true",
             "1",

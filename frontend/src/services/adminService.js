@@ -41,6 +41,18 @@ export const adminService = {
     return res.data;
   },
 
+  async previewCompaniesExcel(file) {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('preview', 'true');
+    const res = await api.post('/admin/companies/upload/', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return res.data;
+  },
+
   async uploadCompaniesExcel(file, clearExisting = false) {
     const formData = new FormData();
     formData.append('file', file);
