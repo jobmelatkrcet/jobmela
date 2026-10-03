@@ -1,7 +1,22 @@
 import axios from 'axios';
 
+const getBaseURL = () => {
+  if (import.meta.env.VITE_API_URL) {
+    return import.meta.env.VITE_API_URL;
+  }
+  if (typeof window !== 'undefined') {
+    const host = window.location.hostname;
+    if (host === 'localhost' || host === '127.0.0.1') {
+      return '/api';
+    }
+    // Default to the live Vercel Django backend
+    return 'https://jobmela-z1tj.vercel.app/api';
+  }
+  return '/api';
+};
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || '/api',
+  baseURL: getBaseURL(),
   headers: {
     'Content-Type': 'application/json',
   },
