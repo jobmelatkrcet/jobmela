@@ -1,22 +1,29 @@
-import os
+"""
+Django settings for TKRCET Job Mela 2026 platform.
+"""
+
 from pathlib import Path
+import os
+import dj_database_url
 from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Load environment variables from .env file if present
+# Load .env file
 load_dotenv(BASE_DIR / ".env")
 
-# Quick-start development settings - unsuitable for production
+# SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.environ.get(
-    "DJANGO_SECRET_KEY",
-    "django-insecure-tkrcet-job-mela-2026-production-ready-secure-key-789012345",
+    "SECRET_KEY",
+    "django-insecure-tkrcet-jobmela-2026-production-secret-key-9949139414",
 )
 
 DEBUG = os.environ.get("DEBUG", "True").lower() in ("true", "1", "yes")
 
-ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "*").split(",")
+# Allowed hosts configuration
+raw_hosts = os.environ.get("ALLOWED_HOSTS", "*")
+ALLOWED_HOSTS = [h.strip() for h in raw_hosts.split(",") if h.strip()] if raw_hosts != "*" else ["*"]
 
 
 # Application definition
@@ -59,6 +66,7 @@ TEMPLATES = [
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
+                "django.template.context_processors.debug",
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
@@ -70,11 +78,16 @@ TEMPLATES = [
 WSGI_APPLICATION = "config.wsgi.application"
 
 
-# Database
-# Environment-ready database configuration:
-# Easily switched to PostgreSQL/MySQL later by setting DATABASE_ENGINE, etc.
-DB_ENGINE = os.environ.get("DB_ENGINE", "sqlite3")
-if DB_ENGINE == "sqlite3":
+# Database Configuration
+# Supabase PostgreSQL Database with SQLite fallback if requested
+SUPABASE_DATABASE_URL = (
+    "postgresql://postgres.itgcnlqapayqgcloctso:jobmelatkrcet"
+    "@aws-0-ap-northeast-2.pooler.supabase.com:6543/postgres"
+)
+
+DATABASE_URL = os.environ.get("DATABASE_URL", SUPABASE_DATABASE_URL)
+
+if os.environ.get("USE_SQLITE", "False").lower() in ("true", "1", "yes"):
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.sqlite3",
@@ -83,14 +96,11 @@ if DB_ENGINE == "sqlite3":
     }
 else:
     DATABASES = {
-        "default": {
-            "ENGINE": os.environ.get("DB_ENGINE"),
-            "NAME": os.environ.get("DB_NAME"),
-            "USER": os.environ.get("DB_USER"),
-            "PASSWORD": os.environ.get("DB_PASSWORD"),
-            "HOST": os.environ.get("DB_HOST", "localhost"),
-            "PORT": os.environ.get("DB_PORT", "5432"),
-        }
+        "default": dj_database_url.config(
+            default=DATABASE_URL,
+            conn_max_age=600,
+            conn_health_checks=True,
+        )
     }
 
 
@@ -137,15 +147,25 @@ REST_FRAMEWORK = {
 }
 
 # CORS settings for frontend communication
-CORS_ALLOW_ALL_ORIGINS = True  # Enabled for seamless local development
+CORS_ALLOW_ALL_ORIGINS = True  # Allows production Vercel app & local dev
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOWED_ORIGINS = [
+    "https://jobmela.vercel.app",
+    "http://jobmela.vercel.app",
     "http://localhost:5173",
     "http://127.0.0.1:5173",
     "http://localhost:3000",
     "http://127.0.0.1:3000",
     "http://localhost:8000",
     "http://127.0.0.1:8000",
+]
+
+# CSRF Trusted Origins for Vercel
+CSRF_TRUSTED_ORIGINS = [
+    "https://jobmela.vercel.app",
+    "http://jobmela.vercel.app",
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
 ]
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
