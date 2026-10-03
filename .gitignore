@@ -8,6 +8,7 @@ frontend/*.local
 backend/.venv/
 backend/venv/
 backend/env/
+backend/staticfiles/
 **/__pycache__/
 *.py[cod]
 *$py.class
