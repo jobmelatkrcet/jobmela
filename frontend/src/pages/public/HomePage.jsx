@@ -151,7 +151,7 @@ const HomePage = () => {
             </div>
           </motion.div>
 
-          {/* 2. Organized By Section with College Motto, Approvals, & Accreditation Pillars */}
+          {/* 2. Organized By Section with College Motto */}
           <motion.div
             initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
@@ -170,43 +170,9 @@ const HomePage = () => {
               (Autonomous)
             </div>
 
-            {/* College Motto & Approvals (Directly under TKR College) */}
+            {/* College Motto */}
             <div className="hero-institution-motto">
               “Indian in Character, International in Excellence”
-            </div>
-            <div className="hero-approvals-subline">
-              Approved by AICTE  •  Affiliated to JNTUH
-            </div>
-
-            {/* College Accreditations (NAAC, NBA, Autonomous) directly below College */}
-            <div className="hero-pillars-row">
-              <div className="hero-pillar-col">
-                <div className="hero-pillar-icon-box">
-                  <Award size={18} color="#fbbf24" />
-                </div>
-                <div className="hero-pillar-title">NAAC "A+"</div>
-                <div className="hero-pillar-subtitle">Grade Accredited</div>
-              </div>
-
-              <div className="hero-pillar-divider" />
-
-              <div className="hero-pillar-col">
-                <div className="hero-pillar-icon-box">
-                  <ShieldCheck size={18} color="#fbbf24" />
-                </div>
-                <div className="hero-pillar-title">NBA Tier-1</div>
-                <div className="hero-pillar-subtitle">Accredited</div>
-              </div>
-
-              <div className="hero-pillar-divider" />
-
-              <div className="hero-pillar-col">
-                <div className="hero-pillar-icon-box">
-                  <Landmark size={18} color="#fbbf24" />
-                </div>
-                <div className="hero-pillar-title hero-pillar-title-gold">Autonomous</div>
-                <div className="hero-pillar-subtitle">Campus</div>
-              </div>
             </div>
           </motion.div>
 
