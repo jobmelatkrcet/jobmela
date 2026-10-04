@@ -7,6 +7,10 @@ import {
   User,
   LogOut,
   Menu,
+  MoreVertical,
+  UserPlus,
+  LogIn,
+  Sparkles,
   X,
   ShieldCheck,
   Home,
@@ -181,23 +185,56 @@ const Navbar = () => {
               </div>
             )}
 
-            {/* Mobile Hamburger Toggle */}
+            {/* Mobile 3-Dots Menu Toggle */}
             <button
               className="mobile-menu-toggle"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              aria-label="Toggle menu"
+              aria-label="Toggle menu and registration"
+              title="Menu & Registration"
             >
-              {mobileMenuOpen ? <X size={26} /> : <Menu size={26} />}
+              {mobileMenuOpen ? <X size={24} /> : <MoreVertical size={24} />}
             </button>
           </div>
         </div>
       </div>
 
-      {/* Mobile Drawer Navigation */}
+      {/* Mobile Drawer Navigation (Opened via 3-dots) */}
       {mobileMenuOpen && (
         <div className="mobile-drawer">
           {!isAuthenticated ? (
             <div className="mobile-links">
+              {/* Highlighted Registration Card inside 3-Dots Menu */}
+              <div className="mobile-drawer-cta-card">
+                <div className="mobile-drawer-cta-badge">
+                  <Sparkles size={12} color="#fde047" /> Mega Job Mela 2026
+                </div>
+                <div className="mobile-drawer-cta-title">Job Mela Registration</div>
+                <p className="mobile-drawer-cta-desc">
+                  Register for 150+ multinational recruiters &amp; on-campus interviews on Oct 31, 2026.
+                </p>
+                <div className="mobile-drawer-btn-stack">
+                  <Link
+                    to="/register"
+                    onClick={closeMenu}
+                    className="btn btn-primary mobile-drawer-reg-btn"
+                  >
+                    <UserPlus size={17} />
+                    <span>Register for Job Mela</span>
+                  </Link>
+                  <Link
+                    to="/login"
+                    onClick={closeMenu}
+                    className="btn btn-outline mobile-drawer-login-btn"
+                  >
+                    <LogIn size={16} />
+                    <span>Student Login</span>
+                  </Link>
+                </div>
+              </div>
+
+              <div className="mobile-drawer-divider" />
+
+              <div className="mobile-drawer-nav-label">Navigation Menu</div>
               <Link to="/" onClick={closeMenu} className="mobile-link">
                 <Home size={18} /> Home
               </Link>
@@ -210,17 +247,12 @@ const Navbar = () => {
               <Link to="/contact" onClick={closeMenu} className="mobile-link">
                 <Phone size={18} /> Contact Coordinators
               </Link>
-              <div className="mobile-auth-actions">
-                <Link to="/login" onClick={closeMenu} className="btn btn-outline" style={{ width: '100%' }}>
-                  Student Login
-                </Link>
-                <Link to="/register" onClick={closeMenu} className="btn btn-primary" style={{ width: '100%' }}>
-                  Student Registration
-                </Link>
-                <Link to="/admin/login" onClick={closeMenu} className="btn btn-secondary btn-sm" style={{ width: '100%' }}>
-                  <ShieldCheck size={16} /> Admin Login
-                </Link>
-              </div>
+
+              <div className="mobile-drawer-divider" />
+
+              <Link to="/admin/login" onClick={closeMenu} className="mobile-admin-access-link">
+                <ShieldCheck size={16} /> Organizer Admin Login
+              </Link>
             </div>
           ) : isStudent ? (
             <div className="mobile-links">

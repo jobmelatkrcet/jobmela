@@ -153,54 +153,63 @@ const HomePage = () => {
             <motion.div
               initial={{ opacity: 0, scale: 0.92 }}
               animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.5, delay: 0.18 }}
+              transition={{ duration: 0.5, delay: 0.15 }}
               style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}
             >
               <motion.img
                 src="/tkrcet-official-logo.png"
                 alt="TKRCET Logo"
                 className="hero-logo-img"
-                animate={{ y: [0, -5, 0] }}
-                transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
+                animate={{ y: [0, -4, 0] }}
+                transition={{ duration: 4.5, repeat: Infinity, ease: 'easeInOut' }}
               />
               <div className="hero-institution-motto">
                 "Indian in Character, International in Excellence" • Approved by AICTE • Affiliated to JNTUH
               </div>
             </motion.div>
 
-            {/* Main Grand Title */}
-            <motion.h1
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.55, delay: 0.28 }}
-              className="hero-main-title"
-            >
-              MEGA JOB MELA <span className="hero-title-gradient">2026</span>
-            </motion.h1>
-
-            {/* Organizer Banner Below Title & Event Description (No Redundant Repetition) */}
+            {/* Main Grand Title with Radiant Luminous Highlight */}
             <motion.div
               initial={{ opacity: 0, y: 14 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.55, delay: 0.36 }}
-              className="hero-organizer-container"
+              transition={{ duration: 0.5, delay: 0.2 }}
+              className="hero-title-highlight-box"
             >
-              <div className="hero-organizer-pill">
-                <span>Organized by</span>
-                <strong>TKR College of Engineering &amp; Technology</strong>
-                <span className="hero-organizer-tag">(Autonomous)</span>
-              </div>
-
-              <p className="hero-description">
-                Connecting students from all streams with 150+ premier multinational recruiters and emerging enterprises.
-              </p>
+              <div className="hero-title-glow-aura" />
+              <h1 className="hero-main-title">
+                MEGA JOB MELA <span className="hero-title-gradient">2026</span>
+              </h1>
             </motion.div>
+
+            {/* Small & Sleek Organizer Badge (Compact & Subdued) */}
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.26 }}
+              style={{ textAlign: 'center' }}
+            >
+              <div className="hero-organizer-compact">
+                <span className="hero-org-label">Organized by</span>
+                <strong className="hero-org-name">TKR College of Engineering &amp; Technology</strong>
+                <span className="hero-org-sub">(Autonomous)</span>
+              </div>
+            </motion.div>
+
+            {/* Event Description */}
+            <motion.p
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.45, delay: 0.34 }}
+              className="hero-description"
+            >
+              Connecting students from all streams with 150+ premier multinational recruiters and emerging enterprises.
+            </motion.p>
 
             {/* Event Highlights Badges with Hover Micro-Interactions */}
             <motion.div
-              initial={{ opacity: 0, y: 16 }}
+              initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.55, delay: 0.44 }}
+              transition={{ duration: 0.45, delay: 0.4 }}
               className="hero-highlights-grid"
             >
               <motion.div
@@ -212,8 +221,8 @@ const HomePage = () => {
                   <span className="hero-live-ping" />
                   <span className="hero-live-dot" />
                 </span>
-                <Calendar size={18} color="#38bdf8" />
-                <span>31 OCTOBER 2026</span>
+                <Calendar size={16} color="#38bdf8" />
+                <span>31 OCT 2026</span>
               </motion.div>
 
               <motion.div
@@ -221,8 +230,8 @@ const HomePage = () => {
                 whileHover={{ y: -3, scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
               >
-                <Building2 size={18} color="#4ade80" />
-                <span>150+ Participating Companies</span>
+                <Building2 size={16} color="#4ade80" />
+                <span>150+ Companies</span>
               </motion.div>
 
               <motion.div
@@ -230,7 +239,7 @@ const HomePage = () => {
                 whileHover={{ y: -3, scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
               >
-                <Users size={18} color="#fcd34d" />
+                <Users size={16} color="#fcd34d" />
                 <span>10,000+ Candidates</span>
               </motion.div>
             </motion.div>
