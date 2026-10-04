@@ -206,7 +206,7 @@ const AdminCompaniesPage = ({ onTabChange }) => {
         </div>
 
         {/* Major Feature Upload Button */}
-        <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+        <div className="admin-companies-top-actions">
           <button
             onClick={handleOpenUploadModal}
             className="btn btn-primary"
@@ -261,16 +261,7 @@ const AdminCompaniesPage = ({ onTabChange }) => {
 
       {/* Filter and Search Bar */}
       <div
-        className="card"
-        style={{
-          marginBottom: '2rem',
-          padding: '1.25rem 1.5rem',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          flexWrap: 'wrap',
-          gap: '1rem',
-        }}
+        className="card admin-search-filter-card"
       >
         <form
           onSubmit={handleSearchSubmit}

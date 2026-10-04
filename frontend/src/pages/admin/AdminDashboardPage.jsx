@@ -61,7 +61,7 @@ const AdminDashboardPage = ({ onTabChange }) => {
           </p>
         </div>
 
-        <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+        <div className="admin-dashboard-quick-actions">
           {onTabChange ? (
             <>
               <button

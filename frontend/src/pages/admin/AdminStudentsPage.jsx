@@ -118,16 +118,7 @@ const AdminStudentsPage = () => {
 
       {/* Search Bar */}
       <div
-        className="card"
-        style={{
-          marginBottom: '2rem',
-          padding: '1.25rem 1.5rem',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          flexWrap: 'wrap',
-          gap: '1rem',
-        }}
+        className="card admin-search-filter-card"
       >
         <form
           onSubmit={handleSearchSubmit}
