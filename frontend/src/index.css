@@ -1364,15 +1364,43 @@ button, input, select, textarea {
 
 .hero-ref-bg {
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  width: 100%;
-  height: 100%;
+  top: -6%;
+  left: -6%;
+  width: 112%;
+  height: 112%;
   object-fit: cover;
   object-position: center 25%;
   z-index: 1;
+  will-change: transform;
+}
+
+.hero-ambient-sunflare {
+  position: absolute;
+  top: 5%;
+  right: 14%;
+  width: clamp(260px, 35vw, 480px);
+  height: clamp(260px, 35vw, 480px);
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(251, 191, 36, 0.28) 0%, rgba(245, 158, 11, 0.12) 42%, transparent 70%);
+  filter: blur(48px);
+  pointer-events: none;
+  z-index: 2;
+  animation: sunflarePulse 9s ease-in-out infinite alternate;
+}
+
+@keyframes sunflarePulse {
+  0% {
+    opacity: 0.55;
+    transform: scale(0.92) translate(0, 0);
+  }
+  50% {
+    opacity: 0.9;
+    transform: scale(1.15) translate(14px, -12px);
+  }
+  100% {
+    opacity: 0.65;
+    transform: scale(1.02) translate(-8px, 6px);
+  }
 }
 
 .hero-ref-overlay {
@@ -1384,10 +1412,10 @@ button, input, select, textarea {
   z-index: 2;
   background: linear-gradient(
     180deg,
-    rgba(6, 17, 33, 0.70) 0%,
-    rgba(8, 24, 48, 0.76) 35%,
-    rgba(5, 14, 28, 0.90) 70%,
-    rgba(4, 10, 20, 0.97) 100%
+    rgba(6, 17, 33, 0.65) 0%,
+    rgba(8, 24, 48, 0.72) 35%,
+    rgba(5, 14, 28, 0.88) 70%,
+    rgba(4, 10, 20, 0.96) 100%
   );
   pointer-events: none;
 }
@@ -1701,15 +1729,56 @@ button, input, select, textarea {
   font-size: 0.86rem;
   font-weight: 800;
   letter-spacing: 0.03em;
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  box-shadow: 0 0 24px rgba(0, 112, 243, 0.55), 0 4px 16px rgba(0, 81, 204, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  box-shadow: 0 0 24px rgba(0, 112, 243, 0.6), 0 4px 16px rgba(0, 81, 204, 0.45);
   text-decoration: none;
-  transition: all 0.25s ease;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: registerBtnPulse 3.5s ease-in-out infinite;
+}
+
+.hero-btn-register::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -70%;
+  width: 50%;
+  height: 200%;
+  background: linear-gradient(
+    60deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.35) 50%,
+    transparent 100%
+  );
+  transform: rotate(25deg);
+  animation: registerShimmer 4.8s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes registerShimmer {
+  0% {
+    left: -70%;
+  }
+  26%, 100% {
+    left: 150%;
+  }
+}
+
+@keyframes registerBtnPulse {
+  0%, 100% {
+    box-shadow: 0 0 22px rgba(0, 112, 243, 0.55), 0 4px 16px rgba(0, 81, 204, 0.45);
+    transform: translateY(0);
+  }
+  50% {
+    box-shadow: 0 0 38px rgba(0, 112, 243, 0.85), 0 6px 22px rgba(0, 81, 204, 0.65), 0 0 14px rgba(56, 189, 248, 0.8);
+    transform: translateY(-1px);
+  }
 }
 
 .hero-btn-register:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 0 32px rgba(0, 112, 243, 0.7), 0 6px 20px rgba(0, 81, 204, 0.55);
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 0 38px rgba(0, 112, 243, 0.85), 0 8px 24px rgba(0, 81, 204, 0.65);
 }
 
 .hero-btn-login {
@@ -1909,7 +1978,7 @@ button, input, select, textarea {
   }
 }
 
-/* Tablet & Mobile ordering (< 1024px) */
+/* Tablet & Mobile helpers (< 1024px) */
 @media (max-width: 1023px) {
   .hero-desktop-only {
     display: none !important;
@@ -1925,34 +1994,6 @@ button, input, select, textarea {
 
   .hero-scroll-indicator.hero-mobile-only {
     display: flex !important;
-  }
-
-  .hero-title-container {
-    order: 1;
-  }
-
-  .hero-organized-section {
-    order: 2;
-  }
-
-  .hero-description-match {
-    order: 3;
-  }
-
-  .hero-stats-row {
-    order: 4;
-  }
-
-  .hero-actions-row {
-    order: 5;
-  }
-
-  .hero-venue-block {
-    order: 6;
-  }
-
-  .hero-scroll-indicator {
-    order: 7;
   }
 }
 

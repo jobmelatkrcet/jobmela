@@ -112,19 +112,31 @@ const HomePage = () => {
     <div>
       {/* Exact Reference Hero Design matching user's mockup */}
       <section className="hero-ref-wrapper">
-        <img
+        <motion.img
           src="/college-campus.webp"
           alt="TKRCET Campus"
           className="hero-ref-bg"
+          initial={{ scale: 1, x: 0, y: 0 }}
+          animate={{
+            scale: [1, 1.07, 1.02, 1],
+            x: [0, -10, 8, 0],
+            y: [0, -6, 4, 0],
+          }}
+          transition={{
+            duration: 22,
+            repeat: Infinity,
+            ease: 'easeInOut',
+          }}
         />
+        <div className="hero-ambient-sunflare" />
         <div className="hero-ref-overlay" />
 
         <div className="hero-ref-container">
-          {/* 1. College Organizer Block (At top on Laptop matching uploaded image) */}
+          {/* 1. College Organizer Block (At top on both Desktop and Mobile) */}
           <motion.div
-            initial={{ opacity: 0, y: -8 }}
+            initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.45, delay: 0.08 }}
+            transition={{ duration: 0.5, delay: 0.08 }}
             className="hero-organized-section"
           >
             <div className="hero-org-college-name">
@@ -137,7 +149,7 @@ const HomePage = () => {
             <div className="hero-org-divider-row">
               <div className="hero-org-line" />
               <span className="hero-org-label hero-desktop-only">ORGANISES</span>
-              <span className="hero-org-label hero-mobile-only">Organized by</span>
+              <span className="hero-org-label hero-mobile-only">ORGANISES</span>
               <div className="hero-org-line" />
             </div>
 
@@ -149,57 +161,50 @@ const HomePage = () => {
             <div className="hero-mobile-affiliations hero-mobile-only">
               Approved by AICTE • Affiliated to JNTUH
             </div>
-
-            {/* Mobile-only Accreditation Pillars (placed below Job Mela & TKR College on mobile) */}
-            <div className="hero-pillars-row hero-pillars-mobile-only">
-              <div className="hero-pillar-col">
-                <div className="hero-pillar-icon-box">
-                  <Award size={16} color="#fbbf24" />
-                </div>
-                <div className="hero-pillar-title">NAAC "A+"</div>
-                <div className="hero-pillar-subtitle">Grade Accredited</div>
-              </div>
-
-              <div className="hero-pillar-divider" />
-
-              <div className="hero-pillar-col">
-                <div className="hero-pillar-icon-box">
-                  <ShieldCheck size={16} color="#fbbf24" />
-                </div>
-                <div className="hero-pillar-title">NBA Tier-1</div>
-                <div className="hero-pillar-subtitle">Accredited</div>
-              </div>
-
-              <div className="hero-pillar-divider" />
-
-              <div className="hero-pillar-col">
-                <div className="hero-pillar-icon-box">
-                  <Landmark size={16} color="#fbbf24" />
-                </div>
-                <div className="hero-pillar-title hero-pillar-title-gold">Autonomous</div>
-                <div className="hero-pillar-subtitle">Campus</div>
-              </div>
-            </div>
           </motion.div>
 
           {/* 2. Grand Event Title Block - MEGA JOB MELA 2026 */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
+            initial={{ opacity: 0, scale: 0.94 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.5, delay: 0.14 }}
+            transition={{ duration: 0.55, delay: 0.14 }}
             className="hero-title-container"
           >
             <div className="hero-mega-label">MEGA</div>
 
-            {/* Specially Highlighted JOB MELA */}
+            {/* Specially Highlighted JOB MELA with living pulsing glow */}
             <div className="hero-jobmela-highlight-wrap">
-              <div className="hero-jobmela-glow-backdrop" />
+              <motion.div
+                className="hero-jobmela-glow-backdrop"
+                animate={{
+                  opacity: [0.65, 0.95, 0.65],
+                  scale: [0.96, 1.08, 0.96],
+                }}
+                transition={{
+                  duration: 4,
+                  repeat: Infinity,
+                  ease: 'easeInOut',
+                }}
+              />
               <h1 className="hero-jobmela-label">JOB MELA</h1>
             </div>
 
             <div className="hero-year-wrapper">
               <span className="hero-year-text">2026</span>
-              <svg className="hero-year-swoosh" viewBox="0 0 200 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <motion.svg
+                className="hero-year-swoosh"
+                viewBox="0 0 200 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                animate={{
+                  filter: [
+                    'drop-shadow(0 2px 8px rgba(56, 189, 248, 0.6))',
+                    'drop-shadow(0 3px 14px rgba(245, 158, 11, 0.75))',
+                    'drop-shadow(0 2px 8px rgba(56, 189, 248, 0.6))',
+                  ],
+                }}
+                transition={{ duration: 3.5, repeat: Infinity, ease: 'easeInOut' }}
+              >
                 <path d="M 10 18 Q 80 4 190 8 Q 110 24 10 18 Z" fill="url(#swooshGradient)" />
                 <defs>
                   <linearGradient id="swooshGradient" x1="0%" y1="0%" x2="100%" y2="0%">
@@ -209,9 +214,40 @@ const HomePage = () => {
                     <stop offset="100%" stopColor="#fbbf24" />
                   </linearGradient>
                 </defs>
-              </svg>
+              </motion.svg>
             </div>
           </motion.div>
+
+          {/* 3. Mobile-only Accreditation Pillars (Strictly placed BELOW Job Mela) */}
+          <div className="hero-pillars-row hero-pillars-mobile-only">
+            <div className="hero-pillar-col">
+              <div className="hero-pillar-icon-box">
+                <Award size={16} color="#fbbf24" />
+              </div>
+              <div className="hero-pillar-title">NAAC "A+"</div>
+              <div className="hero-pillar-subtitle">Grade Accredited</div>
+            </div>
+
+            <div className="hero-pillar-divider" />
+
+            <div className="hero-pillar-col">
+              <div className="hero-pillar-icon-box">
+                <ShieldCheck size={16} color="#fbbf24" />
+              </div>
+              <div className="hero-pillar-title">NBA Tier-1</div>
+              <div className="hero-pillar-subtitle">Accredited</div>
+            </div>
+
+            <div className="hero-pillar-divider" />
+
+            <div className="hero-pillar-col">
+              <div className="hero-pillar-icon-box">
+                <Landmark size={16} color="#fbbf24" />
+              </div>
+              <div className="hero-pillar-title hero-pillar-title-gold">Autonomous</div>
+              <div className="hero-pillar-subtitle">Campus</div>
+            </div>
+          </div>
 
           {/* 3. Description */}
           <motion.p
