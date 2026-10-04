@@ -172,16 +172,21 @@ const AdminDashboardPage = ({ onTabChange }) => {
             {/* Top Companies by Registrations */}
             <div className="card">
               <div
+                className="admin-dashboard-section-header"
                 style={{
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'space-between',
-                  marginBottom: '1.5rem',
+                  flexWrap: 'wrap',
+                  gap: '0.65rem',
+                  marginBottom: '1.25rem',
                 }}
               >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <TrendingUp size={20} color="var(--color-brand-600)" />
-                  <h3 style={{ fontSize: '1.25rem' }}>Top Companies by Student Interest</h3>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', minWidth: 0 }}>
+                  <TrendingUp size={20} color="var(--color-brand-600)" style={{ flexShrink: 0 }} />
+                  <h3 style={{ fontSize: 'clamp(1.05rem, 3.5vw, 1.25rem)', margin: 0, color: 'var(--color-primary-900)' }}>
+                    Top Companies by Student Interest
+                  </h3>
                 </div>
                 {onTabChange ? (
                   <button
@@ -211,44 +216,29 @@ const AdminDashboardPage = ({ onTabChange }) => {
                   No applications recorded yet.
                 </p>
               ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                   {dashboard?.top_companies?.map((comp, idx) => (
                     <div
                       key={comp.id}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        padding: '0.85rem 1rem',
-                        backgroundColor: 'var(--color-bg-main)',
-                        borderRadius: 'var(--radius-md)',
-                        border: '1px solid var(--color-border)',
-                      }}
+                      className="admin-top-comp-row"
                     >
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                        <span
-                          style={{
-                            fontWeight: 700,
-                            color: 'var(--color-text-muted)',
-                            width: 20,
-                            fontSize: '0.9rem',
-                          }}
-                        >
+                      <div className="admin-top-comp-info">
+                        <span className="admin-top-comp-rank">
                           #{idx + 1}
                         </span>
-                        <strong style={{ fontSize: '0.98rem', color: 'var(--color-primary-900)' }}>
+                        <strong className="admin-top-comp-name">
                           {comp.name}
                         </strong>
                       </div>
 
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                      <div className="admin-top-comp-actions">
                         <span className="badge badge-blue">
-                          {comp.applicant_count} Students
+                          {comp.applicant_count} {comp.applicant_count === 1 ? 'Student' : 'Students'}
                         </span>
                         <Link
                           to={`/admin/companies/${comp.id}`}
-                          className="btn btn-outline btn-sm"
-                          style={{ padding: '0.25rem 0.6rem', fontSize: '0.8rem' }}
+                          className="btn btn-outline btn-sm admin-top-comp-btn"
+                          style={{ padding: '0.25rem 0.65rem', fontSize: '0.8rem' }}
                         >
                           View
                         </Link>

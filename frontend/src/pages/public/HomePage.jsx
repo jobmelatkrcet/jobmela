@@ -515,7 +515,7 @@ const HomePage = () => {
 
             {/* Quick search & View Mode Toggle */}
             <div className="companies-filter-controls-wrapper">
-              <form onSubmit={handleSearch} className="companies-search-form" style={{ display: 'flex', gap: '0.5rem', width: '100%', maxWidth: 320 }}>
+              <form onSubmit={handleSearch} className="companies-search-form">
                 <div style={{ position: 'relative', flex: 1 }}>
                   <input
                     type="text"
@@ -705,6 +705,10 @@ const HomePage = () => {
                                 style={{
                                   width: 40,
                                   height: 40,
+                                  minWidth: 40,
+                                  minHeight: 40,
+                                  maxWidth: 40,
+                                  maxHeight: 40,
                                   borderRadius: 'var(--radius-md)',
                                   backgroundColor: cat.bg,
                                   color: cat.color,
@@ -715,6 +719,7 @@ const HomePage = () => {
                                   fontSize: '1.05rem',
                                   border: `1px solid ${cat.border}`,
                                   flexShrink: 0,
+                                  alignSelf: 'flex-start',
                                 }}
                               >
                                 {comp.name.charAt(0).toUpperCase()}
@@ -821,31 +826,19 @@ const HomePage = () => {
             /* FILTERED CATEGORY OR GRID VIEW */
             <>
               {selectedCategory !== 'all' && (
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    marginBottom: '1.25rem',
-                    padding: '0.85rem 1.25rem',
-                    backgroundColor: '#ffffff',
-                    borderRadius: 'var(--radius-md)',
-                    border: '1px solid #e2e8f0',
-                  }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-                    <span style={{ fontWeight: 700, color: 'var(--color-primary-900)' }}>
-                      Filtered Sector: {CATEGORIES.find((c) => c.id === selectedCategory)?.label}
+                <div className="filtered-sector-banner">
+                  <div className="filtered-sector-title-group">
+                    <span className="filtered-sector-label">
+                      Filtered Sector: <strong>{CATEGORIES.find((c) => c.id === selectedCategory)?.label}</strong>
                     </span>
-                    <span className="badge badge-blue">
+                    <span className="badge badge-blue filtered-sector-count">
                       {filteredCompanies.length} Companies
                     </span>
                   </div>
                   <button
                     type="button"
                     onClick={() => setSelectedCategory('all')}
-                    className="btn btn-outline btn-sm"
-                    style={{ fontSize: '0.78rem', padding: '0.25rem 0.55rem' }}
+                    className="btn btn-outline btn-sm filtered-sector-clear-btn"
                   >
                     Clear Filter (Show All)
                   </button>
@@ -864,8 +857,12 @@ const HomePage = () => {
                         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '0.5rem', marginBottom: '0.85rem' }}>
                           <div
                             style={{
-                              width: 42,
-                              height: 42,
+                              width: 40,
+                              height: 40,
+                              minWidth: 40,
+                              minHeight: 40,
+                              maxWidth: 40,
+                              maxHeight: 40,
                               borderRadius: 'var(--radius-md)',
                               backgroundColor: cat.bg,
                               color: cat.color,
@@ -873,8 +870,10 @@ const HomePage = () => {
                               alignItems: 'center',
                               justifyContent: 'center',
                               fontWeight: 800,
-                              fontSize: '1.1rem',
+                              fontSize: '1.05rem',
                               border: `1px solid ${cat.border}`,
+                              flexShrink: 0,
+                              alignSelf: 'flex-start',
                             }}
                           >
                             {comp.name.charAt(0).toUpperCase()}

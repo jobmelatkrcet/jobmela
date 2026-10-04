@@ -360,90 +360,59 @@ const AdminCompaniesPage = ({ onTabChange }) => {
             {companies.map((company) => (
               <div
                 key={company.id}
-                className="card card-hover"
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  padding: '1.35rem 1.75rem',
-                  flexWrap: 'wrap',
-                  gap: '1rem',
-                }}
+                className="card card-hover admin-company-row-card"
               >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
-                  <div
-                    style={{
-                      width: 46,
-                      height: 46,
-                      borderRadius: 'var(--radius-md)',
-                      backgroundColor: 'var(--color-brand-50)',
-                      color: 'var(--color-brand-600)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      fontWeight: 800,
-                      fontSize: '1.15rem',
-                    }}
-                  >
+                <div className="admin-company-main-col">
+                  <div className="admin-company-avatar-box">
                     {company.name.charAt(0).toUpperCase()}
                   </div>
 
-                  <div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap', marginBottom: '0.25rem' }}>
-                      <h3
-                        style={{
-                          fontSize: '1.25rem',
-                          fontWeight: 700,
-                          color: 'var(--color-primary-900)',
-                          margin: 0,
-                        }}
-                      >
+                  <div className="admin-company-content-box">
+                    <div className="admin-company-header-row">
+                      <h3 className="admin-company-title">
                         {company.name}
                       </h3>
                       {hasValue(company.sector) && (
-                        <span
-                          className="badge badge-blue"
-                          style={{ fontSize: '0.72rem', padding: '0.2rem 0.55rem', textTransform: 'none' }}
-                        >
+                        <span className="badge badge-blue admin-company-sector-badge">
                           {company.sector}
                         </span>
                       )}
                     </div>
 
                     {/* Available details only (Requirement 5) */}
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.85rem', marginTop: '0.45rem', fontSize: '0.82rem' }}>
+                    <div className="admin-company-meta-row">
                       {hasValue(company.job_position) && (
-                        <span style={{ color: 'var(--color-text-muted)', display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}>
+                        <span className="admin-company-meta-item">
                           <Briefcase size={13} color="var(--color-brand-600)" />
-                          <strong style={{ color: 'var(--color-primary-800)' }}>{company.job_position}</strong>
+                          <strong>{company.job_position}</strong>
                         </span>
                       )}
                       {hasValue(company.salary_ctc) && (
-                        <span style={{ color: '#059669', display: 'inline-flex', alignItems: 'center', gap: '0.3rem', fontWeight: 700 }}>
+                        <span className="admin-company-meta-item" style={{ color: '#059669', fontWeight: 700 }}>
                           <IndianRupee size={13} color="#059669" />
                           {company.salary_ctc}
                         </span>
                       )}
                       {hasValue(company.location) && (
-                        <span style={{ color: 'var(--color-text-muted)', display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}>
+                        <span className="admin-company-meta-item">
                           <MapPin size={13} color="var(--color-brand-600)" />
                           {company.location}
                         </span>
                       )}
                       {hasValue(company.room_no) && (
-                        <span style={{ color: '#7c3aed', display: 'inline-flex', alignItems: 'center', gap: '0.3rem', fontWeight: 700 }}>
+                        <span className="admin-company-meta-item" style={{ color: '#7c3aed', fontWeight: 700 }}>
                           <DoorClosed size={13} color="#7c3aed" />
                           Room {company.room_no}
                         </span>
                       )}
                       {hasValue(company.openings) && (
-                        <span style={{ color: 'var(--color-text-muted)', display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}>
+                        <span className="admin-company-meta-item">
                           <Users size={13} color="var(--color-brand-600)" />
                           {company.openings} Openings
                         </span>
                       )}
                       {hasValue(company.qualification) && (
-                        <span style={{ color: 'var(--color-text-muted)', display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}>
+                        <span className="admin-company-meta-item">
                           <GraduationCap size={13} color="var(--color-brand-600)" />
                           {company.qualification}
                         </span>
@@ -452,35 +421,22 @@ const AdminCompaniesPage = ({ onTabChange }) => {
                   </div>
                 </div>
 
-                <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
-                  <div style={{ textAlign: 'right' }}>
-                    <div
-                      style={{
-                        fontSize: '1.25rem',
-                        fontWeight: 800,
-                        color: 'var(--color-brand-700)',
-                      }}
-                    >
+                <div className="admin-company-actions-col">
+                  <div className="admin-company-registered-count-box">
+                    <div className="admin-company-count-num">
                       {company.registered_students_count?.toLocaleString() || 0}
                     </div>
-                    <div
-                      style={{
-                        fontSize: '0.78rem',
-                        color: 'var(--color-text-muted)',
-                        fontWeight: 600,
-                        textTransform: 'uppercase',
-                      }}
-                    >
+                    <div className="admin-company-count-label">
                       Students Registered
                     </div>
                   </div>
 
                   <Link
                     to={`/admin/companies/${company.id}`}
-                    className="btn btn-primary"
-                    style={{ gap: '0.5rem', padding: '0.65rem 1.25rem' }}
+                    className="btn btn-primary admin-company-view-btn"
                   >
-                    VIEW STUDENTS <ArrowRight size={16} />
+                    <span>VIEW STUDENTS</span>
+                    <ArrowRight size={16} />
                   </Link>
                 </div>
               </div>

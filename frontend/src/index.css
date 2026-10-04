@@ -3407,6 +3407,313 @@ button, input, select, textarea {
 }
 
 /* =========================================================
+   RESPONSIVE ENHANCEMENTS: ADMIN DASHBOARD, COMPANY CARDS & FILTERS
+   ========================================================= */
+
+/* 1. Admin Dashboard: Top Companies by Student Interest */
+.admin-top-comp-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.85rem 1rem;
+  background-color: var(--color-bg-main);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  gap: 0.85rem;
+  transition: all 0.2s ease;
+}
+
+.admin-top-comp-row:hover {
+  background-color: #ffffff;
+  border-color: var(--color-brand-200);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.admin-top-comp-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.admin-top-comp-rank {
+  font-weight: 700;
+  color: var(--color-text-muted);
+  width: 24px;
+  flex-shrink: 0;
+  font-size: 0.88rem;
+}
+
+.admin-top-comp-name {
+  font-size: 0.95rem;
+  color: var(--color-primary-900);
+  line-height: 1.35;
+  word-break: break-word;
+}
+
+.admin-top-comp-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  flex-shrink: 0;
+}
+
+@media (max-width: 580px) {
+  .admin-top-comp-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.65rem;
+    padding: 0.8rem 0.85rem;
+  }
+
+  .admin-top-comp-info {
+    align-items: flex-start;
+  }
+
+  .admin-top-comp-name {
+    font-size: 0.92rem;
+  }
+
+  .admin-top-comp-actions {
+    justify-content: space-between;
+    width: 100%;
+    padding-top: 0.55rem;
+    border-top: 1px dashed var(--color-border);
+  }
+}
+
+/* 2. Admin Companies Page: Company Row Cards */
+.admin-company-row-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 1.5rem;
+  gap: 1.25rem;
+  margin-bottom: 1rem;
+}
+
+.admin-company-main-col {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.15rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.admin-company-avatar-box {
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
+  max-width: 44px;
+  max-height: 44px;
+  border-radius: var(--radius-md);
+  background-color: var(--color-brand-50);
+  color: var(--color-brand-600);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 1.15rem;
+  flex-shrink: 0;
+  align-self: flex-start;
+}
+
+.admin-company-content-box {
+  flex: 1;
+  min-width: 0;
+}
+
+.admin-company-header-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.3rem;
+}
+
+.admin-company-title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--color-primary-900);
+  margin: 0;
+  word-break: break-word;
+}
+
+.admin-company-sector-badge {
+  font-size: 0.72rem;
+  padding: 0.2rem 0.55rem;
+  text-transform: none;
+}
+
+.admin-company-meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1rem;
+  margin-top: 0.45rem;
+  font-size: 0.82rem;
+}
+
+.admin-company-meta-item {
+  color: var(--color-text-muted);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.admin-company-meta-item strong {
+  color: var(--color-primary-800);
+}
+
+.admin-company-actions-col {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  flex-shrink: 0;
+}
+
+.admin-company-registered-count-box {
+  text-align: right;
+}
+
+.admin-company-count-num {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--color-brand-700);
+  line-height: 1.1;
+}
+
+.admin-company-count-label {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.admin-company-view-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.65rem 1.2rem;
+  font-size: 0.84rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+@media (max-width: 768px) {
+  .admin-company-row-card {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 1rem 0.95rem;
+    gap: 0.85rem;
+  }
+
+  .admin-company-main-col {
+    gap: 0.75rem;
+  }
+
+  .admin-company-avatar-box {
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    min-height: 40px;
+    font-size: 1rem;
+  }
+
+  .admin-company-title {
+    font-size: 1.05rem;
+  }
+
+  .admin-company-meta-row {
+    gap: 0.45rem 0.75rem;
+    margin-top: 0.35rem;
+    font-size: 0.78rem;
+  }
+
+  .admin-company-actions-col {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--color-border);
+    gap: 0.75rem;
+  }
+
+  .admin-company-registered-count-box {
+    text-align: left;
+  }
+
+  .admin-company-count-num {
+    font-size: 1.15rem;
+  }
+
+  .admin-company-count-label {
+    font-size: 0.68rem;
+  }
+
+  .admin-company-view-btn {
+    padding: 0.5rem 0.95rem;
+    font-size: 0.8rem;
+  }
+}
+
+/* 3. Filtered Sector Banner (Home Page & Company Lists) */
+.filtered-sector-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.25rem;
+  padding: 0.85rem 1.25rem;
+  background-color: #ffffff;
+  border-radius: var(--radius-md);
+  border: 1px solid #e2e8f0;
+  gap: 0.75rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+}
+
+.filtered-sector-title-group {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.filtered-sector-label {
+  color: var(--color-primary-900);
+  font-size: 0.95rem;
+}
+
+@media (max-width: 640px) {
+  .filtered-sector-banner {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 0.75rem 0.85rem;
+    gap: 0.65rem;
+  }
+
+  .filtered-sector-title-group {
+    justify-content: space-between;
+    width: 100%;
+  }
+
+  .filtered-sector-label {
+    font-size: 0.88rem;
+    line-height: 1.35;
+  }
+
+  .filtered-sector-clear-btn {
+    width: 100%;
+    justify-content: center;
+    text-align: center;
+    padding: 0.4rem 0.75rem;
+    font-size: 0.82rem;
+  }
+}
+
+/* =========================================================
    PRINT STYLES FOR OFFICIAL QR PLACARDS & PASSES
    ========================================================= */
 
