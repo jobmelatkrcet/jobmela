@@ -260,18 +260,13 @@ const AdminCompaniesPage = ({ onTabChange }) => {
       )}
 
       {/* Filter and Search Bar */}
-      <div
-        className="card admin-search-filter-card"
-      >
-        <form
-          onSubmit={handleSearchSubmit}
-          style={{ display: 'flex', gap: '0.5rem', flex: 1, minWidth: 260, maxWidth: 450 }}
-        >
+      <div className="card admin-search-filter-card">
+        <form onSubmit={handleSearchSubmit} className="admin-search-form">
           <div style={{ position: 'relative', flex: 1 }}>
             <input
               type="text"
               className="form-control"
-              placeholder="Search companies..."
+              placeholder="Search companies by name..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               style={{ paddingLeft: '2.5rem' }}
@@ -305,12 +300,11 @@ const AdminCompaniesPage = ({ onTabChange }) => {
           )}
         </form>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.88rem' }}>
+        <div className="admin-search-filter-controls">
+          <div className="admin-search-sort-box">
             <span style={{ color: 'var(--color-text-muted)' }}>Sort by:</span>
             <select
-              className="form-control"
-              style={{ padding: '0.4rem 0.75rem', fontSize: '0.85rem' }}
+              className="form-control form-control-sm"
               value={orderBy}
               onChange={(e) => setOrderBy(e.target.value)}
             >
@@ -320,8 +314,8 @@ const AdminCompaniesPage = ({ onTabChange }) => {
             </select>
           </div>
 
-          <div style={{ fontSize: '0.9rem', color: 'var(--color-text-muted)' }}>
-            Total: <strong style={{ color: 'var(--color-primary-900)' }}>{totalCompanies}</strong>
+          <div className="admin-search-total-badge">
+            Total: <strong>{totalCompanies}</strong>
           </div>
         </div>
       </div>
@@ -370,42 +364,44 @@ const AdminCompaniesPage = ({ onTabChange }) => {
                       )}
                     </div>
 
-                    {/* Available details only (Requirement 5) */}
-                    <div className="admin-company-meta-row">
-                      {hasValue(company.job_position) && (
-                        <span className="admin-company-meta-item">
-                          <Briefcase size={13} color="var(--color-brand-600)" />
-                          <strong>{company.job_position}</strong>
-                        </span>
-                      )}
+                    {/* Role line */}
+                    {hasValue(company.job_position) && (
+                      <div className="admin-company-role-line">
+                        <Briefcase size={13} color="var(--color-brand-600)" />
+                        <span><strong>Role:</strong> {company.job_position}</span>
+                      </div>
+                    )}
+
+                    {/* Specs chips grid */}
+                    <div className="admin-company-specs-grid">
                       {hasValue(company.salary_ctc) && (
-                        <span className="admin-company-meta-item" style={{ color: '#059669', fontWeight: 700 }}>
-                          <IndianRupee size={13} color="#059669" />
-                          {company.salary_ctc}
-                        </span>
-                      )}
-                      {hasValue(company.location) && (
-                        <span className="admin-company-meta-item">
-                          <MapPin size={13} color="var(--color-brand-600)" />
-                          {company.location}
+                        <span className="admin-company-spec-pill pill-salary">
+                          <IndianRupee size={12} />
+                          <span>{company.salary_ctc}</span>
                         </span>
                       )}
                       {hasValue(company.room_no) && (
-                        <span className="admin-company-meta-item" style={{ color: '#7c3aed', fontWeight: 700 }}>
-                          <DoorClosed size={13} color="#7c3aed" />
-                          Room {company.room_no}
+                        <span className="admin-company-spec-pill pill-room">
+                          <DoorClosed size={12} />
+                          <span>Room {company.room_no}</span>
                         </span>
                       )}
                       {hasValue(company.openings) && (
-                        <span className="admin-company-meta-item">
-                          <Users size={13} color="var(--color-brand-600)" />
-                          {company.openings} Openings
+                        <span className="admin-company-spec-pill pill-openings">
+                          <Users size={12} />
+                          <span>{company.openings} Openings</span>
                         </span>
                       )}
                       {hasValue(company.qualification) && (
-                        <span className="admin-company-meta-item">
-                          <GraduationCap size={13} color="var(--color-brand-600)" />
-                          {company.qualification}
+                        <span className="admin-company-spec-pill pill-qual">
+                          <GraduationCap size={12} />
+                          <span>{company.qualification}</span>
+                        </span>
+                      )}
+                      {hasValue(company.location) && (
+                        <span className="admin-company-spec-pill pill-location">
+                          <MapPin size={12} />
+                          <span>{company.location}</span>
                         </span>
                       )}
                     </div>
@@ -413,21 +409,17 @@ const AdminCompaniesPage = ({ onTabChange }) => {
                 </div>
 
                 <div className="admin-company-actions-col">
-                  <div className="admin-company-registered-count-box">
-                    <div className="admin-company-count-num">
-                      {company.registered_students_count?.toLocaleString() || 0}
-                    </div>
-                    <div className="admin-company-count-label">
-                      Students Registered
-                    </div>
+                  <div className="admin-company-registered-chip">
+                    <Users size={13} />
+                    <span><strong>{company.registered_students_count || 0}</strong> Registered</span>
                   </div>
 
                   <Link
                     to={`/admin/companies/${company.id}`}
                     className="btn btn-primary admin-company-view-btn"
                   >
-                    <span>VIEW STUDENTS</span>
-                    <ArrowRight size={16} />
+                    <span>View Students</span>
+                    <ArrowRight size={14} />
                   </Link>
                 </div>
               </div>

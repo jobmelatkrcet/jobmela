@@ -279,7 +279,7 @@ const AdminRoomAllocationPage = ({ onTabChange }) => {
           </p>
         </div>
 
-        <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+        <div className="admin-room-top-actions">
           <button
             onClick={handleDownloadAllPlacardsPDF}
             disabled={exportingPdf || !summaryData?.allocated_companies_count}
@@ -390,18 +390,7 @@ const AdminRoomAllocationPage = ({ onTabChange }) => {
 
       {/* Main Table Container */}
       <div className="card" style={{ padding: '1.5rem', marginBottom: '3rem' }}>
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            flexWrap: 'wrap',
-            gap: '1rem',
-            marginBottom: '1.25rem',
-            paddingBottom: '1rem',
-            borderBottom: '1px solid var(--color-border)',
-          }}
-        >
+        <div className="admin-room-assignments-header">
           <div>
             <h3 style={{ fontSize: '1.15rem', margin: '0 0 0.25rem' }}>
               Current Room Assignments
@@ -411,8 +400,8 @@ const AdminRoomAllocationPage = ({ onTabChange }) => {
             </p>
           </div>
 
-          <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
-            <div style={{ position: 'relative', width: 260 }}>
+          <div className="admin-room-search-controls">
+            <div className="admin-room-search-input-wrap">
               <input
                 type="text"
                 className="form-control form-control-sm"
@@ -432,30 +421,23 @@ const AdminRoomAllocationPage = ({ onTabChange }) => {
                 }}
               />
             </div>
-            <button
-              onClick={handleDownloadAllPlacardsPDF}
-              disabled={exportingPdf || !summaryData?.allocated_companies_count}
-              className="btn btn-outline btn-sm"
-              style={{
-                gap: '0.4rem',
-                color: '#047857',
-                borderColor: '#a7f3d0',
-                backgroundColor: '#ecfdf5',
-                fontWeight: 600,
-                fontSize: '0.82rem',
-              }}
-              title="Download all allocated room QR placards as a single PDF document"
-            >
-              <FileDown size={14} /> Download All QRs (PDF)
-            </button>
-            <button
-              onClick={loadSummary}
-              className="btn btn-outline btn-sm"
-              title="Refresh"
-              style={{ padding: '0.45rem 0.65rem' }}
-            >
-              <RefreshCw size={14} />
-            </button>
+            <div className="admin-room-search-buttons">
+              <button
+                onClick={handleDownloadAllPlacardsPDF}
+                disabled={exportingPdf || !summaryData?.allocated_companies_count}
+                className="btn btn-outline btn-sm admin-room-download-btn"
+                title="Download all allocated room QR placards as a single PDF document"
+              >
+                <FileDown size={14} /> Download All QRs (PDF)
+              </button>
+              <button
+                onClick={loadSummary}
+                className="btn btn-outline btn-sm admin-room-refresh-btn"
+                title="Refresh"
+              >
+                <RefreshCw size={14} />
+              </button>
+            </div>
           </div>
         </div>
 
