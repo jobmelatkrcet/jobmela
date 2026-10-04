@@ -204,33 +204,26 @@ const Navbar = () => {
         <div className="mobile-drawer">
           {!isAuthenticated ? (
             <div className="mobile-links">
-              {/* Highlighted Registration Card inside 3-Dots Menu */}
-              <div className="mobile-drawer-cta-card">
-                <div className="mobile-drawer-cta-badge">
-                  <Sparkles size={12} color="#fde047" /> Mega Job Mela 2026
-                </div>
-                <div className="mobile-drawer-cta-title">Job Mela Registration</div>
-                <p className="mobile-drawer-cta-desc">
-                  Register for 150+ multinational recruiters &amp; on-campus interviews on Oct 31, 2026.
-                </p>
-                <div className="mobile-drawer-btn-stack">
-                  <Link
-                    to="/register"
-                    onClick={closeMenu}
-                    className="btn btn-primary mobile-drawer-reg-btn"
-                  >
-                    <UserPlus size={17} />
-                    <span>Register for Job Mela</span>
-                  </Link>
-                  <Link
-                    to="/login"
-                    onClick={closeMenu}
-                    className="btn btn-outline mobile-drawer-login-btn"
-                  >
-                    <LogIn size={16} />
-                    <span>Student Login</span>
-                  </Link>
-                </div>
+              {/* Clean, compact quick actions */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem', marginBottom: '0.75rem' }}>
+                <Link
+                  to="/register"
+                  onClick={closeMenu}
+                  className="btn btn-primary btn-sm"
+                  style={{ justifyContent: 'center', gap: '0.4rem', fontWeight: 700 }}
+                >
+                  <UserPlus size={15} />
+                  <span>Register</span>
+                </Link>
+                <Link
+                  to="/login"
+                  onClick={closeMenu}
+                  className="btn btn-outline btn-sm"
+                  style={{ justifyContent: 'center', gap: '0.4rem', fontWeight: 700 }}
+                >
+                  <LogIn size={15} />
+                  <span>Student Login</span>
+                </Link>
               </div>
 
               <div className="mobile-drawer-divider" />

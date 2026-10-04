@@ -174,6 +174,42 @@ const HomePage = () => {
             <div className="hero-institution-motto">
               “Indian in Character, International in Excellence”
             </div>
+
+            {/* Mobile Affiliations (Image 2 replica) */}
+            <div className="hero-mobile-affiliations">
+              Approved by AICTE • Affiliated to JNTUH
+            </div>
+
+            {/* Mobile-only Accreditation Pillars (matching Image 2, placed below Job Mela & TKR College) */}
+            <div className="hero-pillars-row hero-pillars-mobile-only">
+              <div className="hero-pillar-col">
+                <div className="hero-pillar-icon-box">
+                  <Award size={16} color="#fbbf24" />
+                </div>
+                <div className="hero-pillar-title">NAAC "A+"</div>
+                <div className="hero-pillar-subtitle">Grade Accredited</div>
+              </div>
+
+              <div className="hero-pillar-divider" />
+
+              <div className="hero-pillar-col">
+                <div className="hero-pillar-icon-box">
+                  <ShieldCheck size={16} color="#fbbf24" />
+                </div>
+                <div className="hero-pillar-title">NBA Tier-1</div>
+                <div className="hero-pillar-subtitle">Accredited</div>
+              </div>
+
+              <div className="hero-pillar-divider" />
+
+              <div className="hero-pillar-col">
+                <div className="hero-pillar-icon-box">
+                  <Landmark size={16} color="#fbbf24" />
+                </div>
+                <div className="hero-pillar-title hero-pillar-title-gold">Autonomous</div>
+                <div className="hero-pillar-subtitle">Campus</div>
+              </div>
+            </div>
           </motion.div>
 
           {/* 5. Description */}
