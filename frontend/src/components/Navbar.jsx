@@ -22,6 +22,8 @@ import {
   ChevronDown,
   ClipboardList,
   DoorClosed,
+  CheckCircle,
+  Calendar,
 } from 'lucide-react';
 
 const Navbar = () => {
