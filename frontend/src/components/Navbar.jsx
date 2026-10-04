@@ -78,7 +78,8 @@ const Navbar = () => {
             />
             <div className="brand-text-block">
               <div className="college-name">
-                TKR College of Engineering &amp; Technology
+                <span className="college-name-line1">TKR College of</span>
+                <span className="college-name-line2">Engineering &amp; Technology</span>
               </div>
               <div className="college-subline">
                 <span className="college-autonomous">(Autonomous)</span>
@@ -185,14 +186,14 @@ const Navbar = () => {
               </div>
             )}
 
-            {/* Mobile 3-Dots Menu Toggle */}
+            {/* Mobile Circular Menu Toggle */}
             <button
               className="mobile-menu-toggle"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              aria-label="Toggle menu and registration"
+              aria-label="Toggle navigation and registration"
               title="Menu & Registration"
             >
-              {mobileMenuOpen ? <X size={24} /> : <MoreVertical size={24} />}
+              {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
             </button>
           </div>
         </div>
