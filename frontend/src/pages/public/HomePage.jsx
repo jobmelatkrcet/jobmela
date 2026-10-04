@@ -208,37 +208,6 @@ const HomePage = () => {
             </div>
           </motion.div>
 
-          {/* 3. Mobile-only Accreditation Pillars (Strictly placed BELOW Job Mela) */}
-          <div className="hero-pillars-row hero-mobile-only">
-            <div className="hero-pillar-col">
-              <div className="hero-pillar-icon-box">
-                <Award size={16} color="#fbbf24" />
-              </div>
-              <div className="hero-pillar-title">NAAC "A+"</div>
-              <div className="hero-pillar-subtitle">Grade Accredited</div>
-            </div>
-
-            <div className="hero-pillar-divider" />
-
-            <div className="hero-pillar-col">
-              <div className="hero-pillar-icon-box">
-                <ShieldCheck size={16} color="#fbbf24" />
-              </div>
-              <div className="hero-pillar-title">NBA Tier-1</div>
-              <div className="hero-pillar-subtitle">Accredited</div>
-            </div>
-
-            <div className="hero-pillar-divider" />
-
-            <div className="hero-pillar-col">
-              <div className="hero-pillar-icon-box">
-                <Landmark size={16} color="#fbbf24" />
-              </div>
-              <div className="hero-pillar-title hero-pillar-title-gold">Autonomous</div>
-              <div className="hero-pillar-subtitle">Campus</div>
-            </div>
-          </div>
-
           {/* 3. Description */}
           <motion.p
             initial={{ opacity: 0, y: 6 }}
