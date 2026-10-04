@@ -348,6 +348,7 @@ const StudentRegisterPage = () => {
                   <option value="B.Com / BBA">B.Com / BBA</option>
                   <option value="BA / Other Degree">BA / Other Degree</option>
                   <option value="Polytechnic Diploma">Polytechnic Diploma</option>
+                  <option value="ITI (All Trades / Vocation)">ITI (All Trades / Vocation)</option>
                   <option value="Intermediate / 12th">Intermediate / 12th</option>
                   <option value="10th Class (SSC)">10th Class (SSC)</option>
                   <option value="Post Graduate (MCA / MBA / M.Tech)">Post Graduate (MCA / MBA / M.Tech)</option>

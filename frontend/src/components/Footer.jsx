@@ -113,46 +113,35 @@ const Footer = () => {
             >
               Placement Coordinators
             </h4>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem', fontSize: '0.88rem' }}>
-              <div
-                style={{
-                  backgroundColor: '#0f274e',
-                  padding: '0.75rem 1rem',
-                  borderRadius: 'var(--radius-md)',
-                  border: '1px solid #1e3a8a',
-                }}
-              >
-                <div style={{ color: '#f1f5f9', fontWeight: 700 }}>Srinivas Reddy</div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.2rem' }}>
-                  <Phone size={14} color="#4ade80" />
-                  <a
-                    href="tel:9949139414"
-                    style={{ color: '#38bdf8', fontWeight: 600, textDecoration: 'none' }}
-                  >
-                    9949139414
-                  </a>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem', fontSize: '0.86rem' }}>
+              {[
+                { name: 'Srinivas Reddy', phone: '9949139414' },
+                { name: 'Ashwini Reddy', phone: '7075450757' },
+                { name: 'V. Pranthi', phone: '8121449141' },
+                { name: 'Gnanesh', phone: '9052452403' },
+                { name: 'BalaKrishna Reddy', phone: '9966559298' },
+              ].map((coord) => (
+                <div
+                  key={coord.phone}
+                  style={{
+                    backgroundColor: '#0f274e',
+                    padding: '0.6rem 0.85rem',
+                    borderRadius: 'var(--radius-md)',
+                    border: '1px solid #1e3a8a',
+                  }}
+                >
+                  <div style={{ color: '#f1f5f9', fontWeight: 700, fontSize: '0.88rem' }}>{coord.name}</div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', marginTop: '0.2rem' }}>
+                    <Phone size={13} color="#4ade80" />
+                    <a
+                      href={`tel:${coord.phone}`}
+                      style={{ color: '#38bdf8', fontWeight: 600, textDecoration: 'none', fontSize: '0.84rem' }}
+                    >
+                      {coord.phone}
+                    </a>
+                  </div>
                 </div>
-              </div>
-
-              <div
-                style={{
-                  backgroundColor: '#0f274e',
-                  padding: '0.75rem 1rem',
-                  borderRadius: 'var(--radius-md)',
-                  border: '1px solid #1e3a8a',
-                }}
-              >
-                <div style={{ color: '#f1f5f9', fontWeight: 700 }}>Ashwini Reddy</div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.2rem' }}>
-                  <Phone size={14} color="#4ade80" />
-                  <a
-                    href="tel:7075450757"
-                    style={{ color: '#38bdf8', fontWeight: 600, textDecoration: 'none' }}
-                  >
-                    7075450757
-                  </a>
-                </div>
-              </div>
+              ))}
             </div>
           </div>
 

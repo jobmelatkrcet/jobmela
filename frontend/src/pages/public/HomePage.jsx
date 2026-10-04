@@ -25,8 +25,8 @@ import {
   DoorClosed,
   Grid,
   ListFilter,
-  Sparkles,
   ChevronDown,
+  X,
 } from 'lucide-react';
 import { companyService } from '../../services/companyService';
 import { useAuth } from '../../context/AuthContext';
@@ -405,7 +405,7 @@ const HomePage = () => {
             </p>
           </motion.div>
 
-          <div className="grid-4col-responsive">
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 310px), 1fr))', gap: '1.5rem' }}>
             {[
               {
                 title: 'B.Tech / B.E.',
@@ -416,24 +416,38 @@ const HomePage = () => {
               },
               {
                 title: 'Degree Graduates',
-                desc: 'B.Sc, B.Com, BBA, BCA, BA and equivalent degree disciplines',
+                desc: 'B.Sc, B.Com, BBA, BCA, BA, MCA, MBA & other degree disciplines',
                 color: '#059669',
                 bg: '#ecfdf5',
                 border: '#a7f3d0',
               },
               {
                 title: 'Diploma Holders',
-                desc: 'All Polytechnic engineering and technical diploma certifications',
+                desc: 'All Polytechnic engineering, technical & vocational diploma certifications',
                 color: '#d97706',
                 bg: '#fef3c7',
                 border: '#fde68a',
               },
               {
+                title: 'ITI (All Trades)',
+                desc: 'Fitter, Electrician, Machinist, Welder, Wireman & all trade vocations',
+                color: '#4f46e5',
+                bg: '#eef2ff',
+                border: '#c7d2fe',
+              },
+              {
                 title: '10th & Intermediate',
-                desc: 'Eligible candidates seeking early career openings and entry-level positions',
+                desc: 'SSC / 10th Pass, Intermediate (MPC, BiPC, CEC, HEC) & Equivalent',
                 color: '#7c3aed',
                 bg: '#f5f3ff',
                 border: '#ddd6fe',
+              },
+              {
+                title: 'All Other Sectors & General',
+                desc: 'Open to all graduates, non-engineering & career aspirants across all sectors',
+                color: '#0284c7',
+                bg: '#f0f9ff',
+                border: '#bae6fd',
               },
             ].map((item, idx) => (
               <motion.div
@@ -441,7 +455,7 @@ const HomePage = () => {
                 initial={{ opacity: 0, y: 22 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ duration: 0.45, delay: idx * 0.1 }}
+                transition={{ duration: 0.45, delay: idx * 0.08 }}
                 whileHover={{ y: -6, boxShadow: '0 12px 24px -4px rgba(0, 0, 0, 0.08)' }}
                 className="card"
                 style={{
@@ -515,29 +529,31 @@ const HomePage = () => {
 
             {/* Quick search & View Mode Toggle */}
             <div className="companies-filter-controls-wrapper">
-              <form onSubmit={handleSearch} className="companies-search-form">
-                <div style={{ position: 'relative', flex: 1 }}>
-                  <input
-                    type="text"
-                    className="form-control"
-                    placeholder="Search company or role..."
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    style={{ paddingLeft: '2.5rem' }}
-                  />
-                  <Search
-                    size={18}
-                    style={{
-                      position: 'absolute',
-                      left: 12,
-                      top: '50%',
-                      transform: 'translateY(-50%)',
-                      color: 'var(--color-text-light)',
+              <form onSubmit={handleSearch} className="home-search-capsule">
+                <Search size={17} className="home-search-capsule-icon" />
+                <input
+                  type="text"
+                  className="home-search-capsule-input"
+                  placeholder="Search company or role..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                />
+                {search && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSearch('');
+                      fetchFeaturedCompanies('');
                     }}
-                  />
-                </div>
-                <button type="submit" className="btn btn-primary btn-sm">
-                  Search
+                    className="home-search-capsule-clear"
+                    title="Clear search"
+                  >
+                    <X size={14} />
+                  </button>
+                )}
+                <button type="submit" className="home-search-capsule-submit" title="Search">
+                  <Search size={14} />
+                  <span>Search</span>
                 </button>
               </form>
 
@@ -1083,66 +1099,46 @@ const HomePage = () => {
                 feel free to reach out to our placement team.
               </p>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-                <div
-                  style={{
-                    backgroundColor: '#1e293b',
-                    padding: '1.15rem 1.35rem',
-                    borderRadius: 'var(--radius-md)',
-                    border: '1px solid #334155',
-                  }}
-                >
-                  <div style={{ color: '#94a3b8', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                    Placement Coordinator
-                  </div>
-                  <div style={{ fontSize: '1.15rem', fontWeight: 700, color: '#f8fafc', marginTop: '0.2rem' }}>
-                    Srinivas Reddy
-                  </div>
-                  <a
-                    href="tel:9949139414"
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 250px), 1fr))', gap: '0.85rem' }}>
+                {[
+                  { name: 'Srinivas Reddy', phone: '9949139414' },
+                  { name: 'Ashwini Reddy', phone: '7075450757' },
+                  { name: 'V. Pranthi', phone: '8121449141' },
+                  { name: 'Gnanesh', phone: '9052452403' },
+                  { name: 'BalaKrishna Reddy', phone: '9966559298' },
+                ].map((coord) => (
+                  <div
+                    key={coord.phone}
                     style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '0.5rem',
-                      marginTop: '0.5rem',
-                      color: '#38bdf8',
-                      fontWeight: 600,
-                      fontSize: '0.95rem',
+                      backgroundColor: '#1e293b',
+                      padding: '1rem 1.15rem',
+                      borderRadius: 'var(--radius-md)',
+                      border: '1px solid #334155',
                     }}
                   >
-                    <Phone size={16} /> 9949139414
-                  </a>
-                </div>
-
-                <div
-                  style={{
-                    backgroundColor: '#1e293b',
-                    padding: '1.15rem 1.35rem',
-                    borderRadius: 'var(--radius-md)',
-                    border: '1px solid #334155',
-                  }}
-                >
-                  <div style={{ color: '#94a3b8', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                    Placement Coordinator
+                    <div style={{ color: '#94a3b8', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                      Placement Coordinator
+                    </div>
+                    <div style={{ fontSize: '1.05rem', fontWeight: 700, color: '#f8fafc', marginTop: '0.2rem' }}>
+                      {coord.name}
+                    </div>
+                    <a
+                      href={`tel:${coord.phone}`}
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '0.45rem',
+                        marginTop: '0.45rem',
+                        color: '#38bdf8',
+                        fontWeight: 600,
+                        fontSize: '0.92rem',
+                        textDecoration: 'none',
+                      }}
+                    >
+                      <Phone size={14} /> {coord.phone}
+                    </a>
                   </div>
-                  <div style={{ fontSize: '1.15rem', fontWeight: 700, color: '#f8fafc', marginTop: '0.2rem' }}>
-                    Ashwini Reddy
-                  </div>
-                  <a
-                    href="tel:7075450757"
-                    style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '0.5rem',
-                      marginTop: '0.5rem',
-                      color: '#38bdf8',
-                      fontWeight: 600,
-                      fontSize: '0.95rem',
-                    }}
-                  >
-                    <Phone size={16} /> 7075450757
-                  </a>
-                </div>
+                ))}
               </div>
             </div>
           </div>
