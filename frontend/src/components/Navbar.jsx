@@ -48,20 +48,28 @@ const Navbar = () => {
       <div className="top-utility-bar">
         <div className="app-container utility-container">
           <div className="utility-left">
-            <span className="accreditation-pill">
-              <Award size={13} /> NAAC "A+" Grade
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', color: '#fbbf24', fontWeight: 600 }}>
+              <Award size={13} color="#fbbf24" /> NAAC "A+" Grade
             </span>
-            <span className="utility-separator">•</span>
-            <span>NBA Accredited</span>
-            <span className="utility-separator">•</span>
-            <span>AICTE Approved</span>
-            <span className="utility-separator">•</span>
+            <span className="utility-separator">|</span>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
+              <ShieldCheck size={13} color="#fbbf24" /> NBA Accredited
+            </span>
+            <span className="utility-separator">|</span>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
+              <CheckCircle size={13} color="#38bdf8" /> AICTE Approved
+            </span>
+            <span className="utility-separator">|</span>
             <span>Affiliated to JNTUH (Autonomous)</span>
           </div>
           <div className="utility-right">
-            <span>📅 Event Date: <strong>31 October 2026</strong></span>
-            <span className="utility-separator">•</span>
-            <span>Placement Helpline: <a href="tel:9949139414">9949139414</a> / <a href="tel:7075450757">7075450757</a></span>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
+              <Calendar size={13} color="#f59e0b" /> Event Date: <strong>31 October 2026</strong>
+            </span>
+            <span className="utility-separator">|</span>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
+              <Phone size={13} color="#38bdf8" /> Placement Helpline: <a href="tel:9949139414">9949139414</a> / <a href="tel:7075450757">7075450757</a>
+            </span>
           </div>
         </div>
       </div>

@@ -120,49 +120,13 @@ const HomePage = () => {
         <div className="hero-ref-overlay" />
 
         <div className="hero-ref-container">
-          {/* 1. Grand Event Title Block - HIGHLIGHT ONLY JOB MELA */}
+          {/* 1. College Organizer Block (At top on Laptop matching uploaded image) */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.5, delay: 0.08 }}
-            className="hero-title-container"
-          >
-            <div className="hero-mega-label">MEGA</div>
-
-            {/* Specially Highlighted JOB MELA */}
-            <div className="hero-jobmela-highlight-wrap">
-              <div className="hero-jobmela-glow-backdrop" />
-              <h1 className="hero-jobmela-label">JOB MELA</h1>
-            </div>
-
-            <div className="hero-year-wrapper">
-              <span className="hero-year-text">2026</span>
-              <svg className="hero-year-swoosh" viewBox="0 0 200 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M 10 18 Q 80 4 190 8 Q 110 24 10 18 Z" fill="url(#swooshGradient)" />
-                <defs>
-                  <linearGradient id="swooshGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                    <stop offset="0%" stopColor="#38bdf8" />
-                    <stop offset="45%" stopColor="#0284c7" />
-                    <stop offset="80%" stopColor="#f59e0b" />
-                    <stop offset="100%" stopColor="#fbbf24" />
-                  </linearGradient>
-                </defs>
-              </svg>
-            </div>
-          </motion.div>
-
-          {/* 2. Organized By Section with College Motto */}
-          <motion.div
-            initial={{ opacity: 0, y: 6 }}
+            initial={{ opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.45, delay: 0.16 }}
+            transition={{ duration: 0.45, delay: 0.08 }}
             className="hero-organized-section"
           >
-            <div className="hero-org-divider-row">
-              <div className="hero-org-line" />
-              <span className="hero-org-label">Organized by</span>
-              <div className="hero-org-line" />
-            </div>
             <div className="hero-org-college-name">
               TKR College of Engineering &amp; Technology
             </div>
@@ -170,17 +134,23 @@ const HomePage = () => {
               (Autonomous)
             </div>
 
-            {/* College Motto */}
-            <div className="hero-institution-motto">
+            <div className="hero-org-divider-row">
+              <div className="hero-org-line" />
+              <span className="hero-org-label hero-desktop-only">ORGANISES</span>
+              <span className="hero-org-label hero-mobile-only">Organized by</span>
+              <div className="hero-org-line" />
+            </div>
+
+            {/* Mobile-only Motto & Affiliations */}
+            <div className="hero-institution-motto hero-mobile-only">
               “Indian in Character, International in Excellence”
             </div>
 
-            {/* Mobile Affiliations (Image 2 replica) */}
-            <div className="hero-mobile-affiliations">
+            <div className="hero-mobile-affiliations hero-mobile-only">
               Approved by AICTE • Affiliated to JNTUH
             </div>
 
-            {/* Mobile-only Accreditation Pillars (matching Image 2, placed below Job Mela & TKR College) */}
+            {/* Mobile-only Accreditation Pillars (placed below Job Mela & TKR College on mobile) */}
             <div className="hero-pillars-row hero-pillars-mobile-only">
               <div className="hero-pillar-col">
                 <div className="hero-pillar-icon-box">
@@ -212,21 +182,52 @@ const HomePage = () => {
             </div>
           </motion.div>
 
-          {/* 5. Description */}
+          {/* 2. Grand Event Title Block - MEGA JOB MELA 2026 */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5, delay: 0.14 }}
+            className="hero-title-container"
+          >
+            <div className="hero-mega-label">MEGA</div>
+
+            {/* Specially Highlighted JOB MELA */}
+            <div className="hero-jobmela-highlight-wrap">
+              <div className="hero-jobmela-glow-backdrop" />
+              <h1 className="hero-jobmela-label">JOB MELA</h1>
+            </div>
+
+            <div className="hero-year-wrapper">
+              <span className="hero-year-text">2026</span>
+              <svg className="hero-year-swoosh" viewBox="0 0 200 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M 10 18 Q 80 4 190 8 Q 110 24 10 18 Z" fill="url(#swooshGradient)" />
+                <defs>
+                  <linearGradient id="swooshGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stopColor="#38bdf8" />
+                    <stop offset="45%" stopColor="#0284c7" />
+                    <stop offset="80%" stopColor="#f59e0b" />
+                    <stop offset="100%" stopColor="#fbbf24" />
+                  </linearGradient>
+                </defs>
+              </svg>
+            </div>
+          </motion.div>
+
+          {/* 3. Description */}
           <motion.p
             initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.45, delay: 0.32 }}
+            transition={{ duration: 0.45, delay: 0.22 }}
             className="hero-description-match"
           >
             Connecting students from all streams with 150+ premier multinational recruiters and emerging enterprises.
           </motion.p>
 
-          {/* 6. Event Highlights (Wide Horizontal Stats) */}
+          {/* 4. Event Highlights (Wide Horizontal Stats) */}
           <motion.div
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.45, delay: 0.38 }}
+            transition={{ duration: 0.45, delay: 0.28 }}
             className="hero-stats-row"
           >
             <div className="hero-stat-col">
@@ -258,11 +259,11 @@ const HomePage = () => {
             </div>
           </motion.div>
 
-          {/* 7. Action Buttons (Side by Side Centered) */}
+          {/* 5. Action Buttons (Side by Side Centered) */}
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.44 }}
+            transition={{ duration: 0.5, delay: 0.34 }}
             className="hero-actions-row"
           >
             {!isAuthenticated ? (
@@ -300,12 +301,12 @@ const HomePage = () => {
             )}
           </motion.div>
 
-          {/* 8. Venue Card */}
+          {/* 6. Venue Card - Mobile Only */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ duration: 0.55, delay: 0.5 }}
-            className="hero-venue-block"
+            transition={{ duration: 0.55, delay: 0.4 }}
+            className="hero-venue-block hero-mobile-only"
           >
             <div className="hero-venue-pin-circle">
               <MapPin size={17} color="#38bdf8" />
@@ -318,9 +319,9 @@ const HomePage = () => {
             </div>
           </motion.div>
 
-          {/* Downward Chevron Scroll Indicator */}
+          {/* Downward Chevron Scroll Indicator - Mobile Only */}
           <motion.div
-            className="hero-scroll-indicator"
+            className="hero-scroll-indicator hero-mobile-only"
             animate={{ y: [0, 5, 0] }}
             transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
             onClick={() => {
