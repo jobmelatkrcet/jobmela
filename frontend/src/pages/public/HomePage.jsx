@@ -132,12 +132,12 @@ const HomePage = () => {
         <div className="hero-ref-overlay" />
 
         <div className="hero-ref-container">
-          {/* 1. Desktop-Only College Organizer Block (Exact uploaded laptop layout) */}
+          {/* 1. College Organizer Block (At top on BOTH Laptop and Mobile) */}
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.08 }}
-            className="hero-organized-section hero-desktop-only"
+            className="hero-organized-section"
           >
             <div className="hero-org-college-name">
               TKR College of Engineering &amp; Technology
@@ -153,52 +153,7 @@ const HomePage = () => {
             </div>
           </motion.div>
 
-          {/* 2. Mobile-Only Top Academic Credentials Banner (Exact Reference Image A replica) */}
-          <motion.div
-            initial={{ opacity: 0, y: -8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.08 }}
-            className="hero-mobile-top-banner hero-mobile-only"
-          >
-            <div className="hero-pillars-row">
-              <div className="hero-pillar-col">
-                <div className="hero-pillar-icon-box">
-                  <Award size={18} color="#fbbf24" />
-                </div>
-                <div className="hero-pillar-title">NAAC "A+"</div>
-                <div className="hero-pillar-subtitle">Grade Accredited</div>
-              </div>
-
-              <div className="hero-pillar-divider" />
-
-              <div className="hero-pillar-col">
-                <div className="hero-pillar-icon-box">
-                  <ShieldCheck size={18} color="#fbbf24" />
-                </div>
-                <div className="hero-pillar-title">NBA Tier-1</div>
-                <div className="hero-pillar-subtitle">Accredited</div>
-              </div>
-
-              <div className="hero-pillar-divider" />
-
-              <div className="hero-pillar-col">
-                <div className="hero-pillar-icon-box">
-                  <Landmark size={18} color="#fbbf24" />
-                </div>
-                <div className="hero-pillar-title hero-pillar-title-gold">Autonomous</div>
-                <div className="hero-pillar-subtitle">Campus</div>
-              </div>
-            </div>
-
-            <div className="hero-mobile-motto-row">
-              “Indian in Character, International in Excellence”
-            </div>
-            <div className="hero-mobile-affil-subline">
-              Approved by AICTE • Affiliated to JNTUH
-            </div>
-          </motion.div>
-
-          {/* 3. Grand Event Title Block - MEGA JOB MELA 2026 (Both Desktop and Mobile) */}
+          {/* 2. Grand Event Title Block - MEGA JOB MELA 2026 (Both Desktop and Mobile) */}
           <motion.div
             initial={{ opacity: 0, scale: 0.94 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -253,18 +208,34 @@ const HomePage = () => {
             </div>
           </motion.div>
 
-          {/* 4. Mobile-Only Organizer Block under Job Mela (Exact Reference Image A replica) */}
-          <div className="hero-mobile-organizer-block hero-mobile-only">
-            <div className="hero-org-divider-row">
-              <div className="hero-org-line" />
-              <span className="hero-org-label">Organized by</span>
-              <div className="hero-org-line" />
+          {/* 3. Mobile-only Accreditation Pillars (Strictly placed BELOW Job Mela) */}
+          <div className="hero-pillars-row hero-mobile-only">
+            <div className="hero-pillar-col">
+              <div className="hero-pillar-icon-box">
+                <Award size={16} color="#fbbf24" />
+              </div>
+              <div className="hero-pillar-title">NAAC "A+"</div>
+              <div className="hero-pillar-subtitle">Grade Accredited</div>
             </div>
-            <div className="hero-org-college-name">
-              TKR College of Engineering &amp; Technology
+
+            <div className="hero-pillar-divider" />
+
+            <div className="hero-pillar-col">
+              <div className="hero-pillar-icon-box">
+                <ShieldCheck size={16} color="#fbbf24" />
+              </div>
+              <div className="hero-pillar-title">NBA Tier-1</div>
+              <div className="hero-pillar-subtitle">Accredited</div>
             </div>
-            <div className="hero-org-autonomous">
-              (Autonomous)
+
+            <div className="hero-pillar-divider" />
+
+            <div className="hero-pillar-col">
+              <div className="hero-pillar-icon-box">
+                <Landmark size={16} color="#fbbf24" />
+              </div>
+              <div className="hero-pillar-title hero-pillar-title-gold">Autonomous</div>
+              <div className="hero-pillar-subtitle">Campus</div>
             </div>
           </div>
 
