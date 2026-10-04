@@ -120,209 +120,215 @@ const HomePage = () => {
         <div className="hero-ref-overlay" />
 
         <div className="hero-ref-container">
-          {/* 1. Top 3 Accreditation Pillars */}
-          <motion.div
-            initial={{ opacity: 0, y: -12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.08 }}
-            className="hero-pillars-row"
-          >
-            <div className="hero-pillar-col">
-              <div className="hero-pillar-icon-box">
-                <Award size={22} color="#fbbf24" />
+          {/* DESKTOP LEFT COLUMN: Core Branding & Calls-to-Action */}
+          <div className="hero-ref-left">
+            {/* 2. Motto & Accreditations (Order 2 on mobile) */}
+            <motion.div
+              initial={{ opacity: 0, y: -6 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.14 }}
+              className="hero-motto-wrapper"
+            >
+              <div className="hero-institution-motto">
+                “Indian in Character, International in Excellence”
               </div>
-              <div className="hero-pillar-title">NAAC "A+"</div>
-              <div className="hero-pillar-subtitle">Grade Accredited</div>
-            </div>
-
-            <div className="hero-pillar-divider" />
-
-            <div className="hero-pillar-col">
-              <div className="hero-pillar-icon-box">
-                <ShieldCheck size={22} color="#fbbf24" />
+              <div className="hero-approvals-subline">
+                Approved by AICTE  •  Affiliated to JNTUH
               </div>
-              <div className="hero-pillar-title">NBA Tier-1</div>
-              <div className="hero-pillar-subtitle">Accredited</div>
-            </div>
+            </motion.div>
 
-            <div className="hero-pillar-divider" />
-
-            <div className="hero-pillar-col">
-              <div className="hero-pillar-icon-box">
-                <Landmark size={22} color="#fbbf24" />
+            {/* 3. Main Title Block (Order 3 on mobile) */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.94 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.55, delay: 0.2 }}
+              className="hero-title-container"
+            >
+              <div className="hero-mega-label">MEGA</div>
+              <div className="hero-jobmela-label">JOB MELA</div>
+              <div className="hero-year-wrapper">
+                <span className="hero-year-text">2026</span>
+                <svg className="hero-year-swoosh" viewBox="0 0 200 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M 10 18 Q 80 4 190 8 Q 110 24 10 18 Z" fill="url(#swooshGradient)" />
+                  <defs>
+                    <linearGradient id="swooshGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                      <stop offset="0%" stopColor="#38bdf8" />
+                      <stop offset="45%" stopColor="#0284c7" />
+                      <stop offset="80%" stopColor="#f59e0b" />
+                      <stop offset="100%" stopColor="#fbbf24" />
+                    </linearGradient>
+                  </defs>
+                </svg>
               </div>
-              <div className="hero-pillar-title hero-pillar-title-gold">Autonomous</div>
-              <div className="hero-pillar-subtitle">Campus</div>
-            </div>
-          </motion.div>
+            </motion.div>
 
-          {/* 2. Motto & Accreditations */}
-          <motion.div
-            initial={{ opacity: 0, y: -6 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.14 }}
-            className="hero-motto-wrapper"
-          >
-            <div className="hero-institution-motto">
-              “Indian in Character, International in Excellence”
-            </div>
-            <div className="hero-approvals-subline">
-              Approved by AICTE  •  Affiliated to JNTUH
-            </div>
-          </motion.div>
-
-          {/* 3. Main Title Block */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.94 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.55, delay: 0.2 }}
-            className="hero-title-container"
-          >
-            <div className="hero-mega-label">MEGA</div>
-            <div className="hero-jobmela-label">JOB MELA</div>
-            <div className="hero-year-wrapper">
-              <span className="hero-year-text">2026</span>
-              <svg className="hero-year-swoosh" viewBox="0 0 200 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M 10 18 Q 80 4 190 8 Q 110 24 10 18 Z" fill="url(#swooshGradient)" />
-                <defs>
-                  <linearGradient id="swooshGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                    <stop offset="0%" stopColor="#38bdf8" />
-                    <stop offset="45%" stopColor="#0284c7" />
-                    <stop offset="80%" stopColor="#f59e0b" />
-                    <stop offset="100%" stopColor="#fbbf24" />
-                  </linearGradient>
-                </defs>
-              </svg>
-            </div>
-          </motion.div>
-
-          {/* 4. Organized By Section */}
-          <motion.div
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.45, delay: 0.26 }}
-            className="hero-organized-section"
-          >
-            <div className="hero-org-divider-row">
-              <div className="hero-org-line" />
-              <span className="hero-org-label">Organized by</span>
-              <div className="hero-org-line" />
-            </div>
-            <div className="hero-org-college-name">
-              TKR College of Engineering &amp; Technology
-            </div>
-            <div className="hero-org-autonomous">
-              (Autonomous)
-            </div>
-          </motion.div>
-
-          {/* 5. Description */}
-          <motion.p
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.45, delay: 0.32 }}
-            className="hero-description-match"
-          >
-            Connecting students from all streams with 150+ premier multinational recruiters and emerging enterprises.
-          </motion.p>
-
-          {/* 6. Event Highlights (3 Stats Columns with Dividers) */}
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.45, delay: 0.38 }}
-            className="hero-stats-row"
-          >
-            <div className="hero-stat-col">
-              <div className="hero-stat-icon-wrapper" style={{ borderColor: 'rgba(56, 189, 248, 0.4)', background: 'rgba(56, 189, 248, 0.12)' }}>
-                <Calendar size={18} color="#38bdf8" />
+            {/* 4. Organized By Section (Order 4 on mobile) */}
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.45, delay: 0.26 }}
+              className="hero-organized-section"
+            >
+              <div className="hero-org-divider-row">
+                <div className="hero-org-line" />
+                <span className="hero-org-label">Organized by</span>
+                <div className="hero-org-line" />
               </div>
-              <div className="hero-stat-val">31 OCT 2026</div>
-              <div className="hero-stat-lbl">Event Date</div>
-            </div>
-
-            <div className="hero-stat-divider" />
-
-            <div className="hero-stat-col">
-              <div className="hero-stat-icon-wrapper" style={{ borderColor: 'rgba(74, 222, 128, 0.4)', background: 'rgba(74, 222, 128, 0.12)' }}>
-                <Building2 size={18} color="#4ade80" />
+              <div className="hero-org-college-name">
+                TKR College of Engineering &amp; Technology
               </div>
-              <div className="hero-stat-val">150+</div>
-              <div className="hero-stat-lbl">Companies</div>
-            </div>
-
-            <div className="hero-stat-divider" />
-
-            <div className="hero-stat-col">
-              <div className="hero-stat-icon-wrapper" style={{ borderColor: 'rgba(252, 211, 77, 0.4)', background: 'rgba(252, 211, 77, 0.12)' }}>
-                <Users size={18} color="#fcd34d" />
+              <div className="hero-org-autonomous">
+                (Autonomous)
               </div>
-              <div className="hero-stat-val">10,000+</div>
-              <div className="hero-stat-lbl">Candidates</div>
-            </div>
-          </motion.div>
+            </motion.div>
 
-          {/* 7. Action Buttons */}
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.44 }}
-            className="hero-actions-row"
-          >
-            {!isAuthenticated ? (
-              <>
-                <Link to="/register" className="hero-btn-register">
-                  <span>REGISTER NOW</span>
+            {/* 5. Description (Order 5 on mobile) */}
+            <motion.p
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.45, delay: 0.32 }}
+              className="hero-description-match"
+            >
+              Connecting students from all streams with 150+ premier multinational recruiters and emerging enterprises.
+            </motion.p>
+
+            {/* 7. Action Buttons (Order 7 on mobile) */}
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.44 }}
+              className="hero-actions-row"
+            >
+              {!isAuthenticated ? (
+                <>
+                  <Link to="/register" className="hero-btn-register">
+                    <span>REGISTER NOW</span>
+                    <ArrowRight size={18} />
+                  </Link>
+                  <Link to="/login" className="hero-btn-login">
+                    <span>STUDENT LOGIN</span>
+                    <ArrowRight size={18} />
+                  </Link>
+                </>
+              ) : isStudent ? (
+                <>
+                  <Link to="/companies" className="hero-btn-register" style={{ maxWidth: 300 }}>
+                    <span>EXPLORE 150+ COMPANIES</span>
+                    <ArrowRight size={18} />
+                  </Link>
+                  <Link to="/dashboard" className="hero-btn-login" style={{ maxWidth: 220 }}>
+                    <span>MY DASHBOARD</span>
+                    <ArrowRight size={18} />
+                  </Link>
+                </>
+              ) : (
+                <Link
+                  to="/admin"
+                  className="hero-btn-register"
+                  style={{ maxWidth: 340, background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)', color: '#0f172a' }}
+                >
+                  <ShieldCheck size={18} />
+                  <span>ADMIN COMMAND CENTER</span>
                   <ArrowRight size={18} />
                 </Link>
-                <Link to="/login" className="hero-btn-login">
-                  <span>STUDENT LOGIN</span>
-                  <ArrowRight size={18} />
-                </Link>
-              </>
-            ) : isStudent ? (
-              <>
-                <Link to="/companies" className="hero-btn-register" style={{ maxWidth: 300 }}>
-                  <span>EXPLORE 150+ COMPANIES</span>
-                  <ArrowRight size={18} />
-                </Link>
-                <Link to="/dashboard" className="hero-btn-login" style={{ maxWidth: 220 }}>
-                  <span>MY DASHBOARD</span>
-                  <ArrowRight size={18} />
-                </Link>
-              </>
-            ) : (
-              <Link
-                to="/admin"
-                className="hero-btn-register"
-                style={{ maxWidth: 340, background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)', color: '#0f172a' }}
-              >
-                <ShieldCheck size={18} />
-                <span>ADMIN COMMAND CENTER</span>
-                <ArrowRight size={18} />
-              </Link>
-            )}
-          </motion.div>
+              )}
+            </motion.div>
+          </div>
 
-          {/* 8. Venue Card & Scroll Chevron */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.55, delay: 0.5 }}
-            className="hero-venue-block"
-          >
-            <div className="hero-venue-pin-circle">
-              <MapPin size={18} color="#38bdf8" />
-            </div>
-            <div className="hero-venue-vdivider" />
-            <div className="hero-venue-details">
-              <div className="hero-venue-label">Venue</div>
-              <div className="hero-venue-name">TKR College of Engineering &amp; Technology</div>
-              <div className="hero-venue-sub">Medbowli, Meerpet, Hyderabad</div>
-            </div>
-          </motion.div>
+          {/* DESKTOP RIGHT COLUMN: Credentials, Event Stats & Venue Showcase */}
+          <div className="hero-ref-right">
+            {/* 1. Top 3 Accreditation Pillars (Order 1 on mobile) */}
+            <motion.div
+              initial={{ opacity: 0, y: -12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.08 }}
+              className="hero-pillars-row"
+            >
+              <div className="hero-pillar-col">
+                <div className="hero-pillar-icon-box">
+                  <Award size={22} color="#fbbf24" />
+                </div>
+                <div className="hero-pillar-title">NAAC "A+"</div>
+                <div className="hero-pillar-subtitle">Grade Accredited</div>
+              </div>
 
-          {/* Downward Chevron Scroll Indicator */}
+              <div className="hero-pillar-divider" />
+
+              <div className="hero-pillar-col">
+                <div className="hero-pillar-icon-box">
+                  <ShieldCheck size={22} color="#fbbf24" />
+                </div>
+                <div className="hero-pillar-title">NBA Tier-1</div>
+                <div className="hero-pillar-subtitle">Accredited</div>
+              </div>
+
+              <div className="hero-pillar-divider" />
+
+              <div className="hero-pillar-col">
+                <div className="hero-pillar-icon-box">
+                  <Landmark size={22} color="#fbbf24" />
+                </div>
+                <div className="hero-pillar-title hero-pillar-title-gold">Autonomous</div>
+                <div className="hero-pillar-subtitle">Campus</div>
+              </div>
+            </motion.div>
+
+            {/* 6. Event Highlights (3 Stats Columns with Dividers) (Order 6 on mobile) */}
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.45, delay: 0.38 }}
+              className="hero-stats-row"
+            >
+              <div className="hero-stat-col">
+                <div className="hero-stat-icon-wrapper" style={{ borderColor: 'rgba(56, 189, 248, 0.4)', background: 'rgba(56, 189, 248, 0.12)' }}>
+                  <Calendar size={18} color="#38bdf8" />
+                </div>
+                <div className="hero-stat-val">31 OCT 2026</div>
+                <div className="hero-stat-lbl">Event Date</div>
+              </div>
+
+              <div className="hero-stat-divider" />
+
+              <div className="hero-stat-col">
+                <div className="hero-stat-icon-wrapper" style={{ borderColor: 'rgba(74, 222, 128, 0.4)', background: 'rgba(74, 222, 128, 0.12)' }}>
+                  <Building2 size={18} color="#4ade80" />
+                </div>
+                <div className="hero-stat-val">150+</div>
+                <div className="hero-stat-lbl">Companies</div>
+              </div>
+
+              <div className="hero-stat-divider" />
+
+              <div className="hero-stat-col">
+                <div className="hero-stat-icon-wrapper" style={{ borderColor: 'rgba(252, 211, 77, 0.4)', background: 'rgba(252, 211, 77, 0.12)' }}>
+                  <Users size={18} color="#fcd34d" />
+                </div>
+                <div className="hero-stat-val">10,000+</div>
+                <div className="hero-stat-lbl">Candidates</div>
+              </div>
+            </motion.div>
+
+            {/* 8. Venue Card (Order 8 on mobile) */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.55, delay: 0.5 }}
+              className="hero-venue-block"
+            >
+              <div className="hero-venue-pin-circle">
+                <MapPin size={18} color="#38bdf8" />
+              </div>
+              <div className="hero-venue-vdivider" />
+              <div className="hero-venue-details">
+                <div className="hero-venue-label">Venue</div>
+                <div className="hero-venue-name">TKR College of Engineering &amp; Technology</div>
+                <div className="hero-venue-sub">Medbowli, Meerpet, Hyderabad</div>
+              </div>
+            </motion.div>
+          </div>
+
+          {/* Downward Chevron Scroll Indicator (Order 9 on mobile) */}
           <motion.div
             className="hero-scroll-indicator"
             animate={{ y: [0, 6, 0] }}

@@ -1404,6 +1404,23 @@ button, input, select, textarea {
   text-align: center;
 }
 
+/* Mobile: wrappers dissolve so children order matches reference replica */
+.hero-ref-left,
+.hero-ref-right {
+  display: contents;
+}
+
+/* Mobile Ordering: Exact single-column sequence */
+.hero-pillars-row { order: 1; }
+.hero-motto-wrapper { order: 2; }
+.hero-title-container { order: 3; }
+.hero-organized-section { order: 4; }
+.hero-description-match { order: 5; }
+.hero-stats-row { order: 6; }
+.hero-actions-row { order: 7; }
+.hero-venue-block { order: 8; }
+.hero-scroll-indicator { order: 9; }
+
 /* 1. Top 3 Accreditation Pillars */
 .hero-pillars-row {
   display: flex;
@@ -1776,6 +1793,191 @@ button, input, select, textarea {
   cursor: pointer;
   margin-top: 0.25rem;
   opacity: 0.85;
+}
+
+/* =========================================================
+   LAPTOP / DESKTOP RESPONSIVE HORIZONTAL ALIGNMENT (>= 1024px)
+   ========================================================= */
+@media (min-width: 1024px) {
+  .hero-ref-wrapper {
+    min-height: calc(100vh - 78px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2.25rem 2.5rem;
+  }
+
+  .hero-ref-container {
+    max-width: 1260px;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: clamp(2rem, 3.5vw, 4rem);
+    text-align: left;
+  }
+
+  /* Two side-by-side columns on laptop/desktop */
+  .hero-ref-left {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    text-align: left;
+    flex: 1.18;
+    max-width: 640px;
+  }
+
+  .hero-ref-right {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    flex: 0.82;
+    max-width: 480px;
+    gap: 1.15rem;
+  }
+
+  /* Left column: Typography and spacing */
+  .hero-motto-wrapper {
+    text-align: left;
+    margin-bottom: 0.65rem;
+  }
+
+  .hero-institution-motto {
+    text-align: left;
+    font-size: 0.94rem;
+    color: #e0f2fe;
+    letter-spacing: 0.015em;
+  }
+
+  .hero-approvals-subline {
+    text-align: left;
+    font-size: 0.8rem;
+    color: #94a3b8;
+  }
+
+  .hero-title-container {
+    align-items: flex-start;
+    text-align: left;
+    margin-bottom: 0.85rem;
+  }
+
+  .hero-mega-label {
+    text-align: left;
+    font-size: clamp(1.8rem, 2.4vw, 2.5rem);
+    letter-spacing: 0.18em;
+    margin-bottom: 0.2rem;
+  }
+
+  .hero-jobmela-label {
+    text-align: left;
+    font-size: clamp(3.6rem, 5.2vw, 5.4rem);
+    line-height: 0.92;
+    letter-spacing: -0.04em;
+  }
+
+  .hero-year-wrapper {
+    align-items: flex-start;
+    margin-top: -0.35rem;
+  }
+
+  .hero-year-text {
+    font-size: clamp(4.2rem, 5.8vw, 6.2rem);
+    line-height: 0.92;
+  }
+
+  .hero-year-swoosh {
+    width: clamp(190px, 20vw, 250px);
+    margin-top: -8px;
+    margin-left: 0;
+  }
+
+  .hero-organized-section {
+    align-items: flex-start;
+    text-align: left;
+    margin-bottom: 0.95rem;
+  }
+
+  .hero-org-divider-row {
+    justify-content: flex-start;
+    max-width: 100%;
+    margin-bottom: 0.35rem;
+  }
+
+  .hero-org-divider-row .hero-org-line:first-child {
+    display: none;
+  }
+
+  .hero-org-divider-row .hero-org-line:last-child {
+    width: 90px;
+    flex: none;
+  }
+
+  .hero-org-college-name {
+    text-align: left;
+    font-size: clamp(1.15rem, 1.6vw, 1.4rem);
+  }
+
+  .hero-org-autonomous {
+    text-align: left;
+    font-size: 0.86rem;
+  }
+
+  .hero-description-match {
+    text-align: left;
+    margin: 0 0 1.4rem 0;
+    max-width: 540px;
+    font-size: 1.02rem;
+    line-height: 1.55;
+    color: #cbd5e1;
+  }
+
+  .hero-actions-row {
+    justify-content: flex-start;
+    margin-bottom: 0;
+    max-width: 440px;
+    width: 100%;
+    gap: 1rem;
+  }
+
+  /* Right column: Sleek Frosted Glass Cards */
+  .hero-pillars-row {
+    max-width: 100%;
+    margin-bottom: 0;
+    background: rgba(15, 23, 42, 0.65);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 16px;
+    padding: 1.1rem 1.25rem;
+    box-shadow: 0 10px 32px rgba(0, 0, 0, 0.38);
+  }
+
+  .hero-stats-row {
+    max-width: 100%;
+    margin-bottom: 0;
+    background: rgba(15, 23, 42, 0.65);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 16px;
+    padding: 1.15rem 1.25rem;
+    box-shadow: 0 10px 32px rgba(0, 0, 0, 0.38);
+  }
+
+  .hero-venue-block {
+    max-width: 100%;
+    margin-bottom: 0;
+    background: rgba(15, 23, 42, 0.65);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 16px;
+    padding: 0.95rem 1.25rem;
+    box-shadow: 0 10px 32px rgba(0, 0, 0, 0.38);
+  }
+
+  .hero-scroll-indicator {
+    display: none;
+  }
 }
 
 /* Luminous Highlight for MEGA JOB MELA 2026 */
