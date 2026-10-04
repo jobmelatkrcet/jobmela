@@ -42,6 +42,8 @@ class User(AbstractUser):
     qualification = models.CharField(max_length=100, blank=True, default="")
     college = models.CharField(max_length=255, blank=True, default="")
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, default="student")
+    photo = models.FileField(upload_to="photos/", blank=True, null=True)
+    resume = models.FileField(upload_to="resumes/", blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

@@ -1,8 +1,23 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { authService } from '../../services/authService';
-import { UserCheck, Lock, Mail, Phone, GraduationCap, Building2, User, ArrowRight } from 'lucide-react';
+import {
+  UserCheck,
+  Lock,
+  Mail,
+  Phone,
+  GraduationCap,
+  Building2,
+  User,
+  ArrowRight,
+  Camera,
+  FileText,
+  Upload,
+  X,
+  CheckCircle2,
+  FileCheck,
+} from 'lucide-react';
 import Alert from '../../components/Alert';
 
 const StudentRegisterPage = () => {
@@ -19,6 +34,16 @@ const StudentRegisterPage = () => {
     confirm_password: '',
   });
 
+  const [photoFile, setPhotoFile] = useState(null);
+  const [photoPreview, setPhotoPreview] = useState(null);
+  const [photoError, setPhotoError] = useState('');
+
+  const [resumeFile, setResumeFile] = useState(null);
+  const [resumeError, setResumeError] = useState('');
+
+  const photoInputRef = useRef(null);
+  const resumeInputRef = useRef(null);
+
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [generalError, setGeneralError] = useState('');
@@ -29,6 +54,71 @@ const StudentRegisterPage = () => {
     if (errors[name]) {
       setErrors((prev) => ({ ...prev, [name]: null }));
     }
+  };
+
+  const handlePhotoChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setPhotoError('');
+
+    const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg'];
+    if (!validTypes.includes(file.type)) {
+      setPhotoError('Please upload a valid image file (JPG, PNG, or WebP).');
+      return;
+    }
+    if (file.size > 3 * 1024 * 1024) {
+      setPhotoError('Photo file size exceeds 3MB limit.');
+      return;
+    }
+
+    setPhotoFile(file);
+    const reader = new FileReader();
+    reader.onload = (uploadEvent) => {
+      setPhotoPreview(uploadEvent.target.result);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleRemovePhoto = () => {
+    setPhotoFile(null);
+    setPhotoPreview(null);
+    setPhotoError('');
+    if (photoInputRef.current) photoInputRef.current.value = '';
+  };
+
+  const handleResumeChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setResumeError('');
+
+    const validExtensions = ['.pdf', '.doc', '.docx'];
+    const fileNameLower = file.name.toLowerCase();
+    const isValid = validExtensions.some((ext) => fileNameLower.endsWith(ext));
+
+    if (!isValid) {
+      setResumeError('Please upload a PDF, DOC, or DOCX document.');
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setResumeError('Resume file size exceeds 5MB limit.');
+      return;
+    }
+
+    setResumeFile(file);
+  };
+
+  const handleRemoveResume = () => {
+    setResumeFile(null);
+    setResumeError('');
+    if (resumeInputRef.current) resumeInputRef.current.value = '';
+  };
+
+  const formatFileSize = (bytes) => {
+    if (!bytes) return '';
+    if (bytes < 1024 * 1024) {
+      return `${(bytes / 1024).toFixed(1)} KB`;
+    }
+    return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
   };
 
   const validate = () => {
@@ -69,7 +159,23 @@ const StudentRegisterPage = () => {
 
     setLoading(true);
     try {
-      const response = await authService.register(formData);
+      const payload = new FormData();
+      payload.append('full_name', formData.full_name.trim());
+      payload.append('email', formData.email.trim().toLowerCase());
+      payload.append('mobile', formData.mobile.trim());
+      payload.append('qualification', formData.qualification.trim());
+      payload.append('college', formData.college.trim());
+      payload.append('password', formData.password);
+      payload.append('confirm_password', formData.confirm_password);
+
+      if (photoFile) {
+        payload.append('photo', photoFile);
+      }
+      if (resumeFile) {
+        payload.append('resume', resumeFile);
+      }
+
+      const response = await authService.register(payload);
       // Auto-login upon successful registration
       login(response.token, response.user);
       navigate('/dashboard', {
@@ -106,8 +212,8 @@ const StudentRegisterPage = () => {
   };
 
   return (
-    <div style={{ padding: '2rem 0 4rem', backgroundColor: '#f8fafc' }}>
-      <div className="app-container" style={{ maxWidth: 640 }}>
+    <div style={{ padding: '2.5rem 0 4.5rem', backgroundColor: '#f8fafc' }}>
+      <div className="app-container" style={{ maxWidth: 680 }}>
         <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
           <div
             className="badge badge-blue"
@@ -291,6 +397,136 @@ const StudentRegisterPage = () => {
               {errors.college && <span className="form-error">{errors.college}</span>}
             </div>
 
+            {/* CANDIDATE PHOTOGRAPH UPLOAD */}
+            <div className="form-group" style={{ marginBottom: '1.5rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.4rem' }}>
+                <label className="form-label" style={{ margin: 0 }}>
+                  Candidate Photograph <span style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)', fontWeight: 400 }}>(Optional, recommended)</span>
+                </label>
+                <span style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>JPG, PNG or WebP &lt; 3MB</span>
+              </div>
+
+              <input
+                ref={photoInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp,image/jpg"
+                onChange={handlePhotoChange}
+                style={{ display: 'none' }}
+                id="candidate-photo-input"
+              />
+
+              {photoPreview ? (
+                <div className="photo-preview-container">
+                  <img src={photoPreview} alt="Candidate Preview" className="photo-preview-img" />
+                  <div style={{ flex: 1, overflow: 'hidden' }}>
+                    <div style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--color-primary-900)' }}>
+                      {photoFile?.name}
+                    </div>
+                    <div style={{ fontSize: '0.78rem', color: 'var(--color-text-muted)', marginTop: '0.2rem' }}>
+                      {formatFileSize(photoFile?.size)} • Ready for upload
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleRemovePhoto}
+                    className="btn-remove-file"
+                    title="Remove selected photograph"
+                  >
+                    <X size={16} /> Remove
+                  </button>
+                </div>
+              ) : (
+                <div
+                  className="upload-dropzone"
+                  onClick={() => photoInputRef.current?.click()}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      photoInputRef.current?.click();
+                    }
+                  }}
+                >
+                  <div className="upload-dropzone-icon">
+                    <Camera size={22} />
+                  </div>
+                  <div className="upload-dropzone-title">Upload Passport Size Photograph</div>
+                  <div className="upload-dropzone-hint">
+                    Click to browse photograph from device
+                  </div>
+                </div>
+              )}
+              {photoError && <span className="form-error" style={{ marginTop: '0.35rem' }}>{photoError}</span>}
+              {errors.photo && <span className="form-error" style={{ marginTop: '0.35rem' }}>{errors.photo}</span>}
+            </div>
+
+            {/* CANDIDATE RESUME / CV UPLOAD */}
+            <div className="form-group" style={{ marginBottom: '1.5rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.4rem' }}>
+                <label className="form-label" style={{ margin: 0 }}>
+                  Resume / Curriculum Vitae (CV) <span style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)', fontWeight: 400 }}>(Optional, recommended)</span>
+                </label>
+                <span style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>PDF or DOCX &lt; 5MB</span>
+              </div>
+
+              <input
+                ref={resumeInputRef}
+                type="file"
+                accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                onChange={handleResumeChange}
+                style={{ display: 'none' }}
+                id="candidate-resume-input"
+              />
+
+              {resumeFile ? (
+                <div className="resume-preview-container">
+                  <div className="resume-preview-info">
+                    <div className="resume-preview-icon">
+                      <FileCheck size={22} />
+                    </div>
+                    <div className="resume-preview-text">
+                      <div className="resume-preview-filename">{resumeFile.name}</div>
+                      <div className="resume-preview-filesize">
+                        {formatFileSize(resumeFile.size)} • Document attached
+                      </div>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleRemoveResume}
+                    className="btn-remove-file"
+                    title="Remove selected resume"
+                  >
+                    <X size={16} /> Remove
+                  </button>
+                </div>
+              ) : (
+                <div
+                  className="upload-dropzone"
+                  onClick={() => resumeInputRef.current?.click()}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      resumeInputRef.current?.click();
+                    }
+                  }}
+                >
+                  <div className="upload-dropzone-icon" style={{ color: '#059669' }}>
+                    <FileText size={22} />
+                  </div>
+                  <div className="upload-dropzone-title">Upload Resume / Curriculum Vitae</div>
+                  <div className="upload-dropzone-hint">
+                    Click to browse your latest resume (PDF or DOCX format)
+                  </div>
+                </div>
+              )}
+              {resumeError && <span className="form-error" style={{ marginTop: '0.35rem' }}>{resumeError}</span>}
+              {errors.resume && <span className="form-error" style={{ marginTop: '0.35rem' }}>{errors.resume}</span>}
+            </div>
+
             {/* Password */}
             <div className="form-group">
               <label className="form-label" htmlFor="password">
@@ -356,12 +592,12 @@ const StudentRegisterPage = () => {
             <button
               type="submit"
               className="btn btn-primary btn-lg"
-              style={{ width: '100%', marginTop: '1rem' }}
+              style={{ width: '100%', marginTop: '1.25rem' }}
               disabled={loading}
             >
               {loading ? (
                 <>
-                  <span className="spinner" style={{ width: 18, height: 18 }} /> Registering...
+                  <span className="spinner" style={{ width: 18, height: 18 }} /> Registering Candidate...
                 </>
               ) : (
                 <>

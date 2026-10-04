@@ -11,9 +11,19 @@ import {
   GraduationCap,
   Calendar,
   CheckCircle2,
+  FileText,
+  ExternalLink,
 } from 'lucide-react';
 import Pagination from '../../components/Pagination';
 import Alert from '../../components/Alert';
+
+const getMediaUrl = (path) => {
+  if (!path) return null;
+  if (path.startsWith('http://') || path.startsWith('https://')) return path;
+  const baseUrl = import.meta.env.VITE_API_URL || '';
+  const origin = baseUrl.replace(/\/api\/?$/, '');
+  return `${origin}${path.startsWith('/') ? '' : '/'}${path}`;
+};
 
 const AdminStudentsPage = () => {
   const [students, setStudents] = useState([]);
@@ -189,12 +199,13 @@ const AdminStudentsPage = () => {
             <table className="custom-table">
               <thead>
                 <tr>
-                  <th style={{ width: '60px' }}>#</th>
-                  <th>Full Name</th>
+                  <th style={{ width: '50px' }}>#</th>
+                  <th>Candidate Name</th>
                   <th>Email</th>
                   <th>Mobile</th>
                   <th>Qualification</th>
                   <th>College / Institution</th>
+                  <th style={{ textAlign: 'center' }}>Resume</th>
                   <th>Reg. Date</th>
                   <th style={{ textAlign: 'center' }}>Applications</th>
                   <th style={{ textAlign: 'center' }}>Action</th>
@@ -207,9 +218,44 @@ const AdminStudentsPage = () => {
                       {(currentPage - 1) * 20 + idx + 1}
                     </td>
                     <td>
-                      <strong style={{ color: 'var(--color-primary-900)' }}>
-                        {student.full_name}
-                      </strong>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+                        {student.photo ? (
+                          <img
+                            src={getMediaUrl(student.photo)}
+                            alt={student.full_name}
+                            style={{
+                              width: 32,
+                              height: 32,
+                              borderRadius: '50%',
+                              objectFit: 'cover',
+                              border: '1.5px solid var(--color-brand-400)',
+                              flexShrink: 0,
+                            }}
+                          />
+                        ) : (
+                          <div
+                            style={{
+                              width: 32,
+                              height: 32,
+                              borderRadius: '50%',
+                              backgroundColor: 'var(--color-brand-50)',
+                              color: 'var(--color-brand-600)',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              fontWeight: 700,
+                              fontSize: '0.85rem',
+                              border: '1px solid var(--color-brand-200)',
+                              flexShrink: 0,
+                            }}
+                          >
+                            {student.full_name.charAt(0).toUpperCase()}
+                          </div>
+                        )}
+                        <strong style={{ color: 'var(--color-primary-900)' }}>
+                          {student.full_name}
+                        </strong>
+                      </div>
                     </td>
                     <td>
                       <a
@@ -227,6 +273,31 @@ const AdminStudentsPage = () => {
                     </td>
                     <td style={{ maxWidth: 220, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                       {student.college || '—'}
+                    </td>
+                    <td style={{ textAlign: 'center' }}>
+                      {student.resume ? (
+                        <a
+                          href={getMediaUrl(student.resume)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="btn btn-outline btn-sm"
+                          style={{
+                            padding: '0.2rem 0.55rem',
+                            fontSize: '0.75rem',
+                            color: '#059669',
+                            borderColor: '#a7f3d0',
+                            backgroundColor: '#ecfdf5',
+                            gap: '0.25rem',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                          }}
+                          title="View candidate resume"
+                        >
+                          <FileText size={13} /> Resume
+                        </a>
+                      ) : (
+                        <span style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>—</span>
+                      )}
                     </td>
                     <td>
                       {new Date(student.created_at).toLocaleDateString('en-GB', {
@@ -295,12 +366,9 @@ const AdminStudentsPage = () => {
                 </div>
               ) : (
                 <div>
-                  {/* Basic Info */}
+                  {/* Basic Info with Candidate Photo */}
                   <div
                     style={{
-                      display: 'grid',
-                      gridTemplateColumns: '1fr 1fr',
-                      gap: '1rem',
                       padding: '1.25rem',
                       backgroundColor: 'var(--color-bg-main)',
                       borderRadius: 'var(--radius-md)',
@@ -308,48 +376,112 @@ const AdminStudentsPage = () => {
                       border: '1px solid var(--color-border)',
                     }}
                   >
-                    <div>
-                      <div style={{ fontSize: '0.78rem', color: 'var(--color-text-muted)', textTransform: 'uppercase' }}>
-                        Candidate Name
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem', marginBottom: '1.25rem', flexWrap: 'wrap' }}>
+                      {selectedStudent.photo ? (
+                        <img
+                          src={getMediaUrl(selectedStudent.photo)}
+                          alt={selectedStudent.full_name}
+                          style={{
+                            width: 60,
+                            height: 60,
+                            borderRadius: '50%',
+                            objectFit: 'cover',
+                            border: '2px solid var(--color-brand-500)',
+                            boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                          }}
+                        />
+                      ) : (
+                        <div
+                          style={{
+                            width: 60,
+                            height: 60,
+                            borderRadius: '50%',
+                            backgroundColor: 'var(--color-brand-50)',
+                            color: 'var(--color-brand-600)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontSize: '1.4rem',
+                            fontWeight: 800,
+                            border: '1px solid var(--color-brand-200)',
+                          }}
+                        >
+                          {selectedStudent.full_name.charAt(0).toUpperCase()}
+                        </div>
+                      )}
+
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--color-primary-900)' }}>
+                          {selectedStudent.full_name}
+                        </div>
+                        <div style={{ fontSize: '0.82rem', color: 'var(--color-text-muted)' }}>
+                          Candidate ID: TKRCET-{selectedStudent.id?.toString().padStart(4, '0')}
+                        </div>
                       </div>
-                      <div style={{ fontWeight: 700, fontSize: '1.05rem', color: 'var(--color-primary-900)' }}>
-                        {selectedStudent.full_name}
-                      </div>
+
+                      {selectedStudent.resume && (
+                        <a
+                          href={getMediaUrl(selectedStudent.resume)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="btn btn-sm"
+                          style={{
+                            backgroundColor: '#059669',
+                            color: '#ffffff',
+                            fontWeight: 700,
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '0.4rem',
+                          }}
+                        >
+                          <FileText size={15} /> Open Resume <ExternalLink size={13} />
+                        </a>
+                      )}
                     </div>
 
-                    <div>
-                      <div style={{ fontSize: '0.78rem', color: 'var(--color-text-muted)', textTransform: 'uppercase' }}>
-                        Email Address
+                    <div
+                      style={{
+                        display: 'grid',
+                        gridTemplateColumns: '1fr 1fr',
+                        gap: '1rem',
+                        paddingTop: '1rem',
+                        borderTop: '1px solid var(--color-border)',
+                      }}
+                    >
+                      <div>
+                        <div style={{ fontSize: '0.78rem', color: 'var(--color-text-muted)', textTransform: 'uppercase' }}>
+                          Email Address
+                        </div>
+                        <div style={{ fontWeight: 600, color: 'var(--color-primary-900)' }}>
+                          {selectedStudent.email}
+                        </div>
                       </div>
-                      <div style={{ fontWeight: 600, color: 'var(--color-primary-900)' }}>
-                        {selectedStudent.email}
-                      </div>
-                    </div>
 
-                    <div>
-                      <div style={{ fontSize: '0.78rem', color: 'var(--color-text-muted)', textTransform: 'uppercase' }}>
-                        Mobile Number
+                      <div>
+                        <div style={{ fontSize: '0.78rem', color: 'var(--color-text-muted)', textTransform: 'uppercase' }}>
+                          Mobile Number
+                        </div>
+                        <div style={{ fontWeight: 600, color: 'var(--color-primary-900)' }}>
+                          {selectedStudent.mobile || '—'}
+                        </div>
                       </div>
-                      <div style={{ fontWeight: 600, color: 'var(--color-primary-900)' }}>
-                        {selectedStudent.mobile || '—'}
-                      </div>
-                    </div>
 
-                    <div>
-                      <div style={{ fontSize: '0.78rem', color: 'var(--color-text-muted)', textTransform: 'uppercase' }}>
-                        Qualification
+                      <div>
+                        <div style={{ fontSize: '0.78rem', color: 'var(--color-text-muted)', textTransform: 'uppercase' }}>
+                          Qualification
+                        </div>
+                        <div style={{ fontWeight: 600, color: 'var(--color-brand-700)' }}>
+                          {selectedStudent.qualification || '—'}
+                        </div>
                       </div>
-                      <div style={{ fontWeight: 600, color: 'var(--color-brand-700)' }}>
-                        {selectedStudent.qualification || '—'}
-                      </div>
-                    </div>
 
-                    <div style={{ gridColumn: '1 / -1' }}>
-                      <div style={{ fontSize: '0.78rem', color: 'var(--color-text-muted)', textTransform: 'uppercase' }}>
-                        College / Institution
-                      </div>
-                      <div style={{ fontWeight: 600, color: 'var(--color-primary-900)' }}>
-                        {selectedStudent.college || '—'}
+                      <div>
+                        <div style={{ fontSize: '0.78rem', color: 'var(--color-text-muted)', textTransform: 'uppercase' }}>
+                          College / Institution
+                        </div>
+                        <div style={{ fontWeight: 600, color: 'var(--color-primary-900)' }}>
+                          {selectedStudent.college || '—'}
+                        </div>
                       </div>
                     </div>
                   </div>

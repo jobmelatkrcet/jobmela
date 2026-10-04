@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { applicationService } from '../../services/applicationService';
 import { companyService } from '../../services/companyService';
+import { authService } from '../../services/authService';
 import {
   Building2,
   FileCheck,
@@ -10,15 +11,30 @@ import {
   Clock,
   CheckCircle2,
   ArrowRight,
+  FileText,
+  Download,
+  ExternalLink,
+  ShieldCheck,
+  Award,
+  GraduationCap,
 } from 'lucide-react';
 import StatsCard from '../../components/StatsCard';
 import Alert from '../../components/Alert';
 import ConfirmModal from '../../components/ConfirmModal';
 
+const getMediaUrl = (path) => {
+  if (!path) return null;
+  if (path.startsWith('http://') || path.startsWith('https://')) return path;
+  const baseUrl = import.meta.env.VITE_API_URL || '';
+  const origin = baseUrl.replace(/\/api\/?$/, '');
+  return `${origin}${path.startsWith('/') ? '' : '/'}${path}`;
+};
+
 const StudentDashboardPage = () => {
   const { user } = useAuth();
   const location = useLocation();
 
+  const [profile, setProfile] = useState(user || null);
   const [stats, setStats] = useState({ total_companies: 0, applied_count: 0 });
   const [myApplications, setMyApplications] = useState([]);
   const [featuredCompanies, setFeaturedCompanies] = useState([]);
@@ -39,14 +55,17 @@ const StudentDashboardPage = () => {
   const fetchDashboardData = async () => {
     setLoading(true);
     try {
-      const [statsData, appsData, compsData] = await Promise.all([
+      const [statsData, appsData, compsData, profileData] = await Promise.allSettled([
         applicationService.getStudentStats(),
         applicationService.getMyApplications(),
         companyService.getCompanies({ page: 1, page_size: 6 }),
+        authService.getProfile(),
       ]);
-      setStats(statsData);
-      setMyApplications(appsData.applications || []);
-      setFeaturedCompanies(compsData.results || []);
+
+      if (statsData.status === 'fulfilled') setStats(statsData.value);
+      if (appsData.status === 'fulfilled') setMyApplications(appsData.value.applications || []);
+      if (compsData.status === 'fulfilled') setFeaturedCompanies(compsData.value.results || []);
+      if (profileData.status === 'fulfilled') setProfile(profileData.value);
     } catch (err) {
       console.error('Error loading dashboard data:', err);
     } finally {
@@ -90,6 +109,142 @@ const StudentDashboardPage = () => {
           onClose={() => setAlert(null)}
         />
       )}
+
+      {/* Official Candidate Accreditation Card with Photograph & Resume status */}
+      <div className="candidate-admit-card">
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            gap: '1.5rem',
+            position: 'relative',
+            zIndex: 1,
+          }}
+        >
+          {/* Candidate identity & photo */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem', flexWrap: 'wrap' }}>
+            {profile?.photo ? (
+              <img
+                src={getMediaUrl(profile.photo)}
+                alt={profile.full_name || 'Candidate'}
+                style={{
+                  width: 72,
+                  height: 72,
+                  borderRadius: '50%',
+                  objectFit: 'cover',
+                  border: '3px solid #38bdf8',
+                  boxShadow: '0 4px 14px rgba(0, 0, 0, 0.3)',
+                  backgroundColor: '#1e293b',
+                }}
+              />
+            ) : (
+              <div
+                style={{
+                  width: 72,
+                  height: 72,
+                  borderRadius: '50%',
+                  backgroundColor: '#1e293b',
+                  color: '#38bdf8',
+                  border: '2px dashed #38bdf8',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '1.6rem',
+                  fontWeight: 800,
+                }}
+              >
+                {(profile?.full_name || user?.full_name || 'S').charAt(0).toUpperCase()}
+              </div>
+            )}
+
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
+                <h1 style={{ fontSize: '1.45rem', fontWeight: 800, color: '#f8fafc', margin: 0 }}>
+                  {profile?.full_name || user?.full_name || 'Registered Candidate'}
+                </h1>
+                <span
+                  style={{
+                    backgroundColor: 'rgba(56, 189, 248, 0.15)',
+                    color: '#38bdf8',
+                    border: '1px solid rgba(56, 189, 248, 0.4)',
+                    fontSize: '0.72rem',
+                    fontWeight: 700,
+                    padding: '0.2rem 0.6rem',
+                    borderRadius: 'var(--radius-sm)',
+                    letterSpacing: '0.04em',
+                    textTransform: 'uppercase',
+                  }}
+                >
+                  Candidate ID: TKRCET-{(profile?.id || user?.id || 1).toString().padStart(4, '0')}
+                </span>
+              </div>
+
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '1.25rem',
+                  flexWrap: 'wrap',
+                  marginTop: '0.45rem',
+                  fontSize: '0.85rem',
+                  color: '#94a3b8',
+                }}
+              >
+                <span>{profile?.email || user?.email}</span>
+                {profile?.mobile && <span>• {profile.mobile}</span>}
+                {profile?.qualification && <span>• {profile.qualification}</span>}
+              </div>
+
+              {profile?.college && (
+                <div style={{ fontSize: '0.82rem', color: '#cbd5e1', marginTop: '0.25rem' }}>
+                  {profile.college}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Right Action: Resume Download & Accreditation */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+            {profile?.resume ? (
+              <a
+                href={getMediaUrl(profile.resume)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn"
+                style={{
+                  backgroundColor: '#059669',
+                  color: '#ffffff',
+                  fontWeight: 700,
+                  fontSize: '0.88rem',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  padding: '0.6rem 1.15rem',
+                  borderRadius: 'var(--radius-md)',
+                  boxShadow: '0 4px 12px rgba(5, 150, 105, 0.4)',
+                }}
+              >
+                <FileText size={17} /> View / Download Resume <ExternalLink size={14} />
+              </a>
+            ) : (
+              <span
+                style={{
+                  backgroundColor: 'rgba(255, 255, 255, 0.08)',
+                  color: '#94a3b8',
+                  padding: '0.5rem 0.9rem',
+                  borderRadius: 'var(--radius-md)',
+                  fontSize: '0.8rem',
+                  border: '1px dashed #475569',
+                }}
+              >
+                No Resume Attached
+              </span>
+            )}
+          </div>
+        </div>
+      </div>
 
       {/* 3 Metric Cards */}
       <div

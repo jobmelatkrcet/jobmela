@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import {
   Calendar,
   MapPin,
@@ -108,161 +109,350 @@ const HomePage = () => {
 
   return (
     <div>
-      {/* Hero Section */}
+      {/* Hero Section with Advanced Framer Motion & Atmospheric College Background */}
       <section className="hero-section">
+        {/* Background Visual Layer */}
+        <div className="hero-bg-photo-wrapper">
+          <motion.img
+            src="/college-campus.webp"
+            alt="TKRCET Campus"
+            className="hero-bg-photo"
+            animate={{ scale: [1.02, 1.06, 1.02] }}
+            transition={{ duration: 22, repeat: Infinity, ease: 'easeInOut' }}
+          />
+          <div className="hero-glow-orb hero-glow-top" />
+          <div className="hero-glow-orb hero-glow-bottom" />
+          <div className="hero-grid-pattern" />
+        </div>
+
         <div className="app-container" style={{ position: 'relative', zIndex: 2 }}>
-          <div style={{ maxWidth: 860, margin: '0 auto', textAlign: 'center' }}>
-            {/* Official Logo & Accreditation */}
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-              <img
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.6 }}
+            style={{ maxWidth: 880, margin: '0 auto', textAlign: 'center' }}
+          >
+            {/* Top Accreditation Pill with Staggered Entrance */}
+            <motion.div
+              initial={{ opacity: 0, y: -16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+              style={{ display: 'inline-block' }}
+            >
+              <div className="hero-accreditation-pill">
+                <Sparkles size={14} color="#fde047" />
+                <span>NAAC "A+" Grade Accredited</span>
+                <span style={{ opacity: 0.4 }}>•</span>
+                <span>NBA Tier-1 Accredited</span>
+                <span style={{ opacity: 0.4 }}>•</span>
+                <span>Autonomous Campus</span>
+              </div>
+            </motion.div>
+
+            {/* Official Crest & AICTE / JNTUH Accreditation */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.92 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5, delay: 0.18 }}
+              style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}
+            >
+              <motion.img
                 src="/tkrcet-official-logo.png"
                 alt="TKRCET Logo"
                 className="hero-logo-img"
+                animate={{ y: [0, -5, 0] }}
+                transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
               />
-              <div className="hero-institution-title">
-                TKR College of Engineering &amp; Technology (Autonomous)
-              </div>
               <div className="hero-institution-motto">
                 "Indian in Character, International in Excellence" • Approved by AICTE • Affiliated to JNTUH
               </div>
-              <div className="hero-accreditation-pill">
-                <Award size={14} /> NAAC "A+" Grade Accredited • NBA Tier-1 Accredited
+            </motion.div>
+
+            {/* Main Grand Title */}
+            <motion.h1
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.55, delay: 0.28 }}
+              className="hero-main-title"
+            >
+              MEGA JOB MELA <span className="hero-title-gradient">2026</span>
+            </motion.h1>
+
+            {/* Organizer Banner Below Title & Event Description (No Redundant Repetition) */}
+            <motion.div
+              initial={{ opacity: 0, y: 14 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.55, delay: 0.36 }}
+              className="hero-organizer-container"
+            >
+              <div className="hero-organizer-pill">
+                <span>Organized by</span>
+                <strong>TKR College of Engineering &amp; Technology</strong>
+                <span className="hero-organizer-tag">(Autonomous)</span>
               </div>
-            </div>
 
-            <h1 className="hero-main-title">
-              TKRCET JOB MELA <span style={{ color: '#60a5fa' }}>2026</span>
-            </h1>
+              <p className="hero-description">
+                Connecting students from all streams with 150+ premier multinational recruiters and emerging enterprises.
+              </p>
+            </motion.div>
 
-            <p className="hero-description">
-              Organized by <strong>TKR College of Engineering &amp; Technology</strong> to provide
-              employment opportunities for students from diverse educational backgrounds.
-            </p>
-
-            {/* Event Highlights Badges */}
-            <div className="hero-highlights-grid">
-              <div className="hero-highlight-chip">
+            {/* Event Highlights Badges with Hover Micro-Interactions */}
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.55, delay: 0.44 }}
+              className="hero-highlights-grid"
+            >
+              <motion.div
+                className="hero-highlight-chip"
+                whileHover={{ y: -3, scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                <span className="hero-live-indicator">
+                  <span className="hero-live-ping" />
+                  <span className="hero-live-dot" />
+                </span>
                 <Calendar size={18} color="#38bdf8" />
                 <span>31 OCTOBER 2026</span>
-              </div>
+              </motion.div>
 
-              <div className="hero-highlight-chip">
+              <motion.div
+                className="hero-highlight-chip"
+                whileHover={{ y: -3, scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
                 <Building2 size={18} color="#4ade80" />
                 <span>150+ Participating Companies</span>
-              </div>
+              </motion.div>
 
-              <div className="hero-highlight-chip">
+              <motion.div
+                className="hero-highlight-chip"
+                whileHover={{ y: -3, scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
                 <Users size={18} color="#fcd34d" />
-                <span>10,000+ Registered Candidates</span>
-              </div>
-            </div>
+                <span>10,000+ Candidates</span>
+              </motion.div>
+            </motion.div>
 
-            {/* CTAs */}
-            <div className="hero-ctas-container">
+            {/* CTAs with Dynamic Pulse and Glow */}
+            <motion.div
+              initial={{ opacity: 0, y: 14 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.55, delay: 0.52 }}
+              className="hero-ctas-container"
+            >
               {!isAuthenticated ? (
                 <>
-                  <Link
-                    to="/register"
-                    className="btn btn-primary btn-lg"
-                    style={{
-                      boxShadow: '0 8px 20px rgba(37, 99, 235, 0.4)',
-                    }}
-                  >
-                    REGISTER NOW <ArrowRight size={18} />
-                  </Link>
-                  <Link
-                    to="/login"
-                    className="btn btn-lg"
-                    style={{
-                      backgroundColor: 'rgba(255, 255, 255, 0.12)',
-                      border: '1px solid rgba(255, 255, 255, 0.3)',
-                      color: '#ffffff',
-                    }}
-                  >
-                    STUDENT LOGIN
-                  </Link>
+                  <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
+                    <Link to="/register" className="hero-primary-btn">
+                      REGISTER NOW
+                      <motion.span
+                        animate={{ x: [0, 5, 0] }}
+                        transition={{ duration: 1.6, repeat: Infinity, ease: 'easeInOut' }}
+                      >
+                        <ArrowRight size={19} />
+                      </motion.span>
+                    </Link>
+                  </motion.div>
+
+                  <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
+                    <Link to="/login" className="hero-secondary-btn">
+                      STUDENT LOGIN
+                    </Link>
+                  </motion.div>
                 </>
               ) : isStudent ? (
                 <>
-                  <Link to="/companies" className="btn btn-primary btn-lg">
-                    Browse Companies & Apply <ArrowRight size={18} />
-                  </Link>
-                  <Link to="/dashboard" className="btn btn-outline btn-lg" style={{ color: '#fff', borderColor: '#fff' }}>
-                    Go to My Dashboard
-                  </Link>
+                  <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
+                    <Link to="/companies" className="hero-primary-btn">
+                      Browse Companies &amp; Apply <ArrowRight size={19} />
+                    </Link>
+                  </motion.div>
+                  <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
+                    <Link to="/dashboard" className="hero-secondary-btn">
+                      Go to My Dashboard
+                    </Link>
+                  </motion.div>
                 </>
               ) : (
-                <Link to="/admin" className="btn btn-primary btn-lg" style={{ backgroundColor: '#f59e0b', color: '#0f172a' }}>
-                  Open Admin Command Center <ArrowRight size={18} />
-                </Link>
+                <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
+                  <Link
+                    to="/admin"
+                    className="hero-primary-btn"
+                    style={{ background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)', color: '#0f172a' }}
+                  >
+                    Open Admin Command Center <ArrowRight size={19} />
+                  </Link>
+                </motion.div>
               )}
+            </motion.div>
+
+            {/* Venue Pill with Beacon */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.6, delay: 0.6 }}
+              style={{ textAlign: 'center' }}
+            >
+              <div className="hero-venue-row">
+                <MapPin size={16} color="#38bdf8" />
+                <span>
+                  Venue: <strong>TKR College of Engineering &amp; Technology</strong>, Medbowli, Meerpet, Hyderabad
+                </span>
+              </div>
+            </motion.div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Floating Key Benefits Strip (4 High-Impact Value Props) */}
+      <section className="hero-benefits-strip">
+        <div className="app-container">
+          <div className="hero-benefits-grid">
+            <div className="benefit-item">
+              <div className="benefit-icon-box" style={{ backgroundColor: '#eff6ff', color: '#2563eb', border: '1px solid #dbeafe' }}>
+                <Building2 size={22} />
+              </div>
+              <div>
+                <div className="benefit-text-title">150+ Top Recruiters</div>
+                <div className="benefit-text-desc">IT, Core Engineering, Banking &amp; Healthcare</div>
+              </div>
             </div>
 
-            <div className="hero-venue-row">
-              <MapPin size={16} color="#38bdf8" /> Venue: TKR College of Engineering &amp; Technology, Medbowli, Meerpet, Hyderabad
+            <div className="benefit-item">
+              <div className="benefit-icon-box" style={{ backgroundColor: '#ecfdf5', color: '#059669', border: '1px solid #a7f3d0' }}>
+                <CheckCircle size={22} />
+              </div>
+              <div>
+                <div className="benefit-text-title">Spot Offer Letters</div>
+                <div className="benefit-text-desc">Immediate on-campus recruitment &amp; interviews</div>
+              </div>
+            </div>
+
+            <div className="benefit-item">
+              <div className="benefit-icon-box" style={{ backgroundColor: '#fef3c7', color: '#d97706', border: '1px solid #fde68a' }}>
+                <GraduationCap size={22} />
+              </div>
+              <div>
+                <div className="benefit-text-title">All Degrees Eligible</div>
+                <div className="benefit-text-desc">B.Tech, B.Sc, B.Com, MBA, MCA &amp; Diploma</div>
+              </div>
+            </div>
+
+            <div className="benefit-item">
+              <div className="benefit-icon-box" style={{ backgroundColor: '#f5f3ff', color: '#7c3aed', border: '1px solid #ddd6fe' }}>
+                <ShieldCheck size={22} />
+              </div>
+              <div>
+                <div className="benefit-text-title">100% Free Registration</div>
+                <div className="benefit-text-desc">Zero entry fees for candidates</div>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
       {/* Target Audiences / Educational Eligibility */}
-      <section style={{ padding: '4rem 0', backgroundColor: '#ffffff' }}>
+      <section style={{ padding: '4.5rem 0', backgroundColor: '#ffffff' }}>
         <div className="app-container">
-          <div style={{ textAlign: 'center', maxWidth: 700, margin: '0 auto 3rem' }}>
-            <h2 style={{ fontSize: '2rem', marginBottom: '0.75rem' }}>
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+            style={{ textAlign: 'center', maxWidth: 700, margin: '0 auto 3rem' }}
+          >
+            <div
+              style={{
+                fontSize: '0.8rem',
+                fontWeight: 700,
+                textTransform: 'uppercase',
+                color: 'var(--color-brand-600)',
+                letterSpacing: '0.06em',
+                marginBottom: '0.35rem',
+              }}
+            >
+              Eligibility & Streams
+            </div>
+            <h2 style={{ fontSize: '2.1rem', marginBottom: '0.75rem', color: 'var(--color-primary-900)' }}>
               Inclusive Employment Drive
             </h2>
-            <p style={{ color: 'var(--color-text-muted)', fontSize: '1.05rem' }}>
-              Open to candidates across diverse academic levels and institutions.
+            <p style={{ color: 'var(--color-text-muted)', fontSize: '1.05rem', lineHeight: 1.6 }}>
+              Open to candidates across diverse academic levels, disciplines, and higher education institutions.
             </p>
-          </div>
+          </motion.div>
 
           <div className="grid-4col-responsive">
             {[
               {
                 title: 'B.Tech / B.E.',
                 desc: 'CSE, ECE, EEE, Mechanical, Civil & Allied Engineering Streams',
+                color: '#2563eb',
+                bg: '#eff6ff',
+                border: '#bfdbfe',
               },
               {
                 title: 'Degree Graduates',
                 desc: 'B.Sc, B.Com, BBA, BCA, BA and equivalent degree disciplines',
+                color: '#059669',
+                bg: '#ecfdf5',
+                border: '#a7f3d0',
               },
               {
                 title: 'Diploma Holders',
                 desc: 'All Polytechnic engineering and technical diploma certifications',
+                color: '#d97706',
+                bg: '#fef3c7',
+                border: '#fde68a',
               },
               {
                 title: '10th & Intermediate',
                 desc: 'Eligible candidates seeking early career openings and entry-level positions',
+                color: '#7c3aed',
+                bg: '#f5f3ff',
+                border: '#ddd6fe',
               },
             ].map((item, idx) => (
-              <div
+              <motion.div
                 key={idx}
-                className="card card-hover"
+                initial={{ opacity: 0, y: 22 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.45, delay: idx * 0.1 }}
+                whileHover={{ y: -6, boxShadow: '0 12px 24px -4px rgba(0, 0, 0, 0.08)' }}
+                className="card"
                 style={{
-                  borderTop: '4px solid var(--color-brand-600)',
+                  borderTop: `4px solid ${item.color}`,
                   textAlign: 'center',
-                  padding: '2rem 1.5rem',
+                  padding: '2.25rem 1.5rem',
+                  borderRadius: 'var(--radius-lg)',
+                  transition: 'all 0.25s ease',
                 }}
               >
                 <div
                   style={{
-                    width: 50,
-                    height: 50,
+                    width: 54,
+                    height: 54,
                     borderRadius: '50%',
-                    backgroundColor: 'var(--color-brand-50)',
-                    color: 'var(--color-brand-600)',
+                    backgroundColor: item.bg,
+                    color: item.color,
+                    border: `1.5px solid ${item.border}`,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     margin: '0 auto 1.25rem',
                   }}
                 >
-                  <GraduationCap size={26} />
+                  <GraduationCap size={28} />
                 </div>
-                <h3 style={{ fontSize: '1.25rem', marginBottom: '0.6rem' }}>{item.title}</h3>
-                <p style={{ fontSize: '0.88rem', color: 'var(--color-text-muted)' }}>{item.desc}</p>
-              </div>
+                <h3 style={{ fontSize: '1.25rem', marginBottom: '0.6rem', color: 'var(--color-primary-900)' }}>
+                  {item.title}
+                </h3>
+                <p style={{ fontSize: '0.88rem', color: 'var(--color-text-muted)', lineHeight: 1.6 }}>
+                  {item.desc}
+                </p>
+              </motion.div>
             ))}
           </div>
         </div>

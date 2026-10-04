@@ -19,6 +19,9 @@ def root_health_check(request):
     )
 
 
+from django.conf import settings
+from django.conf.urls.static import static
+
 urlpatterns = [
     path("", root_health_check, name="api-root"),
     path("api/", root_health_check, name="api-root-alias"),
@@ -38,3 +41,7 @@ urlpatterns = [
         name="student-room-checkin",
     ),
 ]
+
+if settings.MEDIA_URL:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+

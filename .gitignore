@@ -32,3 +32,7 @@ Thumbs.db
 # Environment Variables
 .env
 .env.local
+
+# Media Uploads
+backend/media/**
+!backend/media/.gitkeep

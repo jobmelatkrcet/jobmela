@@ -26,9 +26,15 @@ class StudentRegistrationSerializer(serializers.ModelSerializer):
             "mobile",
             "qualification",
             "college",
+            "photo",
+            "resume",
             "password",
             "confirm_password",
         ]
+        extra_kwargs = {
+            "photo": {"required": False, "allow_null": True},
+            "resume": {"required": False, "allow_null": True},
+        }
 
     def validate_email(self, value):
         normalized_email = value.lower().strip()
@@ -44,6 +50,8 @@ class StudentRegistrationSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         validated_data.pop("confirm_password")
         password = validated_data.pop("password")
+        photo = validated_data.get("photo", None)
+        resume = validated_data.get("resume", None)
         user = User.objects.create_user(
             email=validated_data["email"],
             password=password,
@@ -51,6 +59,8 @@ class StudentRegistrationSerializer(serializers.ModelSerializer):
             mobile=validated_data.get("mobile", "").strip(),
             qualification=validated_data.get("qualification", "").strip(),
             college=validated_data.get("college", "").strip(),
+            photo=photo,
+            resume=resume,
             role="student",
         )
         return user
@@ -66,6 +76,8 @@ class UserSerializer(serializers.ModelSerializer):
             "mobile",
             "qualification",
             "college",
+            "photo",
+            "resume",
             "role",
             "is_staff",
             "created_at",

@@ -17,9 +17,20 @@ import {
   DoorClosed,
   ShieldCheck,
   Gift,
+  Clock,
+  FileText,
+  ExternalLink,
 } from 'lucide-react';
 import Pagination from '../../components/Pagination';
 import Alert from '../../components/Alert';
+
+const getMediaUrl = (path) => {
+  if (!path) return null;
+  if (path.startsWith('http://') || path.startsWith('https://')) return path;
+  const baseUrl = import.meta.env.VITE_API_URL || '';
+  const origin = baseUrl.replace(/\/api\/?$/, '');
+  return `${origin}${path.startsWith('/') ? '' : '/'}${path}`;
+};
 
 const hasValue = (val) => {
   if (!val) return false;
@@ -403,12 +414,13 @@ const AdminCompanyStudentsPage = () => {
             <table className="custom-table">
               <thead>
                 <tr>
-                  <th style={{ width: '60px', textAlign: 'center' }}>S.No</th>
-                  <th>Student Name</th>
+                  <th style={{ width: '50px', textAlign: 'center' }}>S.No</th>
+                  <th>Student Candidate</th>
                   <th>Email</th>
                   <th>Mobile</th>
                   <th>Qualification</th>
                   <th>College / Institution</th>
+                  <th style={{ textAlign: 'center' }}>Resume</th>
                   <th>Applied Date & Time</th>
                 </tr>
               </thead>
@@ -419,7 +431,42 @@ const AdminCompanyStudentsPage = () => {
                       {(currentPage - 1) * 20 + idx + 1}
                     </td>
                     <td>
-                      <strong style={{ color: 'var(--color-primary-900)' }}>{item.name}</strong>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+                        {item.photo ? (
+                          <img
+                            src={getMediaUrl(item.photo)}
+                            alt={item.name}
+                            style={{
+                              width: 32,
+                              height: 32,
+                              borderRadius: '50%',
+                              objectFit: 'cover',
+                              border: '1.5px solid var(--color-brand-400)',
+                              flexShrink: 0,
+                            }}
+                          />
+                        ) : (
+                          <div
+                            style={{
+                              width: 32,
+                              height: 32,
+                              borderRadius: '50%',
+                              backgroundColor: 'var(--color-brand-50)',
+                              color: 'var(--color-brand-600)',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              fontWeight: 700,
+                              fontSize: '0.85rem',
+                              border: '1px solid var(--color-brand-200)',
+                              flexShrink: 0,
+                            }}
+                          >
+                            {(item.name || 'S').charAt(0).toUpperCase()}
+                          </div>
+                        )}
+                        <strong style={{ color: 'var(--color-primary-900)' }}>{item.name}</strong>
+                      </div>
                     </td>
                     <td>
                       <a href={`mailto:${item.email}`} style={{ color: 'var(--color-brand-600)' }}>
@@ -434,6 +481,31 @@ const AdminCompanyStudentsPage = () => {
                     </td>
                     <td style={{ maxWidth: 220, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                       {item.college || '—'}
+                    </td>
+                    <td style={{ textAlign: 'center' }}>
+                      {item.resume ? (
+                        <a
+                          href={getMediaUrl(item.resume)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="btn btn-outline btn-sm"
+                          style={{
+                            padding: '0.2rem 0.55rem',
+                            fontSize: '0.75rem',
+                            color: '#059669',
+                            borderColor: '#a7f3d0',
+                            backgroundColor: '#ecfdf5',
+                            gap: '0.25rem',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                          }}
+                          title="Open candidate resume"
+                        >
+                          <FileText size={13} /> Resume
+                        </a>
+                      ) : (
+                        <span style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>—</span>
+                      )}
                     </td>
                     <td>
                       <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', color: 'var(--color-text-muted)', fontSize: '0.85rem' }}>

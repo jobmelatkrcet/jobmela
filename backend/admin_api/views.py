@@ -315,6 +315,7 @@ class AdminCompanyExcelExportView(APIView):
             "Mobile",
             "Qualification",
             "College",
+            "Resume Uploaded",
             "Applied Date",
         ]
         ws.row_dimensions[5].height = 26
@@ -324,7 +325,7 @@ class AdminCompanyExcelExportView(APIView):
             cell.font = white_bold_font
             cell.fill = navy_header
             cell.alignment = Alignment(
-                horizontal="center" if col_idx in (1, 4, 7) else "left",
+                horizontal="center" if col_idx in (1, 4, 7, 8) else "left",
                 vertical="center",
             )
             cell.border = cell_border
@@ -334,6 +335,7 @@ class AdminCompanyExcelExportView(APIView):
             current_row = 5 + row_idx
             ws.row_dimensions[current_row].height = 20
             student = app.student
+            resume_status = "Available (Uploaded)" if student.resume else "Not Uploaded"
 
             row_data = [
                 row_idx,
@@ -342,6 +344,7 @@ class AdminCompanyExcelExportView(APIView):
                 student.mobile or "N/A",
                 student.qualification or "N/A",
                 student.college or "N/A",
+                resume_status,
                 app.applied_at.strftime("%d-%m-%Y %I:%M %p"),
             ]
 
