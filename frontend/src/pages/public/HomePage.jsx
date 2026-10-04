@@ -120,62 +120,11 @@ const HomePage = () => {
         <div className="hero-ref-overlay" />
 
         <div className="hero-ref-container">
-          {/* 1. Top 3 Accreditation Pillars */}
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.08 }}
-            className="hero-pillars-row"
-          >
-            <div className="hero-pillar-col">
-              <div className="hero-pillar-icon-box">
-                <Award size={20} color="#fbbf24" />
-              </div>
-              <div className="hero-pillar-title">NAAC "A+"</div>
-              <div className="hero-pillar-subtitle">Grade Accredited</div>
-            </div>
-
-            <div className="hero-pillar-divider" />
-
-            <div className="hero-pillar-col">
-              <div className="hero-pillar-icon-box">
-                <ShieldCheck size={20} color="#fbbf24" />
-              </div>
-              <div className="hero-pillar-title">NBA Tier-1</div>
-              <div className="hero-pillar-subtitle">Accredited</div>
-            </div>
-
-            <div className="hero-pillar-divider" />
-
-            <div className="hero-pillar-col">
-              <div className="hero-pillar-icon-box">
-                <Landmark size={20} color="#fbbf24" />
-              </div>
-              <div className="hero-pillar-title hero-pillar-title-gold">Autonomous</div>
-              <div className="hero-pillar-subtitle">Campus</div>
-            </div>
-          </motion.div>
-
-          {/* 2. Motto & Accreditations */}
-          <motion.div
-            initial={{ opacity: 0, y: -6 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.14 }}
-            className="hero-motto-wrapper"
-          >
-            <div className="hero-institution-motto">
-              “Indian in Character, International in Excellence”
-            </div>
-            <div className="hero-approvals-subline">
-              Approved by AICTE  •  Affiliated to JNTUH
-            </div>
-          </motion.div>
-
-          {/* 3. Main Title Block - HIGHLIGHT ONLY JOB MELA */}
+          {/* 1. Grand Event Title Block - HIGHLIGHT ONLY JOB MELA */}
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.55, delay: 0.2 }}
+            transition={{ duration: 0.5, delay: 0.08 }}
             className="hero-title-container"
           >
             <div className="hero-mega-label">MEGA</div>
@@ -202,11 +151,11 @@ const HomePage = () => {
             </div>
           </motion.div>
 
-          {/* 4. Organized By Section */}
+          {/* 2. Organized By Section with College Motto, Approvals, & Accreditation Pillars */}
           <motion.div
             initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.45, delay: 0.26 }}
+            transition={{ duration: 0.45, delay: 0.16 }}
             className="hero-organized-section"
           >
             <div className="hero-org-divider-row">
@@ -219,6 +168,45 @@ const HomePage = () => {
             </div>
             <div className="hero-org-autonomous">
               (Autonomous)
+            </div>
+
+            {/* College Motto & Approvals (Directly under TKR College) */}
+            <div className="hero-institution-motto">
+              “Indian in Character, International in Excellence”
+            </div>
+            <div className="hero-approvals-subline">
+              Approved by AICTE  •  Affiliated to JNTUH
+            </div>
+
+            {/* College Accreditations (NAAC, NBA, Autonomous) directly below College */}
+            <div className="hero-pillars-row">
+              <div className="hero-pillar-col">
+                <div className="hero-pillar-icon-box">
+                  <Award size={18} color="#fbbf24" />
+                </div>
+                <div className="hero-pillar-title">NAAC "A+"</div>
+                <div className="hero-pillar-subtitle">Grade Accredited</div>
+              </div>
+
+              <div className="hero-pillar-divider" />
+
+              <div className="hero-pillar-col">
+                <div className="hero-pillar-icon-box">
+                  <ShieldCheck size={18} color="#fbbf24" />
+                </div>
+                <div className="hero-pillar-title">NBA Tier-1</div>
+                <div className="hero-pillar-subtitle">Accredited</div>
+              </div>
+
+              <div className="hero-pillar-divider" />
+
+              <div className="hero-pillar-col">
+                <div className="hero-pillar-icon-box">
+                  <Landmark size={18} color="#fbbf24" />
+                </div>
+                <div className="hero-pillar-title hero-pillar-title-gold">Autonomous</div>
+                <div className="hero-pillar-subtitle">Campus</div>
+              </div>
             </div>
           </motion.div>
 
