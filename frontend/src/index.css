@@ -2496,3 +2496,52 @@ button, input, select, textarea {
   }
 }
 
+/* =========================================================
+   PRINT STYLES FOR OFFICIAL QR PLACARDS & PASSES
+   ========================================================= */
+
+@media print {
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+  }
+
+  .site-header,
+  .top-utility-bar,
+  .main-navbar,
+  .site-footer,
+  .navbar-actions,
+  .mobile-drawer,
+  .btn,
+  button,
+  .modal-footer,
+  .modal-header .btn-close,
+  .requirements-banner-strip {
+    display: none !important;
+  }
+
+  .modal-backdrop {
+    position: static !important;
+    background: none !important;
+    padding: 0 !important;
+  }
+
+  .modal-content {
+    box-shadow: none !important;
+    border: none !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    padding: 0 !important;
+  }
+
+  .modal-body {
+    padding: 0 !important;
+  }
+
+  @page {
+    size: A4 portrait;
+    margin: 10mm;
+  }
+}
+
+

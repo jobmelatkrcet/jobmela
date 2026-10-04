@@ -16,14 +16,20 @@ import {
   ArrowRight,
   Info,
   RefreshCw,
+  FileDown,
 } from 'lucide-react';
 import Alert from '../../components/Alert';
+import { generatePlacardsPDF } from '../../utils/qrPlacardPdfGenerator';
 
 const AdminRoomAllocationPage = ({ onTabChange }) => {
   const [loading, setLoading] = useState(true);
   const [summaryData, setSummaryData] = useState(null);
   const [search, setSearch] = useState('');
   const [alert, setAlert] = useState(null);
+
+  // PDF Export state
+  const [exportingPdf, setExportingPdf] = useState(false);
+  const [pdfProgress, setPdfProgress] = useState({ current: 0, total: 0, name: '' });
 
   // Upload & Preview state
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
@@ -158,6 +164,70 @@ const AdminRoomAllocationPage = ({ onTabChange }) => {
     window.print();
   };
 
+  const handleDownloadAllPlacardsPDF = async () => {
+    const allocations = summaryData?.allocations || [];
+    const valid = allocations.filter(
+      (a) => a.room_number && a.room_number !== 'Unallocated'
+    );
+
+    if (valid.length === 0) {
+      setAlert({
+        type: 'danger',
+        message: 'No allocated rooms found to export. Please allocate rooms to companies first.',
+      });
+      return;
+    }
+
+    setExportingPdf(true);
+    setPdfProgress({ current: 0, total: valid.length, name: 'Initializing PDF document...' });
+
+    try {
+      const res = await generatePlacardsPDF(valid, {
+        onProgress: (current, total, item) => {
+          setPdfProgress({
+            current,
+            total,
+            name: `ROOM ${item.room_number} — ${item.company_name}`,
+          });
+        },
+      });
+
+      setAlert({
+        type: 'success',
+        message: `Successfully generated and downloaded ${res.filename} with ${res.count} high-resolution room placards!`,
+      });
+    } catch (err) {
+      console.error('Error generating PDF placards:', err);
+      setAlert({
+        type: 'danger',
+        message: err.message || 'Failed to generate room QR placards PDF.',
+      });
+    } finally {
+      setExportingPdf(false);
+    }
+  };
+
+  const handleDownloadSinglePlacardPDF = async () => {
+    if (!selectedRoomQR) return;
+    try {
+      const singleItem = [
+        {
+          room_id: selectedRoomQR.id,
+          room_number: selectedRoomQR.room_number,
+          company_name: selectedRoomQR.assigned_company?.name || 'Assigned Recruiter',
+          sector: selectedRoomQR.assigned_company?.sector || '',
+          job_position: selectedRoomQR.assigned_company?.job_position || '',
+          unique_room_token: selectedRoomQR.unique_room_token,
+          qr_status: selectedRoomQR.qr_status,
+        },
+      ];
+      await generatePlacardsPDF(singleItem, { singleRoom: true });
+    } catch (err) {
+      console.error('Failed to export single placard PDF:', err);
+      setAlert({ type: 'danger', message: 'Failed to download QR placard PDF.' });
+    }
+  };
+
   // Filter allocations
   const filteredAllocations = (summaryData?.allocations || []).filter((item) => {
     if (!search.trim()) return true;
@@ -211,9 +281,24 @@ const AdminRoomAllocationPage = ({ onTabChange }) => {
 
         <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
           <button
-            onClick={handleOpenUploadModal}
+            onClick={handleDownloadAllPlacardsPDF}
+            disabled={exportingPdf || !summaryData?.allocated_companies_count}
             className="btn btn-primary"
-            style={{ gap: '0.5rem', boxShadow: '0 4px 10px rgba(37, 99, 235, 0.25)' }}
+            style={{
+              gap: '0.5rem',
+              backgroundColor: '#047857',
+              borderColor: '#047857',
+              boxShadow: '0 4px 10px rgba(4, 120, 87, 0.25)',
+            }}
+            title="Download all allocated room QR placards as a single PDF document"
+          >
+            <FileDown size={17} /> Download All QRs (PDF)
+          </button>
+
+          <button
+            onClick={handleOpenUploadModal}
+            className="btn btn-outline"
+            style={{ gap: '0.5rem' }}
           >
             <Upload size={17} /> Upload Room Numbers Excel
           </button>
@@ -347,6 +432,22 @@ const AdminRoomAllocationPage = ({ onTabChange }) => {
                 }}
               />
             </div>
+            <button
+              onClick={handleDownloadAllPlacardsPDF}
+              disabled={exportingPdf || !summaryData?.allocated_companies_count}
+              className="btn btn-outline btn-sm"
+              style={{
+                gap: '0.4rem',
+                color: '#047857',
+                borderColor: '#a7f3d0',
+                backgroundColor: '#ecfdf5',
+                fontWeight: 600,
+                fontSize: '0.82rem',
+              }}
+              title="Download all allocated room QR placards as a single PDF document"
+            >
+              <FileDown size={14} /> Download All QRs (PDF)
+            </button>
             <button
               onClick={loadSummary}
               className="btn btn-outline btn-sm"
@@ -917,12 +1018,89 @@ const AdminRoomAllocationPage = ({ onTabChange }) => {
               </button>
               <button
                 type="button"
+                className="btn btn-outline"
+                onClick={handleDownloadSinglePlacardPDF}
+                style={{ gap: '0.4rem', color: '#047857', borderColor: '#a7f3d0' }}
+                title="Download this room's official QR placard as a PDF"
+              >
+                <FileDown size={16} /> Download PDF
+              </button>
+              <button
+                type="button"
                 className="btn btn-primary"
                 onClick={handlePrintPlacard}
                 style={{ gap: '0.4rem' }}
               >
                 <Printer size={16} /> Print Placard
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* PDF Export Progress Modal */}
+      {exportingPdf && (
+        <div className="modal-backdrop" style={{ zIndex: 1100 }}>
+          <div className="modal-content" style={{ maxWidth: 460, textAlign: 'center', padding: '2rem 1.5rem' }}>
+            <div
+              style={{
+                width: 56,
+                height: 56,
+                borderRadius: '50%',
+                backgroundColor: '#ecfdf5',
+                color: '#047857',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                margin: '0 auto 1.25rem',
+              }}
+            >
+              <FileDown size={28} />
+            </div>
+            <h3 style={{ fontSize: '1.25rem', marginBottom: '0.4rem', color: '#0f172a' }}>
+              Generating All Room QR Placards PDF
+            </h3>
+            <p style={{ fontSize: '0.85rem', color: '#64748b', marginBottom: '1.25rem' }}>
+              Creating high-resolution vector QR placards for every allocated interview room...
+            </p>
+
+            {/* Progress Bar */}
+            <div
+              style={{
+                width: '100%',
+                height: 10,
+                backgroundColor: '#e2e8f0',
+                borderRadius: 9999,
+                overflow: 'hidden',
+                marginBottom: '0.85rem',
+              }}
+            >
+              <div
+                style={{
+                  height: '100%',
+                  backgroundColor: '#047857',
+                  width: `${pdfProgress.total > 0 ? (pdfProgress.current / pdfProgress.total) * 100 : 0}%`,
+                  transition: 'width 0.15s ease',
+                }}
+              />
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.82rem', fontWeight: 600, color: '#334155' }}>
+              <span>Placard {pdfProgress.current} of {pdfProgress.total}</span>
+              <span>{pdfProgress.total > 0 ? Math.round((pdfProgress.current / pdfProgress.total) * 100) : 0}%</span>
+            </div>
+
+            <div
+              style={{
+                fontSize: '0.76rem',
+                color: '#64748b',
+                marginTop: '0.5rem',
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+              }}
+            >
+              {pdfProgress.name}
             </div>
           </div>
         </div>
