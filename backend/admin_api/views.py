@@ -773,17 +773,7 @@ class AdminCompanyExcelUploadView(APIView):
         ]
 
         if is_preview:
-            exact_lower_map = {}
-            norm_key_map = {}
-            for c in Company.objects.all():
-                clean_name = c.name.strip()
-                exact_lower_map[clean_name.lower()] = c.name
-                for k in get_company_lookup_keys(clean_name):
-                    norm_key_map[k] = c.name
-
             preview_companies = []
-            duplicate_matches = []
-            seen_in_file = set()
             invalid_count = 0
             sample_rows = []
 
@@ -803,22 +793,6 @@ class AdminCompanyExcelUploadView(APIView):
                     invalid_count += 1
                     continue
 
-                norm_lower = company_name.lower()
-                existing_match = exact_lower_map.get(norm_lower)
-                if not existing_match:
-                    for k in get_company_lookup_keys(company_name):
-                        if k in norm_key_map:
-                            existing_match = norm_key_map[k]
-                            break
-
-                if existing_match:
-                    if existing_match not in duplicate_matches:
-                        duplicate_matches.append(existing_match)
-                elif norm_lower in seen_in_file:
-                    if company_name not in duplicate_matches:
-                        duplicate_matches.append(company_name)
-
-                seen_in_file.add(norm_lower)
                 preview_companies.append(company_name)
                 if len(sample_rows) < 5:
                     sample_rows.append(row_data)
@@ -831,8 +805,8 @@ class AdminCompanyExcelUploadView(APIView):
                     "companies_detected": len(preview_companies),
                     "invalid_rows": invalid_count,
                     "columns_detected": detected_columns,
-                    "possible_duplicates_count": len(duplicate_matches),
-                    "possible_duplicates": duplicate_matches[:10],
+                    "possible_duplicates_count": 0,
+                    "possible_duplicates": [],
                     "sample_rows": sample_rows,
                 },
                 status=status.HTTP_200_OK,
@@ -846,22 +820,12 @@ class AdminCompanyExcelUploadView(APIView):
 
         total_rows_processed = 0
         new_companies = 0
-        updated_companies = 0
-        existing_unchanged = 0
         invalid_rows = 0
-
-        exact_lower_map = {}
-        norm_key_map = {}
+        companies_to_create = []
 
         with transaction.atomic():
             if clear_existing:
                 Company.objects.all().delete()
-            else:
-                for c in Company.objects.all():
-                    clean_name = c.name.strip()
-                    exact_lower_map[clean_name.lower()] = c
-                    for k in get_company_lookup_keys(clean_name):
-                        norm_key_map[k] = c
 
             for row in rows[start_row:]:
                 if not row or not any(c is not None and str(c).strip() for c in row):
@@ -880,43 +844,8 @@ class AdminCompanyExcelUploadView(APIView):
                     continue
 
                 total_rows_processed += 1
-                norm_lower = company_name.lower()
-
-                existing_company = exact_lower_map.get(norm_lower)
-                if not existing_company:
-                    for k in get_company_lookup_keys(company_name):
-                        if k in norm_key_map:
-                            existing_company = norm_key_map[k]
-                            break
-
-                if existing_company:
-                    is_changed = False
-                    for f in [
-                        "sector",
-                        "job_position",
-                        "openings",
-                        "salary_ctc",
-                        "qualification",
-                        "location",
-                        "gender",
-                        "eligibility",
-                        "facilities",
-                        "room_no",
-                    ]:
-                        new_val = row_data.get(f, "")
-                        if new_val:
-                            curr_val = getattr(existing_company, f, "")
-                            if curr_val != new_val:
-                                setattr(existing_company, f, new_val)
-                                is_changed = True
-
-                    if is_changed:
-                        existing_company.save()
-                        updated_companies += 1
-                    else:
-                        existing_unchanged += 1
-                else:
-                    new_company = Company(
+                companies_to_create.append(
+                    Company(
                         name=company_name,
                         sector=row_data.get("sector", ""),
                         job_position=row_data.get("job_position", ""),
@@ -929,12 +858,11 @@ class AdminCompanyExcelUploadView(APIView):
                         facilities=row_data.get("facilities", ""),
                         room_no=row_data.get("room_no", ""),
                     )
-                    new_company.save()
-                    new_companies += 1
+                )
 
-                    exact_lower_map[norm_lower] = new_company
-                    for k in get_company_lookup_keys(company_name):
-                        norm_key_map[k] = new_company
+            if companies_to_create:
+                Company.objects.bulk_create(companies_to_create)
+                new_companies = len(companies_to_create)
 
         detected_columns = [
             FIELD_DISPLAY_LABELS.get(f, f) for f in col_mappings.values()
@@ -943,14 +871,14 @@ class AdminCompanyExcelUploadView(APIView):
         return Response(
             {
                 "message": (
-                    f"Import Complete: {new_companies} new companies added, {updated_companies} updated."
+                    f"Import Complete: {new_companies} companies added."
                     if not clear_existing
                     else f"Reset & Import Complete: {new_companies} companies added."
                 ),
                 "total_rows": total_rows_processed,
                 "new_companies": new_companies,
-                "updated_companies": updated_companies,
-                "existing_companies": existing_unchanged,
+                "updated_companies": 0,
+                "existing_companies": 0,
                 "invalid_rows": invalid_rows,
                 "columns_detected": detected_columns,
                 "cleared_existing": clear_existing,

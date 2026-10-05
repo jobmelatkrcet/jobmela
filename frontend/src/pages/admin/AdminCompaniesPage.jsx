@@ -481,7 +481,7 @@ const AdminCompaniesPage = ({ onTabChange }) => {
               >
                 <Info size={16} style={{ flexShrink: 0 }} />
                 <span>
-                  <strong>Flexible Structure:</strong> Company Name is the ONLY mandatory field. All other columns are optional and different column formats/namings are automatically recognized.
+                  <strong>Accurate 1-to-1 Import:</strong> Company Name is the mandatory field. Every company row in your spreadsheet will be imported directly as its own entry without merging.
                 </span>
               </div>
 
@@ -514,10 +514,9 @@ const AdminCompaniesPage = ({ onTabChange }) => {
                       fontSize: '0.88rem',
                     }}
                   >
-                    <div>Companies Processed: <strong>{uploadResult.total_rows}</strong></div>
-                    <div>New Companies: <strong style={{ color: 'var(--color-success-700)' }}>+{uploadResult.new_companies}</strong></div>
-                    <div>Updated Companies: <strong style={{ color: '#2563eb' }}>{uploadResult.updated_companies || 0}</strong></div>
-                    <div>Invalid Rows: <strong style={{ color: uploadResult.invalid_rows ? '#dc2626' : 'inherit' }}>{uploadResult.invalid_rows || 0}</strong></div>
+                    <div>Rows Processed: <strong>{uploadResult.total_rows}</strong></div>
+                    <div>Companies Added: <strong style={{ color: 'var(--color-success-700)' }}>+{uploadResult.new_companies}</strong></div>
+                    <div>Invalid / Blank Rows: <strong style={{ color: uploadResult.invalid_rows ? '#dc2626' : 'inherit' }}>{uploadResult.invalid_rows || 0}</strong></div>
                   </div>
 
                   {uploadResult.columns_detected && uploadResult.columns_detected.length > 0 && (
@@ -663,14 +662,6 @@ const AdminCompaniesPage = ({ onTabChange }) => {
                         {previewData.invalid_rows > 0 && <span style={{ fontSize: '0.72rem', fontWeight: 500, marginLeft: '0.35rem' }}>(skipped)</span>}
                       </div>
                     </div>
-
-                    <div style={{ padding: '0.65rem 0.75rem', backgroundColor: '#eff6ff', borderRadius: 'var(--radius-md)', border: '1px solid #bfdbfe' }}>
-                      <div style={{ fontSize: '0.72rem', color: '#1e40af', textTransform: 'uppercase', fontWeight: 700 }}>Possible Duplicates</div>
-                      <div style={{ fontSize: '1.1rem', fontWeight: 800, color: '#1d4ed8', marginTop: '0.2rem' }}>
-                        {previewData.possible_duplicates_count}
-                        <span style={{ fontSize: '0.72rem', fontWeight: 500, marginLeft: '0.35rem' }}>(merge mode)</span>
-                      </div>
-                    </div>
                   </div>
 
                   {/* Detected Columns */}
@@ -745,9 +736,9 @@ const AdminCompaniesPage = ({ onTabChange }) => {
                     </div>
                   )}
 
-                  {/* Duplicate merging note */}
-                  <div style={{ marginTop: '0.75rem', fontSize: '0.78rem', color: '#1e40af', backgroundColor: '#eff6ff', padding: '0.5rem 0.75rem', borderRadius: 'var(--radius-sm)', lineHeight: 1.4 }}>
-                    <strong>Smart Merge Enabled:</strong> Matching company records (e.g. <em>ABC Ltd</em> and <em>ABC Limited</em>) will be merged non-destructively. Existing information will NOT be deleted or lost.
+                  {/* 1-to-1 accurate import note */}
+                  <div style={{ marginTop: '0.75rem', fontSize: '0.78rem', color: '#047857', backgroundColor: '#ecfdf5', border: '1px solid #a7f3d0', padding: '0.5rem 0.75rem', borderRadius: 'var(--radius-sm)', lineHeight: 1.4 }}>
+                    <strong>Accurate 1-to-1 Import:</strong> Every company row will be imported directly as its own entry without merging, ensuring an exact count matching your spreadsheet.
                   </div>
                 </div>
               )}

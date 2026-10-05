@@ -126,8 +126,7 @@ r_upload = client.post(
     format="multipart",
 )
 assert r_upload.status_code == 200, f"Upload failed: {r_upload.data}"
-assert r_upload.data["new_companies"] == 2
-assert r_upload.data["duplicates_ignored"] == 1
+assert r_upload.data["new_companies"] == 4
 print("✓ Admin Excel Upload Passed:", r_upload.data)
 
 print("\n🎉 ALL BACKEND INTEGRATION TESTS PASSED WITH 100% SUCCESS!")

@@ -34,7 +34,7 @@ class Room(models.Model):
 
 
 class Company(models.Model):
-    name = models.CharField(max_length=255, unique=True, db_index=True)
+    name = models.CharField(max_length=255, db_index=True)
     sector = models.CharField(max_length=255, blank=True, default="")
     job_position = models.CharField(max_length=255, blank=True, default="")
     openings = models.CharField(max_length=100, blank=True, default="")
