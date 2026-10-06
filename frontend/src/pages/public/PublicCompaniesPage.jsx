@@ -154,7 +154,7 @@ const PublicCompaniesPage = () => {
           className="card"
           style={{
             marginBottom: '2rem',
-            padding: '1.25rem 1.5rem',
+            padding: '1.25rem clamp(0.85rem, 3vw, 1.5rem)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
@@ -164,7 +164,7 @@ const PublicCompaniesPage = () => {
         >
           <form
             onSubmit={handleSearchSubmit}
-            style={{ display: 'flex', gap: '0.6rem', flex: 1, minWidth: 280, maxWidth: 500 }}
+            style={{ display: 'flex', gap: '0.6rem', flex: 1, minWidth: 'min(100%, 260px)', maxWidth: 500 }}
           >
             <div style={{ position: 'relative', flex: 1 }}>
               <input

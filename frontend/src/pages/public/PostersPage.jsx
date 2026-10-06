@@ -136,7 +136,7 @@ const PostersPage = () => {
               overflow: 'hidden',
               display: 'flex',
               flexDirection: 'column',
-              padding: '1.75rem',
+              padding: 'clamp(1rem, 3.5vw, 1.75rem)',
             }}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
@@ -305,7 +305,7 @@ const PostersPage = () => {
               overflow: 'hidden',
               display: 'flex',
               flexDirection: 'column',
-              padding: '1.75rem',
+              padding: 'clamp(1rem, 3.5vw, 1.75rem)',
             }}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>

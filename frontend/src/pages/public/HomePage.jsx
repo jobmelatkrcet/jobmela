@@ -59,7 +59,7 @@ const HomePage = () => {
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState('all');
-  const [viewMode, setViewMode] = useState('segregated'); // 'segregated' or 'grid'
+  const [viewMode, setViewMode] = useState('grid'); // Default to 'grid' for clean 10-company spotlight
 
   // Front Page Hero Slideshow State:
   // Slide 0: Custom Designed Hero
@@ -131,11 +131,40 @@ const HomePage = () => {
     return counts;
   }, [companies, categorizedData]);
 
+  const FRONT_PAGE_LIMIT = 10;
+
   // Filtered companies based on active pill
   const filteredCompanies = useMemo(() => {
     if (selectedCategory === 'all') return companies;
     return categorizedData[selectedCategory] || [];
   }, [selectedCategory, companies, categorizedData]);
+
+  // Front page strictly limits view to at most 10 companies
+  const displayedCompanies = useMemo(() => {
+    return filteredCompanies.slice(0, FRONT_PAGE_LIMIT);
+  }, [filteredCompanies]);
+
+  const hasMoreCompanies =
+    (totalCompanies || companies.length) > FRONT_PAGE_LIMIT ||
+    filteredCompanies.length > FRONT_PAGE_LIMIT;
+
+  const remainingCount = Math.max(0, (totalCompanies || companies.length) - FRONT_PAGE_LIMIT);
+
+  // When segregated view is chosen, group ONLY the 10 spotlight companies so the front page never floods
+  const segregatedSpotlight = useMemo(() => {
+    const groups = {};
+    CATEGORIES.forEach((cat) => {
+      if (cat.id !== 'all') groups[cat.id] = [];
+    });
+
+    displayedCompanies.forEach((comp) => {
+      const cat = getCompanyCategory(comp);
+      const catId = groups[cat.id] ? cat.id : 'general';
+      groups[catId].push(comp);
+    });
+
+    return groups;
+  }, [displayedCompanies]);
 
   return (
     <div>
@@ -503,14 +532,14 @@ const HomePage = () => {
 
 
       {/* Target Audiences / Educational Eligibility */}
-      <section style={{ padding: '4.5rem 0', backgroundColor: '#ffffff' }}>
+      <section className="home-section-white">
         <div className="app-container">
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5 }}
-            style={{ textAlign: 'center', maxWidth: 700, margin: '0 auto 3rem' }}
+            style={{ textAlign: 'center', maxWidth: 700, margin: '0 auto 2.5rem' }}
           >
             <div
               style={{
@@ -524,15 +553,15 @@ const HomePage = () => {
             >
               Eligibility & Streams
             </div>
-            <h2 style={{ fontSize: '2.1rem', marginBottom: '0.75rem', color: 'var(--color-primary-900)' }}>
+            <h2 style={{ fontSize: 'clamp(1.45rem, 4vw, 2.1rem)', marginBottom: '0.75rem', color: 'var(--color-primary-900)' }}>
               Inclusive Employment Drive
             </h2>
-            <p style={{ color: 'var(--color-text-muted)', fontSize: '1.05rem', lineHeight: 1.6 }}>
+            <p style={{ color: 'var(--color-text-muted)', fontSize: 'clamp(0.9rem, 2vw, 1.05rem)', lineHeight: 1.6 }}>
               Open to candidates across diverse academic levels, disciplines, and higher education institutions.
             </p>
           </motion.div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 310px), 1fr))', gap: '1.5rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))', gap: '1.25rem' }}>
             {[
               {
                 title: 'B.Tech / B.E.',
@@ -621,8 +650,8 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* Participating Companies Section (Category Segregated) */}
-      <section style={{ padding: '4rem 0', backgroundColor: '#f8fafc' }}>
+      {/* Participating Companies Section (Category Segregated & Spotlight of 10) */}
+      <section id="companies-section" className="home-section-slate">
         <div className="app-container">
           <div
             className="companies-header-wrapper"
@@ -650,7 +679,7 @@ const HomePage = () => {
               </div>
               <h2 className="companies-section-title">Participating Companies by Sector</h2>
               <p className="companies-section-subtitle">
-                Explore <strong>{totalCompanies || companies.length} verified companies</strong> segregated category-wise across Banking, Product-Based IT, Manufacturing, Core Engineering and more.
+                Spotlight view featuring <strong>{displayedCompanies.length} key companies</strong> from <strong>{totalCompanies || companies.length} verified recruiters</strong>. Click any company to apply or explore the full directory.
               </p>
             </div>
 
@@ -752,6 +781,20 @@ const HomePage = () => {
             })}
           </div>
 
+          {/* Spotlight Counter & Quick Link to Full Directory */}
+          <div className="home-spotlight-counter-row">
+            <div className="home-spotlight-counter-text">
+              <Sparkles size={16} color="#0284c7" />
+              <span>
+                Showing <strong>{displayedCompanies.length}</strong> of{' '}
+                <strong>{totalCompanies || companies.length}</strong> Participating Companies
+              </span>
+            </div>
+            <Link to="/companies" className="home-spotlight-counter-link">
+              Explore All {totalCompanies || 150}+ in Full Directory <ArrowRight size={14} />
+            </Link>
+          </div>
+
           {loading ? (
             <div style={{ padding: '1.5rem 0 3rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginBottom: '1.5rem', color: 'var(--color-text-muted)', fontSize: '0.92rem' }}>
@@ -781,12 +824,13 @@ const HomePage = () => {
               </button>
             </div>
           ) : viewMode === 'segregated' && selectedCategory === 'all' ? (
-            /* SEGREGATED SECTIONS: Categorized groups with headers and cards */
+            /* SEGREGATED SECTIONS: Categorized spotlight of top 10 companies */
             <div>
               {CATEGORIES.filter((c) => c.id !== 'all').map((cat) => {
-                const comps = categorizedData[cat.id] || [];
+                const comps = segregatedSpotlight[cat.id] || [];
                 if (comps.length === 0) return null;
                 const Icon = CATEGORY_ICONS[cat.id] || Building2;
+                const totalInCat = categoryCounts[cat.id] || comps.length;
 
                 return (
                   <div key={cat.id} className="category-section-container">
@@ -825,15 +869,14 @@ const HomePage = () => {
                             fontSize: '0.82rem',
                           }}
                         >
-                          {comps.length} {comps.length === 1 ? 'Company' : 'Companies'}
+                          {comps.length} of {totalInCat} Spotlight
                         </span>
-                        <button
-                          type="button"
-                          onClick={() => setSelectedCategory(cat.id)}
+                        <Link
+                          to="/companies"
                           className="btn btn-outline btn-sm category-view-only-btn"
                         >
-                          View {cat.shortLabel} →
-                        </button>
+                          Explore All {totalInCat} {cat.shortLabel} →
+                        </Link>
                       </div>
                     </div>
 
@@ -962,10 +1005,33 @@ const HomePage = () => {
                 );
               })}
 
-              <div style={{ textAlign: 'center', marginTop: '1.5rem' }}>
-                <Link to="/companies" className="btn btn-primary btn-lg">
-                  Browse All {totalCompanies || companies.length} Companies <ArrowRight size={17} />
-                </Link>
+              {/* Full Directory Explore Banner in Segregated Mode */}
+              <div className="home-explore-full-directory-banner">
+                <div className="home-explore-left">
+                  <div className="badge badge-blue" style={{ width: 'fit-content', marginBottom: '0.65rem' }}>
+                    <Sparkles size={14} /> Comprehensive Recruiter Directory
+                  </div>
+                  <h3 className="home-explore-title">
+                    Explore All {totalCompanies || 150}+ Participating Companies
+                  </h3>
+                  <p className="home-explore-desc">
+                    Only 10 spotlight companies are featured on the front page. Discover all 150+ organizations categorized across Banking, Product IT, Core Engineering, Manufacturing, BPO &amp; Healthcare with real-time room allocations and qualification filters.
+                  </p>
+                </div>
+                <div className="home-explore-right">
+                  <Link to="/companies" className="btn btn-primary btn-lg home-explore-cta-btn">
+                    <Building2 size={18} /> Explore All Companies <ArrowRight size={18} />
+                  </Link>
+                  {isAuthenticated && isStudent ? (
+                    <Link to="/companies" className="btn btn-outline btn-lg home-explore-sub-btn">
+                      Browse &amp; Apply
+                    </Link>
+                  ) : (
+                    <Link to="/register" className="btn btn-outline btn-lg home-explore-sub-btn">
+                      Register as Candidate
+                    </Link>
+                  )}
+                </div>
               </div>
             </div>
           ) : (
@@ -992,7 +1058,7 @@ const HomePage = () => {
               )}
 
               <div className="category-companies-grid">
-                {filteredCompanies.map((comp) => {
+                {displayedCompanies.map((comp) => {
                   const cat = getCompanyCategory(comp);
                   return (
                     <div
@@ -1112,12 +1178,54 @@ const HomePage = () => {
                     </div>
                   );
                 })}
+
+                {/* 11th "Explore More Companies" Spotlight Card */}
+                {hasMoreCompanies && (
+                  <div className="card home-explore-more-card">
+                    <div className="home-explore-card-icon-box">
+                      <Sparkles size={24} />
+                    </div>
+                    <span className="badge home-explore-card-badge">
+                      +{remainingCount > 0 ? remainingCount : '140+'} More Companies
+                    </span>
+                    <h4 className="home-explore-card-title">Explore More Companies</h4>
+                    <p className="home-explore-card-desc">
+                      Access the full interactive directory of 150+ verified recruiters. Filter by qualification, check room placards, and submit applications.
+                    </p>
+                    <Link to="/companies" className="btn btn-primary home-explore-card-btn">
+                      Browse All Companies <ArrowRight size={16} />
+                    </Link>
+                  </div>
+                )}
               </div>
 
-              <div style={{ textAlign: 'center', marginTop: '2.5rem' }}>
-                <Link to="/companies" className="btn btn-primary">
-                  View Full Companies Directory ({totalCompanies || companies.length}) <ArrowRight size={16} />
-                </Link>
+              {/* Full Directory Explore Banner in Grid Mode */}
+              <div className="home-explore-full-directory-banner">
+                <div className="home-explore-left">
+                  <div className="badge badge-blue" style={{ width: 'fit-content', marginBottom: '0.65rem' }}>
+                    <Sparkles size={14} /> Comprehensive Recruiter Directory
+                  </div>
+                  <h3 className="home-explore-title">
+                    Explore All {totalCompanies || 150}+ Participating Companies
+                  </h3>
+                  <p className="home-explore-desc">
+                    Only 10 spotlight companies are featured on the front page. Discover all 150+ organizations categorized across Banking, Product IT, Core Engineering, Manufacturing, BPO &amp; Healthcare with real-time room allocations and qualification filters.
+                  </p>
+                </div>
+                <div className="home-explore-right">
+                  <Link to="/companies" className="btn btn-primary btn-lg home-explore-cta-btn">
+                    <Building2 size={18} /> Explore All Companies <ArrowRight size={18} />
+                  </Link>
+                  {isAuthenticated && isStudent ? (
+                    <Link to="/companies" className="btn btn-outline btn-lg home-explore-sub-btn">
+                      Browse &amp; Apply
+                    </Link>
+                  ) : (
+                    <Link to="/register" className="btn btn-outline btn-lg home-explore-sub-btn">
+                      Register as Candidate
+                    </Link>
+                  )}
+                </div>
               </div>
             </>
           )}
@@ -1125,16 +1233,9 @@ const HomePage = () => {
       </section>
 
       {/* Event Details Section */}
-      <section style={{ padding: '4.5rem 0', backgroundColor: '#ffffff' }}>
+      <section className="home-section-white">
         <div className="app-container">
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))',
-              gap: '2.5rem',
-              alignItems: 'center',
-            }}
-          >
+          <div className="home-event-schedule-grid">
             <div>
               <div
                 style={{
@@ -1212,7 +1313,7 @@ const HomePage = () => {
 
             {/* Coordinator Contact Card */}
             <div
-              className="card"
+              className="card home-organizers-card"
               style={{
                 backgroundColor: '#0f172a',
                 color: '#ffffff',

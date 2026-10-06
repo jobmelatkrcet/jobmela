@@ -76,7 +76,7 @@ const StudentCheckInPage = () => {
 
   return (
     <div className="app-container" style={{ maxWidth: 600, padding: '2.5rem 1rem 4rem' }}>
-      <div className="card" style={{ padding: '2rem', textAlign: 'center', boxShadow: '0 8px 30px rgba(0,0,0,0.08)' }}>
+      <div className="card" style={{ padding: 'clamp(1.25rem, 4vw, 2rem)', textAlign: 'center', boxShadow: '0 8px 30px rgba(0,0,0,0.08)' }}>
         {/* Header Branding */}
         <div style={{ fontSize: '0.78rem', fontWeight: 800, color: 'var(--color-brand-600)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
           TKR College of Engineering &amp; Technology

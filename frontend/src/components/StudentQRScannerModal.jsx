@@ -251,7 +251,7 @@ const StudentQRScannerModal = ({ isOpen, onClose, onCheckInSuccess }) => {
           maxWidth: 520,
           maxHeight: '92vh',
           overflowY: 'auto',
-          padding: '1.75rem',
+          padding: 'clamp(1rem, 3.5vw, 1.75rem)',
           borderRadius: 'var(--radius-xl)',
           boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.35)',
           border: '1px solid rgba(255, 255, 255, 0.1)',

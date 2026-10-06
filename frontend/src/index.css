@@ -4905,4 +4905,337 @@ button, input, select, textarea {
   }
 }
 
+/* =========================================================
+   HOMEPAGE ENHANCEMENTS & MOBILE SEGMENT ALIGNMENTS
+   - 10-Company limit card & Explore More Directory banner
+   - Responsive section padding & container alignment
+   - Mobile benefits grid (2-column/1-column clean cards)
+   - Mobile eligibility, schedule, venue & organizers alignment
+   ========================================================= */
+
+/* Responsive Section Spacing */
+.home-section-white {
+  padding: 4.5rem 0;
+  background-color: #ffffff;
+}
+
+.home-section-slate {
+  padding: 4.5rem 0;
+  background-color: #f8fafc;
+}
+
+@media (max-width: 768px) {
+  .home-section-white,
+  .home-section-slate {
+    padding: 2.25rem 0 !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .home-section-white,
+  .home-section-slate {
+    padding: 1.75rem 0 !important;
+  }
+}
+
+/* Front Page 10-Company Explore More 11th Spotlight Card */
+.home-explore-more-card {
+  background: linear-gradient(145deg, #091e42 0%, #0f274e 50%, #1e3a8a 100%) !important;
+  color: #ffffff !important;
+  border: 1.5px solid rgba(56, 189, 248, 0.45) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  align-items: center !important;
+  text-align: center !important;
+  padding: 1.85rem 1.35rem !important;
+  border-radius: var(--radius-lg) !important;
+  box-shadow: 0 12px 30px -5px rgba(2, 132, 199, 0.3) !important;
+  position: relative !important;
+  overflow: hidden !important;
+  min-height: 220px !important;
+  transition: transform 0.25s ease, box-shadow 0.25s ease !important;
+}
+
+.home-explore-more-card:hover {
+  transform: translateY(-4px) !important;
+  box-shadow: 0 18px 40px -5px rgba(2, 132, 199, 0.45) !important;
+  border-color: rgba(56, 189, 248, 0.8) !important;
+}
+
+.home-explore-card-icon-box {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: rgba(56, 189, 248, 0.2);
+  border: 1.5px solid rgba(56, 189, 248, 0.5);
+  color: #38bdf8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0.85rem;
+}
+
+.home-explore-card-badge {
+  background: rgba(56, 189, 248, 0.15) !important;
+  color: #38bdf8 !important;
+  border: 1px solid rgba(56, 189, 248, 0.4) !important;
+  font-size: 0.78rem !important;
+  padding: 0.25rem 0.65rem !important;
+  margin-bottom: 0.6rem !important;
+}
+
+.home-explore-card-title {
+  color: #ffffff !important;
+  font-size: 1.18rem !important;
+  font-weight: 800 !important;
+  margin-bottom: 0.35rem !important;
+  line-height: 1.3 !important;
+}
+
+.home-explore-card-desc {
+  color: #cbd5e1 !important;
+  font-size: 0.84rem !important;
+  line-height: 1.45 !important;
+  margin-bottom: 1.15rem !important;
+}
+
+.home-explore-card-btn {
+  width: 100% !important;
+  justify-content: center !important;
+  gap: 0.45rem !important;
+  font-weight: 700 !important;
+  padding: 0.6rem 1rem !important;
+  font-size: 0.88rem !important;
+}
+
+/* Full-Width "Explore All 150+ Companies" Banner */
+.home-explore-full-directory-banner {
+  background: linear-gradient(135deg, #091e42 0%, #0f274e 45%, #1e3a8a 100%);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  border-radius: var(--radius-xl);
+  padding: 2.5rem;
+  margin-top: 2.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2.5rem;
+  color: #ffffff;
+  box-shadow: 0 20px 45px -10px rgba(0, 0, 0, 0.25);
+  position: relative;
+  overflow: hidden;
+}
+
+.home-explore-full-directory-banner::before {
+  content: '';
+  position: absolute;
+  top: -40%;
+  right: -10%;
+  width: 320px;
+  height: 320px;
+  background: radial-gradient(circle, rgba(56, 189, 248, 0.18) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.home-explore-left {
+  flex: 1;
+  min-width: 0;
+  position: relative;
+  z-index: 2;
+}
+
+.home-explore-title {
+  color: #ffffff !important;
+  font-size: clamp(1.4rem, 3.2vw, 2rem) !important;
+  font-weight: 900 !important;
+  letter-spacing: -0.02em !important;
+  margin: 0.35rem 0 0.65rem !important;
+  line-height: 1.2 !important;
+}
+
+.home-explore-desc {
+  color: #cbd5e1 !important;
+  font-size: clamp(0.88rem, 1.8vw, 0.98rem) !important;
+  line-height: 1.6 !important;
+  margin: 0 !important;
+  max-width: 680px !important;
+}
+
+.home-explore-right {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 2;
+}
+
+.home-explore-cta-btn {
+  padding: 0.85rem 1.6rem !important;
+  font-size: 0.96rem !important;
+  font-weight: 800 !important;
+  white-space: nowrap !important;
+  box-shadow: 0 8px 20px rgba(2, 132, 199, 0.4) !important;
+}
+
+.home-explore-sub-btn {
+  border-color: rgba(255, 255, 255, 0.35) !important;
+  color: #ffffff !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+  padding: 0.85rem 1.35rem !important;
+  font-size: 0.96rem !important;
+  font-weight: 700 !important;
+  white-space: nowrap !important;
+}
+
+.home-explore-sub-btn:hover {
+  background: rgba(255, 255, 255, 0.18) !important;
+  border-color: #ffffff !important;
+}
+
+@media (max-width: 900px) {
+  .home-explore-full-directory-banner {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    padding: 1.75rem 1.25rem !important;
+    gap: 1.35rem !important;
+    margin-top: 2rem !important;
+  }
+
+  .home-explore-right {
+    flex-direction: column !important;
+    width: 100% !important;
+    gap: 0.65rem !important;
+  }
+
+  .home-explore-cta-btn,
+  .home-explore-sub-btn {
+    width: 100% !important;
+    justify-content: center !important;
+  }
+}
+
+/* Spotlights Badge Header Row */
+.home-spotlight-counter-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: var(--radius-md);
+  padding: 0.65rem 1.15rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+}
+
+.home-spotlight-counter-text {
+  font-size: 0.88rem;
+  color: var(--color-primary-900);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.home-spotlight-counter-link {
+  font-size: 0.84rem;
+  color: #0284c7;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  text-decoration: none;
+}
+
+.home-spotlight-counter-link:hover {
+  color: #0369a1;
+  text-decoration: underline;
+}
+
+@media (max-width: 640px) {
+  .home-spotlight-counter-row {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 0.65rem 0.85rem;
+    gap: 0.45rem;
+  }
+}
+
+/* Mobile Alignment for Floating Benefits Strip */
+@media (max-width: 768px) {
+  .hero-benefits-strip {
+    padding: 1rem 0 !important;
+  }
+
+  .hero-benefits-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 0.65rem !important;
+  }
+
+  .benefit-item {
+    padding: 0.65rem 0.6rem !important;
+    background: #f8fafc !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 12px !important;
+    gap: 0.6rem !important;
+    min-width: 0 !important;
+  }
+
+  .benefit-icon-box {
+    width: 38px !important;
+    height: 38px !important;
+    min-width: 38px !important;
+    border-radius: 8px !important;
+  }
+
+  .benefit-icon-box svg {
+    width: 18px !important;
+    height: 18px !important;
+  }
+
+  .benefit-text-title {
+    font-size: 0.82rem !important;
+    line-height: 1.2 !important;
+    word-break: break-word !important;
+  }
+
+  .benefit-text-desc {
+    font-size: 0.70rem !important;
+    line-height: 1.25 !important;
+    display: -webkit-box !important;
+    -webkit-line-clamp: 2 !important;
+    -webkit-box-orient: vertical !important;
+    overflow: hidden !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero-benefits-grid {
+    grid-template-columns: 1fr !important;
+    gap: 0.5rem !important;
+  }
+}
+
+/* Mobile Alignment for Schedule & Venue Section */
+.home-event-schedule-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+  gap: 2.25rem;
+  align-items: stretch;
+}
+
+@media (max-width: 768px) {
+  .home-event-schedule-grid {
+    grid-template-columns: 1fr !important;
+    gap: 1.75rem !important;
+  }
+
+  .home-organizers-card {
+    padding: 1.35rem 1.15rem !important;
+  }
+}
+
+
 
