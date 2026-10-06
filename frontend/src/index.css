@@ -1352,14 +1352,15 @@ button, input, select, textarea {
 
 .hero-ref-wrapper {
   position: relative;
-  min-height: calc(100vh - 72px);
+  min-height: calc(100vh - 108px);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 2.25rem 1.5rem 2rem;
+  padding: 0.85rem 1.25rem;
   overflow: hidden;
   background-color: #061121;
+  box-sizing: border-box;
 }
 
 @keyframes campusPanZoom {
@@ -4707,26 +4708,32 @@ button, input, select, textarea {
   }
 }
 
-/* Hero Stage Container for Centered Fade Cycle */
+/* Hero Stage Container for Centered Fade Cycle with Overlapping Cross-Fade */
 .hero-stage-container {
   position: relative;
   z-index: 5;
   width: 100%;
   max-width: 1200px;
   margin: 0 auto;
-  display: flex;
+  display: grid;
+  grid-template-areas: "stage";
   align-items: center;
-  justify-content: center;
-  min-height: calc(100vh - 120px);
+  justify-items: center;
+  min-height: calc(100vh - 128px);
+}
+
+.hero-ref-container,
+.hero-poster-fade-stage {
+  grid-area: stage;
+  width: 100%;
 }
 
 /* Poster Fade Stage - Center poster in place of hero text */
 .hero-poster-fade-stage {
-  width: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 1.5rem 1rem;
+  padding: 0.25rem;
   box-sizing: border-box;
 }
 
@@ -4737,48 +4744,48 @@ button, input, select, textarea {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  border-radius: 16px;
+  border-radius: 14px;
   overflow: hidden;
   box-shadow: 
-    0 25px 60px -10px rgba(0, 0, 0, 0.75),
+    0 20px 50px -10px rgba(0, 0, 0, 0.75),
     0 0 35px rgba(56, 189, 248, 0.25),
     0 0 0 1px rgba(255, 255, 255, 0.22);
-  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s ease;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease;
   background-color: #061121;
 }
 
 .hero-stage-poster-card:hover {
-  transform: scale(1.02) translateY(-4px);
+  transform: scale(1.015) translateY(-3px);
   box-shadow: 
-    0 30px 75px -10px rgba(0, 0, 0, 0.85),
-    0 0 50px rgba(56, 189, 248, 0.45),
+    0 25px 60px -10px rgba(0, 0, 0, 0.85),
+    0 0 45px rgba(56, 189, 248, 0.45),
     0 0 0 1px rgba(56, 189, 248, 0.6);
 }
 
-/* Crisp, Responsive High-Resolution Poster Image */
+/* Crisp, Responsive High-Resolution Poster Image that GUARANTEED FITS IN THE SCREEN */
 .hero-stage-poster-img {
-  max-height: calc(100vh - 140px);
-  max-width: min(92vw, 860px);
+  max-height: min(78vh, calc(100vh - 165px));
+  max-width: min(90vw, 800px);
   width: auto;
   height: auto;
   object-fit: contain;
   display: block;
-  border-radius: 16px;
+  border-radius: 14px;
 }
 
 /* Clean Zoom Pill Badge */
 .hero-stage-zoom-badge {
   position: absolute;
-  bottom: 14px;
-  right: 14px;
+  bottom: 12px;
+  right: 12px;
   background: rgba(15, 23, 42, 0.88);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   color: #ffffff;
   border: 1px solid rgba(255, 255, 255, 0.25);
   border-radius: 999px;
-  padding: 0.35rem 0.85rem;
-  font-size: 0.75rem;
+  padding: 0.32rem 0.8rem;
+  font-size: 0.74rem;
   font-weight: 700;
   display: flex;
   align-items: center;
@@ -4800,7 +4807,7 @@ button, input, select, textarea {
     padding: 0.5rem 0;
   }
   .hero-stage-poster-img {
-    max-height: calc(100vh - 180px);
+    max-height: calc(100vh - 160px);
     max-width: 95vw;
   }
 }

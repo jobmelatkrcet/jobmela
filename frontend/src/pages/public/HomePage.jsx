@@ -151,7 +151,7 @@ const HomePage = () => {
         <div className="hero-ref-overlay" />
 
         <div className="hero-stage-container">
-          <AnimatePresence mode="wait" initial={false}>
+          <AnimatePresence initial={false}>
             {/* STAGE 0: Designed Event Text & Controls */}
             {currentSlide === 0 && (
               <motion.div
@@ -159,7 +159,7 @@ const HomePage = () => {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                transition={{ duration: 0.8, ease: 'easeInOut' }}
+                transition={{ duration: 1.1, ease: 'easeInOut' }}
                 className="hero-ref-container"
               >
                   {/* 1. College Organizer Block */}
@@ -344,7 +344,7 @@ const HomePage = () => {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                transition={{ duration: 0.8, ease: 'easeInOut' }}
+                transition={{ duration: 1.1, ease: 'easeInOut' }}
                 className="hero-poster-fade-stage"
               >
                 <div
@@ -376,7 +376,7 @@ const HomePage = () => {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                transition={{ duration: 0.8, ease: 'easeInOut' }}
+                transition={{ duration: 1.1, ease: 'easeInOut' }}
                 className="hero-poster-fade-stage"
               >
                 <div
