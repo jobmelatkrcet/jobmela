@@ -99,60 +99,6 @@ const ContactPage = () => {
           ))}
         </div>
 
-        {/* Student Coordinators Section */}
-        <div style={{ marginBottom: '1.25rem' }}>
-          <h2 style={{ fontSize: '1.35rem', fontWeight: 800, color: 'var(--color-primary-900)', marginBottom: '0.35rem' }}>
-            Student Coordinators
-          </h2>
-          <p style={{ color: 'var(--color-text-muted)', fontSize: '0.92rem' }}>
-            Candidate support & campus navigation assistance desk.
-          </p>
-        </div>
-
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))',
-            gap: '1.25rem',
-            marginBottom: '3.5rem',
-          }}
-        >
-          {[
-            { name: 'P. Siddartha', phone: '8019198059', displayPhone: '+91 80191 98059', role: 'Student Coordinator' },
-            { name: 'M. Dilip', phone: '8919298459', displayPhone: '+91 89192 98459', role: 'Student Coordinator' },
-          ].map((coord, idx) => (
-            <div
-              key={idx}
-              className="card card-hover"
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                padding: '1.25rem 1.5rem',
-                borderLeft: '4px solid #10b981',
-                gap: '1rem',
-                flexWrap: 'wrap',
-              }}
-            >
-              <div>
-                <div style={{ fontSize: '0.74rem', fontWeight: 700, color: '#059669', textTransform: 'uppercase' }}>
-                  {coord.role}
-                </div>
-                <div style={{ fontSize: '1.15rem', fontWeight: 700, color: 'var(--color-primary-900)', marginTop: '0.2rem' }}>
-                  {coord.name}
-                </div>
-              </div>
-              <a
-                href={`tel:${coord.phone}`}
-                className="btn btn-outline"
-                style={{ gap: '0.5rem', fontSize: '0.9rem', padding: '0.55rem 0.95rem' }}
-              >
-                <Phone size={15} color="#059669" /> {coord.displayPhone}
-              </a>
-            </div>
-          ))}
-        </div>
-
         {/* Venue Information */}
         <div
           className="card"

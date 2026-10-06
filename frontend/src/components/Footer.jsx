@@ -169,11 +169,6 @@ const Footer = () => {
                 </Link>
               </li>
               <li>
-                <Link to="/posters" style={{ color: '#38bdf8', fontSize: '0.88rem', fontWeight: 600 }}>
-                  → ⭐️ Official Event Posters
-                </Link>
-              </li>
-              <li>
                 <Link to="/companies" style={{ color: '#cbd5e1', fontSize: '0.88rem' }}>
                   → Participating Companies
                 </Link>

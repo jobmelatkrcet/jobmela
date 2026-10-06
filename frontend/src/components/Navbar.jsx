@@ -107,9 +107,6 @@ const Navbar = () => {
                 <NavLink to="/" end className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
                   <Home size={16} /> Home
                 </NavLink>
-                <NavLink to="/posters" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
-                  <Sparkles size={16} color="#0284c7" /> Official Posters
-                </NavLink>
                 <NavLink to="/about" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
                   <Info size={16} /> About
                 </NavLink>
@@ -244,9 +241,6 @@ const Navbar = () => {
               <div className="mobile-drawer-nav-label">Navigation Menu</div>
               <Link to="/" onClick={closeMenu} className="mobile-link">
                 <Home size={18} /> Home
-              </Link>
-              <Link to="/posters" onClick={closeMenu} className="mobile-link" style={{ color: '#0284c7', fontWeight: 700 }}>
-                <Sparkles size={18} color="#0284c7" /> Official Event Posters
               </Link>
               <Link to="/about" onClick={closeMenu} className="mobile-link">
                 <Info size={18} /> About Job Mela

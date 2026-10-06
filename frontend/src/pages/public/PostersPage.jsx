@@ -477,7 +477,7 @@ const PostersPage = () => {
                   }}
                 >
                   <div style={{ fontSize: '0.72rem', color: '#0284c7', fontWeight: 800, textTransform: 'uppercase' }}>
-                    Coordinator {index + 1}
+                    Faculty Coordinator
                   </div>
                   <div style={{ fontSize: '1rem', fontWeight: 800, color: '#0f172a' }}>
                     {c.name}
