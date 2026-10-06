@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import Alert from '../../components/Alert';
 import { generatePlacardsPDF } from '../../utils/qrPlacardPdfGenerator';
+import { TableSkeleton } from '../../components/Skeleton';
 
 const AdminRoomAllocationPage = ({ onTabChange }) => {
   const [loading, setLoading] = useState(true);
@@ -443,9 +444,12 @@ const AdminRoomAllocationPage = ({ onTabChange }) => {
 
         {/* Allocations Table */}
         {loading ? (
-          <div style={{ textAlign: 'center', padding: '3rem 0' }}>
-            <div className="spinner spinner-primary" style={{ margin: '0 auto 1rem' }} />
-            <p style={{ color: 'var(--color-text-muted)' }}>Loading room assignments...</p>
+          <div style={{ padding: '1rem 0' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginBottom: '1.25rem', color: 'var(--color-text-muted)', fontSize: '0.92rem' }}>
+              <span className="spinner" style={{ width: 18, height: 18, borderWidth: 2 }} />
+              <span>Buffering room assignments and interview venue locations...</span>
+            </div>
+            <TableSkeleton rows={8} columns={6} />
           </div>
         ) : filteredAllocations.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '3rem 1rem', color: 'var(--color-text-muted)' }}>

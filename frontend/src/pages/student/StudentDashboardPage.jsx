@@ -21,6 +21,7 @@ import {
 import StatsCard from '../../components/StatsCard';
 import Alert from '../../components/Alert';
 import ConfirmModal from '../../components/ConfirmModal';
+import { ApplicationListSkeleton, Skeleton } from '../../components/Skeleton';
 
 const getMediaUrl = (path) => {
   if (!path) return null;
@@ -320,9 +321,8 @@ const StudentDashboardPage = () => {
           </div>
 
           {loading ? (
-            <div style={{ textAlign: 'center', padding: '2.5rem 0' }}>
-              <div className="spinner spinner-primary" style={{ margin: '0 auto 0.5rem' }} />
-              <p style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)' }}>Loading applications...</p>
+            <div style={{ padding: '0.5rem 0' }}>
+              <ApplicationListSkeleton count={3} />
             </div>
           ) : myApplications.length === 0 ? (
             <div
@@ -429,7 +429,9 @@ const StudentDashboardPage = () => {
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-            {featuredCompanies.map((comp) => (
+            {loading ? (
+              <ApplicationListSkeleton count={4} />
+            ) : featuredCompanies.map((comp) => (
               <div
                 key={comp.id}
                 style={{

@@ -14,6 +14,7 @@ import {
   ArrowRight,
 } from 'lucide-react';
 import Alert from '../../components/Alert';
+import { Skeleton } from '../../components/Skeleton';
 
 const StudentCheckInPage = () => {
   const { token } = useParams();
@@ -91,9 +92,14 @@ const StudentCheckInPage = () => {
         )}
 
         {loading ? (
-          <div style={{ padding: '3rem 0' }}>
-            <div className="spinner spinner-primary" style={{ margin: '0 auto 1rem', width: 32, height: 32 }} />
-            <p style={{ color: 'var(--color-text-muted)' }}>Resolving room &amp; company details...</p>
+          <div style={{ padding: '2rem 1rem', display: 'flex', flexDirection: 'column', gap: '1rem', alignItems: 'center' }}>
+            <Skeleton width={180} height={42} borderRadius="10px" />
+            <Skeleton width="80%" height={24} />
+            <Skeleton width="60%" height={18} />
+            <div style={{ width: '100%', marginTop: '1rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              <Skeleton width="100%" height={80} borderRadius="12px" />
+              <Skeleton width="100%" height={80} borderRadius="12px" />
+            </div>
           </div>
         ) : roomData ? (
           <div>

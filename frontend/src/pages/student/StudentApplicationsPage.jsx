@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { applicationService } from '../../services/applicationService';
 import { FileCheck, Building2, Calendar, CheckCircle2, ArrowRight, Clock } from 'lucide-react';
 import Alert from '../../components/Alert';
+import { TableSkeleton } from '../../components/Skeleton';
 
 const StudentApplicationsPage = () => {
   const [applications, setApplications] = useState([]);
@@ -100,9 +101,12 @@ const StudentApplicationsPage = () => {
       )}
 
       {loading ? (
-        <div style={{ textAlign: 'center', padding: '4rem 0' }}>
-          <div className="spinner spinner-primary" style={{ margin: '0 auto 1rem', width: 36, height: 36 }} />
-          <p style={{ color: 'var(--color-text-muted)' }}>Loading your applications...</p>
+        <div className="card" style={{ padding: '1.5rem', backgroundColor: '#ffffff' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginBottom: '1.25rem', color: 'var(--color-text-muted)', fontSize: '0.92rem' }}>
+            <span className="spinner" style={{ width: 18, height: 18, borderWidth: 2 }} />
+            <span>Buffering your submitted applications...</span>
+          </div>
+          <TableSkeleton rows={5} columns={5} />
         </div>
       ) : applications.length === 0 ? (
         <div

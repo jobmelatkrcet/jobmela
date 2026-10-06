@@ -111,15 +111,15 @@ const Footer = () => {
                 fontWeight: 700,
               }}
             >
-              Placement Coordinators
+              Faculty Coordinators
             </h4>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem', fontSize: '0.86rem' }}>
               {[
-                { name: 'Srinivas Reddy', phone: '9949139414' },
-                { name: 'Ashwini Reddy', phone: '7075450757' },
-                { name: 'V. Pranthi', phone: '8121449141' },
-                { name: 'Gnanesh', phone: '9052452403' },
-                { name: 'BalaKrishna Reddy', phone: '9966559298' },
+                { name: 'V. Pranathi', phone: '8121449141', displayPhone: '+91 81214 49141' },
+                { name: 'Srinivas Reddy', phone: '9949139414', displayPhone: '+91 99491 39414' },
+                { name: 'Balakrishna Reddy', phone: '9966559298', displayPhone: '+91 99665 59298' },
+                { name: 'Ashwini Reddy', phone: '7075450757', displayPhone: '+91 70754 50757' },
+                { name: 'M. Gnanesh', phone: '9052452403', displayPhone: '+91 90524 52403' },
               ].map((coord) => (
                 <div
                   key={coord.phone}
@@ -137,7 +137,7 @@ const Footer = () => {
                       href={`tel:${coord.phone}`}
                       style={{ color: '#38bdf8', fontWeight: 600, textDecoration: 'none', fontSize: '0.84rem' }}
                     >
-                      {coord.phone}
+                      {coord.displayPhone}
                     </a>
                   </div>
                 </div>
@@ -166,6 +166,11 @@ const Footer = () => {
               <li>
                 <Link to="/login" style={{ color: '#cbd5e1', fontSize: '0.88rem' }}>
                   → Student Login
+                </Link>
+              </li>
+              <li>
+                <Link to="/posters" style={{ color: '#38bdf8', fontSize: '0.88rem', fontWeight: 600 }}>
+                  → ⭐️ Official Event Posters
                 </Link>
               </li>
               <li>

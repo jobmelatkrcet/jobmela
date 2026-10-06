@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import StatsCard from '../../components/StatsCard';
 import Alert from '../../components/Alert';
+import { StatsGridSkeleton, TableSkeleton } from '../../components/Skeleton';
 
 const AdminDashboardPage = ({ onTabChange }) => {
   const [dashboard, setDashboard] = useState(null);
@@ -121,9 +122,15 @@ const AdminDashboardPage = ({ onTabChange }) => {
       )}
 
       {loading ? (
-        <div style={{ textAlign: 'center', padding: '4rem 0' }}>
-          <div className="spinner spinner-primary" style={{ margin: '0 auto 1rem', width: 36, height: 36 }} />
-          <p style={{ color: 'var(--color-text-muted)' }}>Calculating database aggregates...</p>
+        <div style={{ padding: '0.5rem 0 2rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginBottom: '1.5rem', color: 'var(--color-text-muted)', fontSize: '0.92rem' }}>
+            <span className="spinner" style={{ width: 18, height: 18, borderWidth: 2 }} />
+            <span>Calculating database aggregates & real-time counts...</span>
+          </div>
+          <StatsGridSkeleton count={4} />
+          <div className="card" style={{ padding: '1.5rem', marginTop: '1.5rem' }}>
+            <TableSkeleton rows={4} columns={4} />
+          </div>
         </div>
       ) : (
         <>

@@ -16,6 +16,7 @@ import {
 import requirementsService from '../../services/requirementsService';
 import Alert from '../../components/Alert';
 import ConfirmModal from '../../components/ConfirmModal';
+import { Skeleton } from '../../components/Skeleton';
 
 const AdminRequirementsPage = () => {
   const [requirements, setRequirements] = useState([]);
@@ -287,12 +288,15 @@ const AdminRequirementsPage = () => {
             </thead>
             <tbody>
               {loading ? (
-                <tr>
-                  <td colSpan={5} style={{ textAlign: 'center', padding: '3rem 0' }}>
-                    <div className="spinner spinner-primary" style={{ margin: '0 auto 0.5rem' }} />
-                    <p style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)' }}>Loading requirements...</p>
-                  </td>
-                </tr>
+                Array.from({ length: 5 }).map((_, idx) => (
+                  <tr key={idx}>
+                    <td style={{ padding: '1rem' }}><Skeleton width={24} height={16} /></td>
+                    <td style={{ padding: '1rem' }}><Skeleton width="60%" height={16} /></td>
+                    <td style={{ padding: '1rem' }}><Skeleton width="40%" height={16} /></td>
+                    <td style={{ padding: '1rem' }}><Skeleton width="30%" height={16} /></td>
+                    <td style={{ padding: '1rem', textAlign: 'right' }}><Skeleton width={70} height={28} borderRadius="6px" /></td>
+                  </tr>
+                ))
               ) : requirements.length === 0 ? (
                 <tr>
                   <td colSpan={5} style={{ textAlign: 'center', padding: '3rem 0' }}>

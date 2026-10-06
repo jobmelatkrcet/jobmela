@@ -13,6 +13,7 @@ import HomePage from './pages/public/HomePage';
 import AboutPage from './pages/public/AboutPage';
 import ContactPage from './pages/public/ContactPage';
 import PublicCompaniesPage from './pages/public/PublicCompaniesPage';
+import PostersPage from './pages/public/PostersPage';
 
 // Student Pages
 import StudentRegisterPage from './pages/student/StudentRegisterPage';
@@ -38,6 +39,7 @@ function App() {
             <Route path="/" element={<HomePage />} />
             <Route path="/about" element={<AboutPage />} />
             <Route path="/contact" element={<ContactPage />} />
+            <Route path="/posters" element={<PostersPage />} />
             <Route path="/companies" element={<PublicCompaniesPage />} />
             <Route path="/login" element={<StudentLoginPage />} />
             <Route path="/register" element={<StudentRegisterPage />} />

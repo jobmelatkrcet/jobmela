@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import Pagination from '../../components/Pagination';
 import Alert from '../../components/Alert';
+import { TableSkeleton } from '../../components/Skeleton';
 
 const getMediaUrl = (path) => {
   if (!path) return null;
@@ -389,9 +390,12 @@ const AdminCompanyStudentsPage = () => {
 
       {/* Table: Name | Email | Mobile | Qualification | College | Applied Date */}
       {loading ? (
-        <div style={{ textAlign: 'center', padding: '4rem 0' }}>
-          <div className="spinner spinner-primary" style={{ margin: '0 auto 1rem', width: 36, height: 36 }} />
-          <p style={{ color: 'var(--color-text-muted)' }}>Loading applicants registered for {company?.name}...</p>
+        <div className="card" style={{ padding: '1.5rem', backgroundColor: '#ffffff' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginBottom: '1.25rem', color: 'var(--color-text-muted)', fontSize: '0.92rem' }}>
+            <span className="spinner" style={{ width: 18, height: 18, borderWidth: 2 }} />
+            <span>Buffering applicant roster for {company?.name || 'company'}...</span>
+          </div>
+          <TableSkeleton rows={7} columns={6} />
         </div>
       ) : students.length === 0 ? (
         <div
