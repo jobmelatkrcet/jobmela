@@ -139,28 +139,30 @@ const HomePage = () => {
   return (
     <div>
       {/* Front Page Hero Slideshow (Slide 1: Designed Hero, Slide 2: VIP Poster 1, Slide 3: Guidelines Poster 2) */}
-      {/* Front Page Hero Slideshow (Slide 1: Designed Hero, Slide 2: VIP Poster 1, Slide 3: Guidelines Poster 2) */}
       <section className="hero-slideshow-wrapper">
+        {/* Persistent Campus Background for seamless light/blurred continuity */}
+        <div className="hero-persistent-bg-container">
+          <img
+            src="/college-campus.webp"
+            alt="TKRCET Campus"
+            className="hero-ref-bg"
+          />
+          <div className="hero-ambient-sunflare" />
+          <div className="hero-ref-overlay" />
+        </div>
+
         <AnimatePresence initial={false}>
           {/* SLIDE 0: Custom Designed Interactive Hero */}
           {currentSlide === 0 && (
             <motion.div
               key="hero-slide-designed"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.35 }}
-              style={{ width: '100%' }}
+              initial={{ opacity: 0, scale: 0.98 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 1.02 }}
+              transition={{ duration: 0.65, ease: [0.16, 1, 0.3, 1] }}
+              style={{ width: '100%', position: 'relative', zIndex: 3 }}
             >
-              <div className="hero-ref-wrapper">
-                <img
-                  src="/college-campus.webp"
-                  alt="TKRCET Campus"
-                  className="hero-ref-bg"
-                />
-                <div className="hero-ambient-sunflare" />
-                <div className="hero-ref-overlay" />
-
+              <div className="hero-ref-wrapper" style={{ background: 'transparent' }}>
                 <div className="hero-ref-container">
                   {/* 1. College Organizer Block */}
                   <motion.div
@@ -339,19 +341,26 @@ const HomePage = () => {
             </motion.div>
           )}
 
-          {/* SLIDE 1: Poster 1 ONLY (Smooth slideshow, pure poster display) */}
+          {/* SLIDE 1: Poster 1 ONLY (Soft light blur backdrop, ambient glow, cool float animation) */}
           {currentSlide === 1 && (
             <motion.div
               key="hero-slide-poster-1"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.5 }}
-              style={{ width: '100%' }}
+              initial={{ opacity: 0, scale: 0.93, y: 16 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 1.04, y: -16 }}
+              transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+              style={{ width: '100%', position: 'relative', zIndex: 3 }}
             >
-              <div className="hero-pure-poster-slide">
+              <div className="hero-poster-ambient-slide">
+                <div className="hero-poster-blur-backdrop" />
+                <img
+                  src={poster1Img}
+                  alt=""
+                  aria-hidden="true"
+                  className="hero-poster-ambient-glow"
+                />
                 <div
-                  className="hero-pure-poster-wrapper"
+                  className="hero-poster-float-wrapper"
                   onClick={() =>
                     setLightboxPoster({
                       src: poster1Img,
@@ -363,29 +372,36 @@ const HomePage = () => {
                   <img
                     src={poster1Img}
                     alt="Mega Job Mela 2026 Poster 1 - Chief Guest CM Revanth Reddy"
-                    className="hero-pure-poster-img"
+                    className="hero-poster-cinematic-img"
                   />
-                  <div className="hero-pure-poster-zoom-hint">
-                    <Maximize2 size={14} /> Click to Zoom
+                  <div className="hero-poster-zoom-pill">
+                    <Maximize2 size={13} /> Click to Zoom
                   </div>
                 </div>
               </div>
             </motion.div>
           )}
 
-          {/* SLIDE 2: Poster 2 ONLY (Smooth slideshow, pure poster display) */}
+          {/* SLIDE 2: Poster 2 ONLY (Soft light blur backdrop, ambient glow, cool float animation) */}
           {currentSlide === 2 && (
             <motion.div
               key="hero-slide-poster-2"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.5 }}
-              style={{ width: '100%' }}
+              initial={{ opacity: 0, scale: 0.93, y: 16 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 1.04, y: -16 }}
+              transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+              style={{ width: '100%', position: 'relative', zIndex: 3 }}
             >
-              <div className="hero-pure-poster-slide">
+              <div className="hero-poster-ambient-slide">
+                <div className="hero-poster-blur-backdrop" />
+                <img
+                  src={poster2Img}
+                  alt=""
+                  aria-hidden="true"
+                  className="hero-poster-ambient-glow"
+                />
                 <div
-                  className="hero-pure-poster-wrapper"
+                  className="hero-poster-float-wrapper"
                   onClick={() =>
                     setLightboxPoster({
                       src: poster2Img,
@@ -397,64 +413,16 @@ const HomePage = () => {
                   <img
                     src={poster2Img}
                     alt="Mega Job Mela 2026 Poster 2 - Guidelines & Eligibility"
-                    className="hero-pure-poster-img"
+                    className="hero-poster-cinematic-img"
                   />
-                  <div className="hero-pure-poster-zoom-hint">
-                    <Maximize2 size={14} /> Click to Zoom
+                  <div className="hero-poster-zoom-pill">
+                    <Maximize2 size={13} /> Click to Zoom
                   </div>
                 </div>
               </div>
             </motion.div>
           )}
         </AnimatePresence>
-
-        {/* Previous Slide Navigation Arrow */}
-        <button
-          type="button"
-          className="hero-slide-nav-btn hero-slide-nav-prev"
-          onClick={prevSlide}
-          aria-label="Previous Slide"
-        >
-          <ChevronLeft size={26} />
-        </button>
-
-        {/* Next Slide Navigation Arrow */}
-        <button
-          type="button"
-          className="hero-slide-nav-btn hero-slide-nav-next"
-          onClick={nextSlide}
-          aria-label="Next Slide"
-        >
-          <ChevronRight size={26} />
-        </button>
-
-        {/* Bottom Slide Indicators Bar */}
-        <div className="hero-slide-indicators">
-          <button
-            type="button"
-            className={`hero-slide-indicator-dot ${currentSlide === 0 ? 'active' : ''}`}
-            onClick={() => setCurrentSlide(0)}
-          >
-            <span className="dot-circle" />
-            <span>1. Hero Overview</span>
-          </button>
-          <button
-            type="button"
-            className={`hero-slide-indicator-dot ${currentSlide === 1 ? 'active' : ''}`}
-            onClick={() => setCurrentSlide(1)}
-          >
-            <span className="dot-circle" />
-            <span>2. Poster 1</span>
-          </button>
-          <button
-            type="button"
-            className={`hero-slide-indicator-dot ${currentSlide === 2 ? 'active' : ''}`}
-            onClick={() => setCurrentSlide(2)}
-          >
-            <span className="dot-circle" />
-            <span>3. Poster 2</span>
-          </button>
-        </div>
       </section>
 
       {/* Lightbox Modal for Fullscreen Poster Inspection */}
