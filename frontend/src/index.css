@@ -4707,112 +4707,102 @@ button, input, select, textarea {
   }
 }
 
-/* Persistent Campus Background on Hero Section */
-.hero-persistent-bg-container {
-  position: absolute;
-  inset: 0;
+/* Hero Stage Container for Centered Fade Cycle */
+.hero-stage-container {
+  position: relative;
+  z-index: 5;
   width: 100%;
-  height: 100%;
-  overflow: hidden;
-  z-index: 0;
-  pointer-events: none;
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100vh - 120px);
 }
 
-/* Cinematic Ambient Poster Slide (Soft Light Blur Backdrop, No Black Background) */
-.hero-poster-ambient-slide {
-  position: relative;
+/* Poster Fade Stage - Center poster in place of hero text */
+.hero-poster-fade-stage {
   width: 100%;
-  min-height: calc(100vh - 72px);
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 1.5rem 1rem;
   box-sizing: border-box;
-  overflow: hidden;
-  z-index: 2;
 }
 
-/* Frosted glass light blur backdrop that blurs the campus background behind */
-.hero-poster-blur-backdrop {
-  position: absolute;
-  inset: 0;
-  backdrop-filter: blur(24px) saturate(135%);
-  -webkit-backdrop-filter: blur(24px) saturate(135%);
-  background: radial-gradient(circle at center, rgba(30, 58, 138, 0.22) 0%, rgba(10, 22, 40, 0.52) 100%);
-  z-index: 1;
-  pointer-events: none;
-}
-
-/* Ambient glow created by enlarged blurred poster behind the main poster */
-.hero-poster-ambient-glow {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%) scale(1.15);
-  width: min(650px, 85vw);
-  height: min(750px, 85vh);
-  object-fit: cover;
-  filter: blur(60px) brightness(1.1) saturate(130%);
-  opacity: 0.45;
-  z-index: 2;
-  pointer-events: none;
-  border-radius: 40px;
-}
-
-/* Floating poster wrapper */
-.hero-poster-float-wrapper {
+/* Poster Card with Professional Border & Glowing Ambient Shadow directly over College Campus */
+.hero-stage-poster-card {
   position: relative;
-  z-index: 5;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: transform 0.35s cubic-bezier(0.2, 0, 0, 1);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 
+    0 25px 60px -10px rgba(0, 0, 0, 0.75),
+    0 0 35px rgba(56, 189, 248, 0.25),
+    0 0 0 1px rgba(255, 255, 255, 0.22);
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s ease;
+  background-color: #061121;
 }
 
-.hero-poster-float-wrapper:hover {
+.hero-stage-poster-card:hover {
   transform: scale(1.02) translateY(-4px);
+  box-shadow: 
+    0 30px 75px -10px rgba(0, 0, 0, 0.85),
+    0 0 50px rgba(56, 189, 248, 0.45),
+    0 0 0 1px rgba(56, 189, 248, 0.6);
 }
 
-/* The crisp poster image */
-.hero-poster-cinematic-img {
-  max-height: calc(100vh - 110px);
-  max-width: min(90vw, 860px);
+/* Crisp, Responsive High-Resolution Poster Image */
+.hero-stage-poster-img {
+  max-height: calc(100vh - 140px);
+  max-width: min(92vw, 860px);
   width: auto;
   height: auto;
   object-fit: contain;
-  border-radius: 14px;
-  box-shadow: 
-    0 25px 60px -10px rgba(0, 0, 0, 0.6),
-    0 0 40px rgba(56, 189, 248, 0.3),
-    0 0 0 1px rgba(255, 255, 255, 0.25);
   display: block;
+  border-radius: 16px;
 }
 
-.hero-poster-zoom-pill {
+/* Clean Zoom Pill Badge */
+.hero-stage-zoom-badge {
   position: absolute;
-  bottom: 16px;
-  right: 16px;
-  background: rgba(15, 23, 42, 0.82);
-  backdrop-filter: blur(10px);
+  bottom: 14px;
+  right: 14px;
+  background: rgba(15, 23, 42, 0.88);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   color: #ffffff;
   border: 1px solid rgba(255, 255, 255, 0.25);
   border-radius: 999px;
   padding: 0.35rem 0.85rem;
-  font-size: 0.76rem;
+  font-size: 0.75rem;
   font-weight: 700;
   display: flex;
   align-items: center;
   gap: 0.35rem;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
-  opacity: 0.9;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.45);
+  opacity: 0.92;
   transition: opacity 0.2s ease, transform 0.2s ease;
   pointer-events: none;
 }
 
-.hero-poster-float-wrapper:hover .hero-poster-zoom-pill {
+.hero-stage-poster-card:hover .hero-stage-zoom-badge {
   opacity: 1;
   transform: scale(1.05);
+}
+
+@media (max-width: 768px) {
+  .hero-stage-container {
+    min-height: auto;
+    padding: 0.5rem 0;
+  }
+  .hero-stage-poster-img {
+    max-height: calc(100vh - 180px);
+    max-width: 95vw;
+  }
 }
 
 

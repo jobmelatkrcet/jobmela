@@ -68,18 +68,19 @@ const HomePage = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [lightboxPoster, setLightboxPoster] = useState(null);
 
-  // Auto-advance slideshow smoothly every 3 seconds:
-  // Slide 0: Designed hero (3s) -> Slide 1: Poster 1 only (3s) -> Slide 2: Poster 2 only (3s)
+  // Front Page Hero Smooth Fade Slideshow:
+  // Slide 0: Custom Designed Hero Text (5.5s)
+  // Slide 1: Official Poster 1 (4.5s)
+  // Slide 2: Official Poster 2 (4.5s)
+  // Continuous smooth loop: Text fades out -> Poster 1 fades in -> Poster 1 fades out -> Poster 2 fades in -> Poster 2 fades out -> Text fades back in
   useEffect(() => {
     if (lightboxPoster) return;
-    const timer = setInterval(() => {
+    const duration = currentSlide === 0 ? 5500 : 4500;
+    const timer = setTimeout(() => {
       setCurrentSlide((prev) => (prev + 1) % 3);
-    }, 3000);
-    return () => clearInterval(timer);
-  }, [lightboxPoster]);
-
-  const nextSlide = () => setCurrentSlide((prev) => (prev + 1) % 3);
-  const prevSlide = () => setCurrentSlide((prev) => (prev - 1 + 3) % 3);
+    }, duration);
+    return () => clearTimeout(timer);
+  }, [currentSlide, lightboxPoster]);
 
   useEffect(() => {
     fetchFeaturedCompanies();
@@ -138,32 +139,29 @@ const HomePage = () => {
 
   return (
     <div>
-      {/* Front Page Hero Slideshow (Slide 1: Designed Hero, Slide 2: VIP Poster 1, Slide 3: Guidelines Poster 2) */}
-      <section className="hero-slideshow-wrapper">
-        {/* Persistent Campus Background for seamless light/blurred continuity */}
-        <div className="hero-persistent-bg-container">
-          <img
-            src="/college-campus.webp"
-            alt="TKRCET Campus"
-            className="hero-ref-bg"
-          />
-          <div className="hero-ambient-sunflare" />
-          <div className="hero-ref-overlay" />
-        </div>
+      {/* Front Page Hero Section with Seamless Fade Cycle over College Background */}
+      <section className="hero-ref-wrapper">
+        {/* Persistent College Campus Background (always visible, never disappears or flickers) */}
+        <img
+          src="/college-campus.webp"
+          alt="TKRCET Campus"
+          className="hero-ref-bg"
+        />
+        <div className="hero-ambient-sunflare" />
+        <div className="hero-ref-overlay" />
 
-        <AnimatePresence initial={false}>
-          {/* SLIDE 0: Custom Designed Interactive Hero */}
-          {currentSlide === 0 && (
-            <motion.div
-              key="hero-slide-designed"
-              initial={{ opacity: 0, scale: 0.98 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 1.02 }}
-              transition={{ duration: 0.65, ease: [0.16, 1, 0.3, 1] }}
-              style={{ width: '100%', position: 'relative', zIndex: 3 }}
-            >
-              <div className="hero-ref-wrapper" style={{ background: 'transparent' }}>
-                <div className="hero-ref-container">
+        <div className="hero-stage-container">
+          <AnimatePresence mode="wait" initial={false}>
+            {/* STAGE 0: Designed Event Text & Controls */}
+            {currentSlide === 0 && (
+              <motion.div
+                key="hero-text-content"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.8, ease: 'easeInOut' }}
+                className="hero-ref-container"
+              >
                   {/* 1. College Organizer Block */}
                   <motion.div
                     initial={{ opacity: 0, y: -10 }}
@@ -336,31 +334,21 @@ const HomePage = () => {
                   >
                     <ChevronDown size={24} color="rgba(255, 255, 255, 0.7)" />
                   </div>
-                </div>
-              </div>
-            </motion.div>
-          )}
+              </motion.div>
+            )}
 
-          {/* SLIDE 1: Poster 1 ONLY (Soft light blur backdrop, ambient glow, cool float animation) */}
-          {currentSlide === 1 && (
-            <motion.div
-              key="hero-slide-poster-1"
-              initial={{ opacity: 0, scale: 0.93, y: 16 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 1.04, y: -16 }}
-              transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-              style={{ width: '100%', position: 'relative', zIndex: 3 }}
-            >
-              <div className="hero-poster-ambient-slide">
-                <div className="hero-poster-blur-backdrop" />
-                <img
-                  src={poster1Img}
-                  alt=""
-                  aria-hidden="true"
-                  className="hero-poster-ambient-glow"
-                />
+            {/* STAGE 1: Poster 1 ONLY (Smoothly fades in right where the text was, over the college background) */}
+            {currentSlide === 1 && (
+              <motion.div
+                key="hero-poster-1-stage"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.8, ease: 'easeInOut' }}
+                className="hero-poster-fade-stage"
+              >
                 <div
-                  className="hero-poster-float-wrapper"
+                  className="hero-stage-poster-card"
                   onClick={() =>
                     setLightboxPoster({
                       src: poster1Img,
@@ -372,36 +360,27 @@ const HomePage = () => {
                   <img
                     src={poster1Img}
                     alt="Mega Job Mela 2026 Poster 1 - Chief Guest CM Revanth Reddy"
-                    className="hero-poster-cinematic-img"
+                    className="hero-stage-poster-img"
                   />
-                  <div className="hero-poster-zoom-pill">
+                  <div className="hero-stage-zoom-badge">
                     <Maximize2 size={13} /> Click to Zoom
                   </div>
                 </div>
-              </div>
-            </motion.div>
-          )}
+              </motion.div>
+            )}
 
-          {/* SLIDE 2: Poster 2 ONLY (Soft light blur backdrop, ambient glow, cool float animation) */}
-          {currentSlide === 2 && (
-            <motion.div
-              key="hero-slide-poster-2"
-              initial={{ opacity: 0, scale: 0.93, y: 16 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 1.04, y: -16 }}
-              transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-              style={{ width: '100%', position: 'relative', zIndex: 3 }}
-            >
-              <div className="hero-poster-ambient-slide">
-                <div className="hero-poster-blur-backdrop" />
-                <img
-                  src={poster2Img}
-                  alt=""
-                  aria-hidden="true"
-                  className="hero-poster-ambient-glow"
-                />
+            {/* STAGE 2: Poster 2 ONLY (Smoothly fades in right where the text was, over the college background) */}
+            {currentSlide === 2 && (
+              <motion.div
+                key="hero-poster-2-stage"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.8, ease: 'easeInOut' }}
+                className="hero-poster-fade-stage"
+              >
                 <div
-                  className="hero-poster-float-wrapper"
+                  className="hero-stage-poster-card"
                   onClick={() =>
                     setLightboxPoster({
                       src: poster2Img,
@@ -413,16 +392,16 @@ const HomePage = () => {
                   <img
                     src={poster2Img}
                     alt="Mega Job Mela 2026 Poster 2 - Guidelines & Eligibility"
-                    className="hero-poster-cinematic-img"
+                    className="hero-stage-poster-img"
                   />
-                  <div className="hero-poster-zoom-pill">
+                  <div className="hero-stage-zoom-badge">
                     <Maximize2 size={13} /> Click to Zoom
                   </div>
                 </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
       </section>
 
       {/* Lightbox Modal for Fullscreen Poster Inspection */}
@@ -521,233 +500,7 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* Dedicated Official Announcement Posters Showcase */}
-      <section id="posters" style={{ padding: '4.5rem 0', backgroundColor: '#061121', color: '#ffffff' }}>
-        <div className="app-container">
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
-            style={{ textAlign: 'center', maxWidth: 750, margin: '0 auto 3rem' }}
-          >
-            <div
-              className="badge"
-              style={{
-                backgroundColor: 'rgba(56, 189, 248, 0.15)',
-                color: '#38bdf8',
-                border: '1px solid rgba(56, 189, 248, 0.35)',
-                marginBottom: '1rem',
-                padding: '0.4rem 1rem',
-              }}
-            >
-              <Sparkles size={14} style={{ marginRight: '0.4rem', verticalAlign: 'middle' }} />
-              Official Event Posters &amp; Notifications
-            </div>
-            <h2 style={{ fontSize: 'clamp(1.9rem, 3.5vw, 2.5rem)', color: '#ffffff', marginBottom: '0.75rem', fontWeight: 900 }}>
-              Mega Job Mela 2026 Official Posters
-            </h2>
-            <p style={{ color: '#94a3b8', fontSize: '1.05rem', lineHeight: '1.6' }}>
-              Click on either official notification poster to zoom in full resolution, inspect guidelines, or download for candidate circulation.
-            </p>
-          </motion.div>
 
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 460px), 1fr))',
-              gap: '2.5rem',
-              alignItems: 'stretch',
-            }}
-          >
-            {/* Poster Card 1 */}
-            <div
-              className="card card-hover"
-              style={{
-                backgroundColor: '#0d1a33',
-                border: '1px solid rgba(56, 189, 248, 0.25)',
-                borderRadius: 'var(--radius-xl)',
-                overflow: 'hidden',
-                padding: '1.75rem',
-                display: 'flex',
-                flexDirection: 'column',
-                boxShadow: '0 20px 45px rgba(0, 0, 0, 0.5)',
-              }}
-            >
-              <div
-                style={{
-                  position: 'relative',
-                  borderRadius: '14px',
-                  overflow: 'hidden',
-                  cursor: 'pointer',
-                  backgroundColor: '#061121',
-                  textAlign: 'center',
-                  boxShadow: '0 10px 25px rgba(0, 0, 0, 0.4)',
-                  border: '1px solid rgba(255, 255, 255, 0.12)',
-                }}
-                onClick={() =>
-                  setLightboxPoster({
-                    src: poster1Img,
-                    title: 'TKRCET Mega Job Mela 2026 - Chief Guest & Dignitaries Poster',
-                  })
-                }
-              >
-                <img
-                  src={poster1Img}
-                  alt="Mega Job Mela 2026 - Chief Guest CM Revanth Reddy"
-                  style={{ width: '100%', maxHeight: '460px', objectFit: 'contain', display: 'block', margin: '0 auto' }}
-                />
-                <div className="hero-poster-hover-overlay">
-                  <Maximize2 size={34} />
-                  <span style={{ fontWeight: 700, fontSize: '0.95rem' }}>Click to Zoom / View Fullscreen</span>
-                </div>
-              </div>
-
-              <div style={{ marginTop: '1.35rem', display: 'flex', flexDirection: 'column', gap: '0.85rem', flex: 1 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
-                  <span className="badge badge-blue">VIP Dignitaries Launch</span>
-                  <span style={{ color: '#38bdf8', fontSize: '0.86rem', fontWeight: 700 }}>OCT 31ST, 2026</span>
-                </div>
-                <h3 style={{ fontSize: '1.35rem', color: '#ffffff', margin: 0, fontWeight: 800 }}>
-                  Mega Job Mela 2026 Launch Poster
-                </h3>
-                <p style={{ color: '#94a3b8', fontSize: '0.92rem', lineHeight: '1.5', margin: 0 }}>
-                  Chief Guest: Hon'ble CM Sri Anumula Revanth Reddy &amp; Guest of Honour: Hon'ble IT Minister Sri Duddilla Sridhar Babu. Over 150+ companies with 5,000+ openings!
-                </p>
-
-                <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginTop: '0.25rem' }}>
-                  <span style={{ padding: '0.3rem 0.65rem', borderRadius: 6, backgroundColor: 'rgba(56, 189, 248, 0.12)', color: '#38bdf8', fontSize: '0.8rem', fontWeight: 600 }}>
-                    150+ Companies
-                  </span>
-                  <span style={{ padding: '0.3rem 0.65rem', borderRadius: 6, backgroundColor: 'rgba(74, 222, 128, 0.12)', color: '#4ade80', fontSize: '0.8rem', fontWeight: 600 }}>
-                    5,000+ Openings
-                  </span>
-                  <span style={{ padding: '0.3rem 0.65rem', borderRadius: 6, backgroundColor: 'rgba(251, 191, 36, 0.12)', color: '#fbbf24', fontSize: '0.8rem', fontWeight: 600 }}>
-                    Pan India Aspirants
-                  </span>
-                </div>
-
-                <div style={{ display: 'flex', gap: '0.75rem', marginTop: 'auto', paddingTop: '1.25rem' }}>
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setLightboxPoster({
-                        src: poster1Img,
-                        title: 'TKRCET Mega Job Mela 2026 - Chief Guest & Dignitaries Poster',
-                      })
-                    }
-                    className="btn btn-primary"
-                    style={{ flex: 1, gap: '0.5rem', fontSize: '0.92rem' }}
-                  >
-                    <Maximize2 size={16} /> View Fullscreen
-                  </button>
-                  <a
-                    href={poster1Img}
-                    download="TKRCET-Job-Mela-2026-Poster-1.jpg"
-                    className="btn btn-outline"
-                    style={{ color: '#ffffff', borderColor: 'rgba(255, 255, 255, 0.25)', gap: '0.5rem', fontSize: '0.92rem' }}
-                  >
-                    <Download size={16} /> Download
-                  </a>
-                </div>
-              </div>
-            </div>
-
-            {/* Poster Card 2 */}
-            <div
-              className="card card-hover"
-              style={{
-                backgroundColor: '#0d1a33',
-                border: '1px solid rgba(74, 222, 128, 0.25)',
-                borderRadius: 'var(--radius-xl)',
-                overflow: 'hidden',
-                padding: '1.75rem',
-                display: 'flex',
-                flexDirection: 'column',
-                boxShadow: '0 20px 45px rgba(0, 0, 0, 0.5)',
-              }}
-            >
-              <div
-                style={{
-                  position: 'relative',
-                  borderRadius: '14px',
-                  overflow: 'hidden',
-                  cursor: 'pointer',
-                  backgroundColor: '#061121',
-                  textAlign: 'center',
-                  boxShadow: '0 10px 25px rgba(0, 0, 0, 0.4)',
-                  border: '1px solid rgba(255, 255, 255, 0.12)',
-                }}
-                onClick={() =>
-                  setLightboxPoster({
-                    src: poster2Img,
-                    title: 'TKRCET 31st Oct Mega Job Mela - Guidelines & Eligibility Poster',
-                  })
-                }
-              >
-                <img
-                  src={poster2Img}
-                  alt="31st Oct Mega Job Mela - Guidelines & Eligibility"
-                  style={{ width: '100%', maxHeight: '460px', objectFit: 'contain', display: 'block', margin: '0 auto' }}
-                />
-                <div className="hero-poster-hover-overlay">
-                  <Maximize2 size={34} />
-                  <span style={{ fontWeight: 700, fontSize: '0.95rem' }}>Click to Zoom / View Fullscreen</span>
-                </div>
-              </div>
-
-              <div style={{ marginTop: '1.35rem', display: 'flex', flexDirection: 'column', gap: '0.85rem', flex: 1 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
-                  <span className="badge badge-success">Guidelines &amp; Eligibility</span>
-                  <span style={{ color: '#4ade80', fontSize: '0.86rem', fontWeight: 700 }}>All Streams Eligible</span>
-                </div>
-                <h3 style={{ fontSize: '1.35rem', color: '#ffffff', margin: 0, fontWeight: 800 }}>
-                  31st Oct Mega Job Mela Guidelines Poster
-                </h3>
-                <p style={{ color: '#94a3b8', fontSize: '0.92rem', lineHeight: '1.5', margin: 0 }}>
-                  Complete eligibility rules for 10th/12th, ITI, Diploma, and all Degree disciplines. Direct HR recruitment, spot offers, and faculty coordinator helpline contacts.
-                </p>
-
-                <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginTop: '0.25rem' }}>
-                  <span style={{ padding: '0.3rem 0.65rem', borderRadius: 6, backgroundColor: 'rgba(74, 222, 128, 0.12)', color: '#4ade80', fontSize: '0.8rem', fontWeight: 600 }}>
-                    10th / 12th / ITI / Diploma
-                  </span>
-                  <span style={{ padding: '0.3rem 0.65rem', borderRadius: 6, backgroundColor: 'rgba(56, 189, 248, 0.12)', color: '#38bdf8', fontSize: '0.8rem', fontWeight: 600 }}>
-                    All Degrees &amp; B.Tech
-                  </span>
-                  <span style={{ padding: '0.3rem 0.65rem', borderRadius: 6, backgroundColor: 'rgba(168, 85, 247, 0.12)', color: '#c084fc', fontSize: '0.8rem', fontWeight: 600 }}>
-                    Spot Offer Letters
-                  </span>
-                </div>
-
-                <div style={{ display: 'flex', gap: '0.75rem', marginTop: 'auto', paddingTop: '1.25rem' }}>
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setLightboxPoster({
-                        src: poster2Img,
-                        title: 'TKRCET 31st Oct Mega Job Mela - Guidelines & Eligibility Poster',
-                      })
-                    }
-                    className="btn btn-primary"
-                    style={{ flex: 1, gap: '0.5rem', fontSize: '0.92rem' }}
-                  >
-                    <Maximize2 size={16} /> View Fullscreen
-                  </button>
-                  <a
-                    href={poster2Img}
-                    download="TKRCET-Job-Mela-2026-Poster-2.jpg"
-                    className="btn btn-outline"
-                    style={{ color: '#ffffff', borderColor: 'rgba(255, 255, 255, 0.25)', gap: '0.5rem', fontSize: '0.92rem' }}
-                  >
-                    <Download size={16} /> Download
-                  </a>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* Target Audiences / Educational Eligibility */}
       <section style={{ padding: '4.5rem 0', backgroundColor: '#ffffff' }}>
