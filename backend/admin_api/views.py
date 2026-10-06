@@ -133,6 +133,7 @@ class AdminCompaniesListView(APIView):
 
     def get(self, request):
         search_query = request.query_params.get("search", "").strip()
+        qualification_filter = request.query_params.get("qualification", "").strip()
         order_by = request.query_params.get("order", "name")
 
         queryset = Company.objects.annotate(
@@ -148,6 +149,58 @@ class AdminCompaniesListView(APIView):
                 | Q(qualification__icontains=search_query)
                 | Q(room_no__icontains=search_query)
             )
+
+        if qualification_filter and qualification_filter.lower() != "all":
+            q_lower = qualification_filter.lower()
+            if q_lower in ["btech", "be", "engineering", "b.tech", "b.tech / b.e"]:
+                queryset = queryset.filter(
+                    Q(qualification__icontains="btech")
+                    | Q(qualification__icontains="b.tech")
+                    | Q(qualification__icontains="b tech")
+                    | Q(qualification__icontains="be")
+                    | Q(qualification__icontains="b.e")
+                    | Q(qualification__icontains="engineering")
+                    | Q(qualification__icontains="any degree")
+                    | Q(qualification__icontains="any graduation")
+                    | Q(qualification__icontains="any graduate")
+                )
+            elif q_lower in ["degree", "graduation", "graduate", "degree / graduation"]:
+                queryset = queryset.filter(
+                    Q(qualification__icontains="degree")
+                    | Q(qualification__icontains="graduation")
+                    | Q(qualification__icontains="graduate")
+                    | Q(qualification__icontains="bsc")
+                    | Q(qualification__icontains="b.sc")
+                    | Q(qualification__icontains="bcom")
+                    | Q(qualification__icontains="b.com")
+                    | Q(qualification__icontains="bba")
+                    | Q(qualification__icontains="bca")
+                    | Q(qualification__icontains="ba")
+                )
+            elif q_lower in ["diploma", "polytechnic"]:
+                queryset = queryset.filter(
+                    Q(qualification__icontains="diploma")
+                    | Q(qualification__icontains="polytechnic")
+                )
+            elif q_lower in ["mba", "mca", "pg", "pg_mba", "post graduation", "mba / pg"]:
+                queryset = queryset.filter(
+                    Q(qualification__icontains="mba")
+                    | Q(qualification__icontains="mca")
+                    | Q(qualification__icontains="msc")
+                    | Q(qualification__icontains="m.tech")
+                    | Q(qualification__icontains="post graduation")
+                    | Q(qualification__icontains="pg")
+                )
+            elif q_lower in ["inter", "iti", "ssc", "10th", "10th_inter", "inter_iti", "10th / inter / iti"]:
+                queryset = queryset.filter(
+                    Q(qualification__icontains="inter")
+                    | Q(qualification__icontains="iti")
+                    | Q(qualification__icontains="ssc")
+                    | Q(qualification__icontains="10")
+                    | Q(qualification__icontains="12th")
+                )
+            else:
+                queryset = queryset.filter(Q(qualification__icontains=qualification_filter))
 
         if order_by == "applications_desc":
             queryset = queryset.order_by("-registered_students_count", "name")
@@ -1552,8 +1605,8 @@ class AdminRoomTemplateDownloadView(APIView):
 
 class AdminRoomQRDetailView(APIView):
     """
-    Returns room details along with a high-resolution base64 PNG QR code
-    and direct candidate check-in link.
+    Returns room details along with a high-resolution base64 PNG QR code,
+    direct candidate check-in link, and list of all candidates checked into this room.
     """
     permission_classes = [IsAdminUserRole]
 
@@ -1568,6 +1621,22 @@ class AdminRoomQRDetailView(APIView):
         checkin_url = f"{frontend_url}/checkin/{room.unique_room_token}"
         qr_svg = generate_qr_svg(checkin_url)
 
+        checkins = room.checkins.select_related("student").order_by("-checked_in_at")
+        students = [
+            {
+                "id": ci.student.id,
+                "full_name": ci.student.full_name,
+                "email": ci.student.email,
+                "mobile": getattr(ci.student, "mobile", ""),
+                "hall_ticket_number": getattr(ci.student, "hall_ticket_number", ""),
+                "qualification": getattr(ci.student, "qualification", ""),
+                "branch": getattr(ci.student, "branch", ""),
+                "college": getattr(ci.student, "college", ""),
+                "checked_in_at": ci.checked_in_at.strftime("%I:%M %p, %d %b %Y"),
+            }
+            for ci in checkins
+        ]
+
         return Response({
             "id": room.id,
             "room_number": room.room_number,
@@ -1581,8 +1650,11 @@ class AdminRoomQRDetailView(APIView):
                 "name": company.name,
                 "sector": company.sector,
                 "job_position": company.job_position,
+                "salary_ctc": company.salary_ctc,
+                "location": company.location,
             } if company else None,
-            "checkins_count": room.checkins.count(),
+            "checkins_count": len(students),
+            "students": students,
         }, status=status.HTTP_200_OK)
 
 
@@ -1617,18 +1689,24 @@ class StudentRoomCheckInView(APIView):
     """
     Student QR scan & interview check-in endpoint.
     GET: Resolves room & assigned company information for candidate display.
-    POST: Records candidate check-in to that room/company.
+    POST: Records candidate check-in to that room/company with strict 3-attempt cap.
     """
     permission_classes = [AllowAny]
+
     def get(self, request, token):
-        try:
-            room = Room.objects.get(unique_room_token=token)
-        except Room.DoesNotExist:
-            return Response({"error": "Invalid room QR code or room not found."}, status=status.HTTP_404_NOT_FOUND)
+        clean_token = str(token).strip()
+        room = Room.objects.filter(
+            Q(unique_room_token__iexact=clean_token) | Q(room_number__iexact=clean_token)
+        ).first()
+        if not room:
+            return Response({"error": f"Invalid room QR code or room '{token}' not found."}, status=status.HTTP_404_NOT_FOUND)
 
         company = room.companies.first()
         already_checked_in = False
         checked_in_at = None
+        attempts_count = 0
+        limit_reached = False
+        attempted_companies = []
 
         if request.user and request.user.is_authenticated:
             existing = RoomCheckIn.objects.filter(student=request.user, room=room).first()
@@ -1636,9 +1714,24 @@ class StudentRoomCheckInView(APIView):
                 already_checked_in = True
                 checked_in_at = existing.checked_in_at.strftime("%I:%M %p, %d %b %Y")
 
+            all_checkins = RoomCheckIn.objects.filter(student=request.user).select_related("company", "room").order_by("-checked_in_at")
+            attempts_count = all_checkins.count()
+
+            # Rule: 3 company interview attempts limit
+            if not already_checked_in and attempts_count >= 3:
+                limit_reached = True
+
+            for ci in all_checkins:
+                attempted_companies.append({
+                    "company_name": ci.company.name if ci.company else f"Room {ci.room.room_number}",
+                    "room_number": ci.room.room_number,
+                    "checked_in_at": ci.checked_in_at.strftime("%I:%M %p, %d %b %Y"),
+                })
+
         return Response({
             "room_id": room.id,
             "room_number": room.room_number,
+            "unique_room_token": room.unique_room_token,
             "qr_status": room.qr_status,
             "company": {
                 "id": company.id,
@@ -1647,9 +1740,16 @@ class StudentRoomCheckInView(APIView):
                 "job_position": company.job_position,
                 "location": company.location,
                 "salary_ctc": company.salary_ctc,
+                "qualification": company.qualification,
             } if company else None,
             "already_checked_in": already_checked_in,
             "checked_in_at": checked_in_at,
+            "attempts_count": attempts_count,
+            "max_attempts": 3,
+            "remaining_attempts": max(0, 3 - attempts_count),
+            "limit_reached": limit_reached,
+            "can_check_in": already_checked_in or (attempts_count < 3),
+            "attempted_companies": attempted_companies,
         }, status=status.HTTP_200_OK)
 
     def post(self, request, token):
@@ -1659,9 +1759,11 @@ class StudentRoomCheckInView(APIView):
                 status=status.HTTP_401_UNAUTHORIZED,
             )
 
-        try:
-            room = Room.objects.get(unique_room_token=token)
-        except Room.DoesNotExist:
+        clean_token = str(token).strip()
+        room = Room.objects.filter(
+            Q(unique_room_token__iexact=clean_token) | Q(room_number__iexact=clean_token)
+        ).first()
+        if not room:
             return Response({"error": "Invalid room QR code."}, status=status.HTTP_404_NOT_FOUND)
 
         if room.qr_status != "active":
@@ -1672,11 +1774,29 @@ class StudentRoomCheckInView(APIView):
 
         company = room.companies.first()
 
+        existing = RoomCheckIn.objects.filter(student=request.user, room=room).first()
+        if not existing:
+            # Rule: Student can apply to all companies, but attempt only 3 companies!
+            current_attempts = RoomCheckIn.objects.filter(student=request.user).count()
+            if current_attempts >= 3:
+                return Response(
+                    {
+                        "error": "Interview Attempt Limit Reached! You have already checked in to 3 companies. Each student is permitted a maximum of 3 interview attempts. You cannot attempt any more companies.",
+                        "limit_reached": True,
+                        "attempts_count": current_attempts,
+                        "max_attempts": 3,
+                        "remaining_attempts": 0,
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
         checkin, created = RoomCheckIn.objects.get_or_create(
             student=request.user,
             room=room,
             defaults={"company": company},
         )
+
+        total_attempts = RoomCheckIn.objects.filter(student=request.user).count()
 
         return Response({
             "success": True,
@@ -1685,6 +1805,122 @@ class StudentRoomCheckInView(APIView):
             "room_number": room.room_number,
             "company_name": company.name if company else None,
             "checked_in_at": checkin.checked_in_at.strftime("%I:%M %p, %d %b %Y"),
+            "attempts_count": total_attempts,
+            "max_attempts": 3,
+            "remaining_attempts": max(0, 3 - total_attempts),
         }, status=status.HTTP_200_OK)
+
+
+class StudentAttemptsView(APIView):
+    """
+    Returns student's interview check-in attempt history and remaining quota.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        checkins = (
+            RoomCheckIn.objects.filter(student=request.user)
+            .select_related("room", "company")
+            .order_by("-checked_in_at")
+        )
+        attempts_count = checkins.count()
+        history = [
+            {
+                "id": c.id,
+                "room_number": c.room.room_number,
+                "unique_room_token": c.room.unique_room_token,
+                "company_id": c.company.id if c.company else None,
+                "company_name": c.company.name if c.company else f"Room {c.room.room_number}",
+                "sector": c.company.sector if c.company else "",
+                "job_position": c.company.job_position if c.company else "",
+                "salary_ctc": c.company.salary_ctc if c.company else "",
+                "location": c.company.location if c.company else "",
+                "checked_in_at": c.checked_in_at.strftime("%I:%M %p, %d %b %Y"),
+            }
+            for c in checkins
+        ]
+
+        return Response({
+            "attempts_count": attempts_count,
+            "max_attempts": 3,
+            "remaining_attempts": max(0, 3 - attempts_count),
+            "can_attempt_more": attempts_count < 3,
+            "attempts": history,
+        }, status=status.HTTP_200_OK)
+
+
+class AdminLiveRoomCheckinsView(APIView):
+    """
+    Returns live room check-in monitor: all rooms with assigned company
+    and complete list of checked-in candidates.
+    """
+    permission_classes = [IsAdminUserRole]
+
+    def get(self, request):
+        search_query = request.query_params.get("search", "").strip()
+        rooms = (
+            Room.objects.prefetch_related(
+                "companies",
+                "checkins__student"
+            )
+            .all()
+            .order_by("room_number")
+        )
+
+        results = []
+        for room in rooms:
+            comps = list(room.companies.all())
+            company = comps[0] if comps else None
+            checkin_objs = list(room.checkins.all())
+            student_list = [
+                {
+                    "id": ci.student.id,
+                    "full_name": ci.student.full_name,
+                    "email": ci.student.email,
+                    "mobile": getattr(ci.student, "mobile", ""),
+                    "hall_ticket_number": getattr(ci.student, "hall_ticket_number", ""),
+                    "qualification": getattr(ci.student, "qualification", ""),
+                    "branch": getattr(ci.student, "branch", ""),
+                    "college": getattr(ci.student, "college", ""),
+                    "checked_in_at": ci.checked_in_at.strftime("%I:%M %p, %d %b %Y"),
+                }
+                for ci in checkin_objs
+            ]
+
+            if search_query:
+                sq = search_query.lower()
+                matches_room = sq in room.room_number.lower()
+                matches_company = company and (sq in company.name.lower() or sq in company.job_position.lower())
+                matches_student = any(
+                    sq in s["full_name"].lower()
+                    or sq in s["hall_ticket_number"].lower()
+                    or sq in s["mobile"].lower()
+                    for s in student_list
+                )
+                if not (matches_room or matches_company or matches_student):
+                    continue
+
+            results.append({
+                "room_id": room.id,
+                "room_number": room.room_number,
+                "unique_room_token": room.unique_room_token,
+                "qr_status": room.qr_status,
+                "checkins_count": len(student_list),
+                "company": {
+                    "id": company.id,
+                    "name": company.name,
+                    "sector": company.sector,
+                    "job_position": company.job_position,
+                    "salary_ctc": company.salary_ctc,
+                    "qualification": company.qualification,
+                } if company else None,
+                "students": student_list,
+            })
+
+        return Response({
+            "total_rooms": len(results),
+            "rooms": results,
+        }, status=status.HTTP_200_OK)
+
 
 

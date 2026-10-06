@@ -4,6 +4,7 @@ from django.http import JsonResponse
 from admin_api.views import (
     JobMelaRequirementsPublicListView,
     StudentRoomCheckInView,
+    StudentAttemptsView,
 )
 
 
@@ -39,6 +40,11 @@ urlpatterns = [
         "api/rooms/checkin/<str:token>/",
         StudentRoomCheckInView.as_view(),
         name="student-room-checkin",
+    ),
+    path(
+        "api/rooms/my-attempts/",
+        StudentAttemptsView.as_view(),
+        name="student-room-attempts",
     ),
 ]
 

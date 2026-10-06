@@ -5,7 +5,7 @@ from rest_framework.permissions import IsAuthenticated
 from django.db import IntegrityError
 from .models import Application
 from .serializers import ApplicationSerializer, ApplySerializer
-from companies.models import Company
+from companies.models import Company, RoomCheckIn
 
 
 class ApplyCompanyView(APIView):
@@ -67,10 +67,14 @@ class StudentStatsView(APIView):
     def get(self, request):
         total_companies = Company.objects.count()
         applied_count = Application.objects.filter(student=request.user).count()
+        attempted_count = RoomCheckIn.objects.filter(student=request.user).count()
 
         return Response(
             {
                 "total_companies": total_companies,
                 "applied_count": applied_count,
+                "attempted_count": attempted_count,
+                "max_attempts": 3,
+                "remaining_attempts": max(0, 3 - attempted_count),
             }
         )

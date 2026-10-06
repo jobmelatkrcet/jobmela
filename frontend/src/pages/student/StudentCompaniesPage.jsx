@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Search, Building2, CheckCircle2, AlertCircle, ArrowRight } from 'lucide-react';
+import { Search, Building2, CheckCircle2, AlertCircle, ArrowRight, GraduationCap } from 'lucide-react';
 import { companyService } from '../../services/companyService';
 import { applicationService } from '../../services/applicationService';
 import ConfirmModal from '../../components/ConfirmModal';
@@ -15,6 +15,7 @@ const StudentCompaniesPage = () => {
   const [hasNext, setHasNext] = useState(false);
   const [hasPrevious, setHasPrevious] = useState(false);
   const [search, setSearch] = useState('');
+  const [qualification, setQualification] = useState('all');
   const [loading, setLoading] = useState(true);
 
   // Application Modal state
@@ -24,15 +25,16 @@ const StudentCompaniesPage = () => {
   const [alert, setAlert] = useState(null);
 
   useEffect(() => {
-    loadCompanies(currentPage, search);
-  }, [currentPage]);
+    loadCompanies(currentPage, search, qualification);
+  }, [currentPage, qualification]);
 
-  const loadCompanies = async (page = 1, searchQuery = '') => {
+  const loadCompanies = async (page = 1, searchQuery = '', qual = qualification) => {
     setLoading(true);
     try {
       const data = await companyService.getCompanies({
         page,
         search: searchQuery,
+        qualification: qual,
         page_size: 20,
       });
       setCompanies(data.results || []);
@@ -50,7 +52,12 @@ const StudentCompaniesPage = () => {
   const handleSearchSubmit = (e) => {
     e.preventDefault();
     setCurrentPage(1);
-    loadCompanies(1, search);
+    loadCompanies(1, search, qualification);
+  };
+
+  const handleQualificationChange = (newQual) => {
+    setQualification(newQual);
+    setCurrentPage(1);
   };
 
   const openApplyModal = (company) => {
@@ -184,6 +191,69 @@ const StudentCompaniesPage = () => {
         <div style={{ fontSize: '0.9rem', color: 'var(--color-text-muted)' }}>
           Showing {companies.length} of <strong style={{ color: 'var(--color-primary-900)' }}>{totalCompanies}</strong> companies
         </div>
+      </div>
+
+      {/* Qualification Filter Pills */}
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.5rem',
+          flexWrap: 'wrap',
+          marginBottom: '2rem',
+          padding: '0.75rem 1rem',
+          backgroundColor: '#ffffff',
+          borderRadius: 'var(--radius-lg)',
+          border: '1px solid var(--color-border)',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.03)',
+        }}
+      >
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.4rem',
+            fontSize: '0.85rem',
+            fontWeight: 700,
+            color: 'var(--color-primary-900)',
+            marginRight: '0.5rem',
+          }}
+        >
+          <GraduationCap size={18} color="var(--color-brand-600)" />
+          <span>Filter by Qualification:</span>
+        </div>
+
+        {[
+          { id: 'all', label: 'All Qualifications' },
+          { id: 'btech', label: 'B.Tech / B.E' },
+          { id: 'degree', label: 'Degree / Graduation' },
+          { id: 'diploma', label: 'Diploma / Polytechnic' },
+          { id: 'pg_mba', label: 'MBA / PG / MCA' },
+          { id: '10th_inter', label: '10th / Inter / ITI' },
+        ].map((opt) => {
+          const active = qualification === opt.id;
+          return (
+            <button
+              key={opt.id}
+              type="button"
+              onClick={() => handleQualificationChange(opt.id)}
+              style={{
+                border: active ? '1px solid #0284c7' : '1px solid #e2e8f0',
+                backgroundColor: active ? '#0284c7' : '#f8fafc',
+                color: active ? '#ffffff' : '#334155',
+                padding: '0.35rem 0.85rem',
+                borderRadius: '9999px',
+                fontSize: '0.82rem',
+                fontWeight: active ? 700 : 500,
+                cursor: 'pointer',
+                transition: 'all 0.15s ease',
+                boxShadow: active ? '0 2px 6px rgba(2, 132, 199, 0.3)' : 'none',
+              }}
+            >
+              {opt.label}
+            </button>
+          );
+        })}
       </div>
 
       {/* Companies List */}

@@ -58,13 +58,27 @@ export const roomService = {
 
   // Public/Student Room QR scan inspection
   async getCheckInInfo(roomToken) {
-    const res = await api.get(`/rooms/checkin/${roomToken}/`);
+    const res = await api.get(`/rooms/checkin/${encodeURIComponent(roomToken)}/`);
     return res.data;
   },
 
   // Student check-in submission
   async submitCheckIn(roomToken) {
-    const res = await api.post(`/rooms/checkin/${roomToken}/`);
+    const res = await api.post(`/rooms/checkin/${encodeURIComponent(roomToken)}/`);
+    return res.data;
+  },
+
+  // Student interview attempt history & remaining quota
+  async getMyAttempts() {
+    const res = await api.get('/rooms/my-attempts/');
+    return res.data;
+  },
+
+  // Admin live room & candidate check-in monitor
+  async getLiveRoomCheckins(search = '') {
+    const params = new URLSearchParams();
+    if (search) params.append('search', search);
+    const res = await api.get(`/admin/rooms/live-checkins/?${params.toString()}`);
     return res.data;
   },
 };

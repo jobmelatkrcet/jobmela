@@ -177,8 +177,69 @@ const StudentCheckInPage = () => {
               </div>
             )}
 
+            {/* 3-Attempt Status Indicator */}
+            {isAuthenticated && (
+              <div
+                style={{
+                  marginTop: '1.25rem',
+                  padding: '0.75rem 1rem',
+                  borderRadius: 'var(--radius-md)',
+                  backgroundColor: roomData.limit_reached ? '#fef2f2' : '#f0fdf4',
+                  border: `1px solid ${roomData.limit_reached ? '#fca5a5' : '#bbf7d0'}`,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  gap: '0.75rem',
+                }}
+              >
+                <div style={{ textAlign: 'left' }}>
+                  <div
+                    style={{
+                      fontSize: '0.82rem',
+                      fontWeight: 700,
+                      color: roomData.limit_reached ? '#991b1b' : '#166534',
+                    }}
+                  >
+                    Interview Quota: {roomData.attempts_count || 0} of 3 Used
+                  </div>
+                  <div
+                    style={{
+                      fontSize: '0.74rem',
+                      color: roomData.limit_reached ? '#b91c1c' : '#15803d',
+                      marginTop: '0.1rem',
+                    }}
+                  >
+                    {roomData.limit_reached
+                      ? '3/3 Limit Reached — Cannot attempt additional companies.'
+                      : `${roomData.remaining_attempts ?? (3 - (roomData.attempts_count || 0))} attempt(s) remaining`}
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', gap: '4px' }}>
+                  {[1, 2, 3].map((slot) => {
+                    const filled = slot <= (roomData.attempts_count || 0);
+                    return (
+                      <div
+                        key={slot}
+                        style={{
+                          width: 22,
+                          height: 8,
+                          borderRadius: 4,
+                          backgroundColor: filled
+                            ? roomData.limit_reached
+                              ? '#dc2626'
+                              : '#16a34a'
+                            : '#cbd5e1',
+                        }}
+                      />
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
             {/* Check-in State Box */}
-            <div style={{ marginTop: '1.75rem' }}>
+            <div style={{ marginTop: '1.5rem' }}>
               {checkInSuccess ? (
                 <div
                   style={{
@@ -202,6 +263,59 @@ const StudentCheckInPage = () => {
                   <div style={{ marginTop: '1rem' }}>
                     <Link to="/dashboard" className="btn btn-outline btn-sm">
                       Go to My Dashboard
+                    </Link>
+                  </div>
+                </div>
+              ) : roomData.limit_reached ? (
+                <div
+                  style={{
+                    padding: '1.5rem',
+                    backgroundColor: '#fff1f2',
+                    borderRadius: 'var(--radius-lg)',
+                    border: '1.5px solid #fecdd3',
+                    textAlign: 'left',
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', color: '#be123c', fontWeight: 800, fontSize: '1.1rem' }}>
+                    <AlertCircle size={24} />
+                    <span>Interview Attempt Limit Reached</span>
+                  </div>
+                  <p style={{ fontSize: '0.85rem', color: '#9f1239', margin: '0.6rem 0 1rem', lineHeight: '1.5' }}>
+                    You have already checked in to <strong>3 companies</strong>. As per TKRCET Job Mela regulations, students can apply to all companies, but can attempt a maximum of <strong>3 companies</strong> in interview rooms. You cannot attempt this company.
+                  </p>
+
+                  {roomData.attempted_companies && roomData.attempted_companies.length > 0 && (
+                    <div style={{ marginBottom: '1.25rem' }}>
+                      <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#9f1239', textTransform: 'uppercase', marginBottom: '0.4rem' }}>
+                        Your 3 Attempted Companies:
+                      </div>
+                      <div style={{ display: 'grid', gap: '0.35rem' }}>
+                        {roomData.attempted_companies.map((ac, idx) => (
+                          <div
+                            key={idx}
+                            style={{
+                              padding: '0.45rem 0.75rem',
+                              backgroundColor: '#ffffff',
+                              borderRadius: '6px',
+                              border: '1px solid #fecdd3',
+                              fontSize: '0.8rem',
+                              fontWeight: 600,
+                              color: '#881337',
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                            }}
+                          >
+                            <span>{idx + 1}. {ac.company_name} (Room {ac.room_number})</span>
+                            <span style={{ fontSize: '0.72rem', color: '#9f1239' }}>{ac.checked_in_at?.split(',')[0]}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  <div style={{ textAlign: 'center' }}>
+                    <Link to="/dashboard" className="btn btn-outline btn-sm">
+                      Back to Dashboard
                     </Link>
                   </div>
                 </div>

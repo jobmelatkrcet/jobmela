@@ -24,12 +24,15 @@ import {
   DoorClosed,
   CheckCircle,
   Calendar,
+  QrCode,
 } from 'lucide-react';
+import StudentQRScannerModal from './StudentQRScannerModal';
 
 const Navbar = () => {
   const { user, isAuthenticated, isAdmin, isStudent, logout } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
+  const [isScannerOpen, setIsScannerOpen] = useState(false);
   const navigate = useNavigate();
 
   const handleLogout = async () => {
@@ -131,6 +134,24 @@ const Navbar = () => {
                 <NavLink to="/my-applications" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
                   <FileCheck size={16} /> My Applications
                 </NavLink>
+                <button
+                  type="button"
+                  onClick={() => setIsScannerOpen(true)}
+                  className="nav-item"
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    color: '#0284c7',
+                    fontWeight: 700,
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.4rem',
+                  }}
+                  title="Scan interview room door placard QR"
+                >
+                  <QrCode size={16} /> Scan Room QR
+                </button>
               </>
             )}
 
@@ -277,7 +298,26 @@ const Navbar = () => {
               <Link to="/profile" onClick={closeMenu} className="mobile-link">
                 <User size={18} /> My Profile
               </Link>
-              <button onClick={handleLogout} className="btn btn-danger" style={{ width: '100%', marginTop: '0.75rem' }}>
+              <button
+                type="button"
+                onClick={() => {
+                  closeMenu();
+                  setIsScannerOpen(true);
+                }}
+                className="btn btn-primary"
+                style={{
+                  width: '100%',
+                  marginTop: '0.5rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '0.5rem',
+                  backgroundColor: '#0284c7',
+                }}
+              >
+                <QrCode size={17} /> Scan Room QR
+              </button>
+              <button onClick={handleLogout} className="btn btn-danger" style={{ width: '100%', marginTop: '0.5rem' }}>
                 <LogOut size={16} /> Logout
               </button>
             </div>
@@ -310,6 +350,12 @@ const Navbar = () => {
           )}
         </div>
       )}
+
+      {/* QR Scanner Modal accessible from navbar */}
+      <StudentQRScannerModal
+        isOpen={isScannerOpen}
+        onClose={() => setIsScannerOpen(false)}
+      />
     </header>
   );
 };

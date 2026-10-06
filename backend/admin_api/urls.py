@@ -16,6 +16,7 @@ from .views import (
     AdminRoomTemplateDownloadView,
     AdminRoomQRDetailView,
     AdminRoomToggleStatusView,
+    AdminLiveRoomCheckinsView,
     JobMelaRequirementsPublicListView,
     AdminJobMelaRequirementListCreateView,
     AdminJobMelaRequirementDetailView,
@@ -71,6 +72,7 @@ urlpatterns = [
     path("rooms/template/", AdminRoomTemplateDownloadView.as_view(), name="admin-rooms-template"),
     path("rooms/<int:pk>/qr/", AdminRoomQRDetailView.as_view(), name="admin-rooms-qr"),
     path("rooms/<int:pk>/toggle-status/", AdminRoomToggleStatusView.as_view(), name="admin-rooms-toggle-status"),
+    path("rooms/live-checkins/", AdminLiveRoomCheckinsView.as_view(), name="admin-rooms-live-checkins"),
 
     # Requirements endpoints
     path(

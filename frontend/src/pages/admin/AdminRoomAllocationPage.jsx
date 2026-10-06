@@ -45,11 +45,52 @@ const AdminRoomAllocationPage = ({ onTabChange }) => {
   const [selectedRoomQR, setSelectedRoomQR] = useState(null);
   const [loadingQR, setLoadingQR] = useState(false);
 
+  // Room Students Modal & Live Check-in Monitor state
+  const [activeViewMode, setActiveViewMode] = useState('allocations'); // 'allocations' | 'live'
+  const [selectedRoomStudents, setSelectedRoomStudents] = useState(null);
+  const [loadingRoomStudents, setLoadingRoomStudents] = useState(false);
+  const [liveRoomsData, setLiveRoomsData] = useState([]);
+  const [loadingLiveRooms, setLoadingLiveRooms] = useState(false);
+
   const fileInputRef = useRef(null);
 
   useEffect(() => {
     loadSummary();
   }, []);
+
+  const handleViewRoomStudents = async (roomId) => {
+    setLoadingRoomStudents(true);
+    try {
+      const data = await roomService.getRoomQR(roomId);
+      setSelectedRoomStudents(data);
+    } catch (err) {
+      console.error('Failed to load room candidates:', err);
+      setAlert({
+        type: 'danger',
+        message: 'Failed to load checked-in candidates for this room.',
+      });
+    } finally {
+      setLoadingRoomStudents(false);
+    }
+  };
+
+  const loadLiveRooms = async () => {
+    setLoadingLiveRooms(true);
+    try {
+      const res = await roomService.getLiveRoomCheckins(search);
+      setLiveRoomsData(res.rooms || []);
+    } catch (err) {
+      console.error('Failed to load live rooms:', err);
+    } finally {
+      setLoadingLiveRooms(false);
+    }
+  };
+
+  useEffect(() => {
+    if (activeViewMode === 'live') {
+      loadLiveRooms();
+    }
+  }, [activeViewMode, search]);
 
   const loadSummary = async () => {
     setLoading(true);
@@ -442,148 +483,383 @@ const AdminRoomAllocationPage = ({ onTabChange }) => {
           </div>
         </div>
 
+        {/* View Mode Switcher Tabs */}
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem',
+            padding: '0.4rem',
+            backgroundColor: '#f1f5f9',
+            borderRadius: 'var(--radius-md)',
+            marginBottom: '1.25rem',
+            width: 'fit-content',
+          }}
+        >
+          <button
+            type="button"
+            onClick={() => setActiveViewMode('allocations')}
+            style={{
+              padding: '0.45rem 0.95rem',
+              borderRadius: 'var(--radius-sm)',
+              border: 'none',
+              backgroundColor: activeViewMode === 'allocations' ? '#ffffff' : 'transparent',
+              color: activeViewMode === 'allocations' ? 'var(--color-primary-900)' : '#64748b',
+              fontWeight: activeViewMode === 'allocations' ? 700 : 500,
+              fontSize: '0.85rem',
+              cursor: 'pointer',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.45rem',
+              boxShadow: activeViewMode === 'allocations' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
+            }}
+          >
+            <DoorClosed size={16} /> All Room Allocations ({filteredAllocations.length})
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveViewMode('live')}
+            style={{
+              padding: '0.45rem 0.95rem',
+              borderRadius: 'var(--radius-sm)',
+              border: 'none',
+              backgroundColor: activeViewMode === 'live' ? '#ffffff' : 'transparent',
+              color: activeViewMode === 'live' ? '#0284c7' : '#64748b',
+              fontWeight: activeViewMode === 'live' ? 700 : 500,
+              fontSize: '0.85rem',
+              cursor: 'pointer',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.45rem',
+              boxShadow: activeViewMode === 'live' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
+            }}
+          >
+            <Users size={16} /> 📡 Live Room Check-ins Monitor
+          </button>
+        </div>
+
         {/* Allocations Table */}
-        {loading ? (
-          <div style={{ padding: '1rem 0' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginBottom: '1.25rem', color: 'var(--color-text-muted)', fontSize: '0.92rem' }}>
-              <span className="spinner" style={{ width: 18, height: 18, borderWidth: 2 }} />
-              <span>Buffering room assignments and interview venue locations...</span>
+        {activeViewMode === 'allocations' ? (
+          loading ? (
+            <div style={{ padding: '1rem 0' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginBottom: '1.25rem', color: 'var(--color-text-muted)', fontSize: '0.92rem' }}>
+                <span className="spinner" style={{ width: 18, height: 18, borderWidth: 2 }} />
+                <span>Buffering room assignments and interview venue locations...</span>
+              </div>
+              <TableSkeleton rows={8} columns={6} />
             </div>
-            <TableSkeleton rows={8} columns={6} />
-          </div>
-        ) : filteredAllocations.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '3rem 1rem', color: 'var(--color-text-muted)' }}>
-            <DoorClosed size={40} style={{ margin: '0 auto 0.75rem', opacity: 0.5 }} />
-            <p style={{ fontWeight: 600, fontSize: '1rem', color: 'var(--color-primary-900)' }}>
-              No companies or matching allocations found.
-            </p>
-            <p style={{ fontSize: '0.85rem' }}>
-              Click "Upload Room Numbers Excel" above to automatically allocate rooms.
-            </p>
-          </div>
+          ) : filteredAllocations.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '3rem 1rem', color: 'var(--color-text-muted)' }}>
+              <DoorClosed size={40} style={{ margin: '0 auto 0.75rem', opacity: 0.5 }} />
+              <p style={{ fontWeight: 600, fontSize: '1rem', color: 'var(--color-primary-900)' }}>
+                No companies or matching allocations found.
+              </p>
+              <p style={{ fontSize: '0.85rem' }}>
+                Click "Upload Room Numbers Excel" above to automatically allocate rooms.
+              </p>
+            </div>
+          ) : (
+            <div className="table-responsive">
+              <table className="data-table">
+                <thead>
+                  <tr>
+                    <th style={{ width: '4%' }}>#</th>
+                    <th style={{ width: '25%' }}>Company Name</th>
+                    <th style={{ width: '18%' }}>Position / Sector</th>
+                    <th style={{ width: '14%' }}>Assigned Room</th>
+                    <th style={{ width: '12%' }}>QR Status</th>
+                    <th style={{ width: '14%' }}>Candidates</th>
+                    <th style={{ width: '13%', textAlign: 'right' }}>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredAllocations.map((item, index) => (
+                    <tr key={item.company_id}>
+                      <td style={{ color: 'var(--color-text-muted)', fontWeight: 600 }}>
+                        {index + 1}
+                      </td>
+                      <td>
+                        <Link
+                          to={`/admin/companies/${item.company_id}`}
+                          style={{
+                            fontWeight: 700,
+                            color: 'var(--color-brand-600)',
+                            textDecoration: 'none',
+                          }}
+                        >
+                          {item.company_name}
+                        </Link>
+                      </td>
+                      <td style={{ fontSize: '0.82rem', color: 'var(--color-text-muted)' }}>
+                        {item.job_position || item.sector || '—'}
+                      </td>
+                      <td>
+                        {item.room_id ? (
+                          <span
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '0.35rem',
+                              padding: '0.25rem 0.65rem',
+                              backgroundColor: '#ede9fe',
+                              color: '#6d28d9',
+                              borderRadius: 'var(--radius-sm)',
+                              fontWeight: 700,
+                              fontSize: '0.84rem',
+                              border: '1px solid #ddd6fe',
+                            }}
+                          >
+                            <DoorClosed size={14} /> Room {item.room_number}
+                          </span>
+                        ) : (
+                          <span
+                            style={{
+                              fontSize: '0.78rem',
+                              color: '#dc2626',
+                              backgroundColor: '#fef2f2',
+                              padding: '0.2rem 0.5rem',
+                              borderRadius: 'var(--radius-sm)',
+                              fontWeight: 600,
+                            }}
+                          >
+                            Unallocated
+                          </span>
+                        )}
+                      </td>
+                      <td>
+                        {item.room_id ? (
+                          <span
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '0.3rem',
+                              fontSize: '0.78rem',
+                              padding: '0.2rem 0.55rem',
+                              borderRadius: 9999,
+                              fontWeight: 700,
+                              backgroundColor: item.qr_status === 'active' ? '#ecfdf5' : '#fef2f2',
+                              color: item.qr_status === 'active' ? '#047857' : '#b91c1c',
+                              border: `1px solid ${item.qr_status === 'active' ? '#a7f3d0' : '#fecaca'}`,
+                            }}
+                          >
+                            <span
+                              style={{
+                                width: 6,
+                                height: 6,
+                                borderRadius: '50%',
+                                backgroundColor: item.qr_status === 'active' ? '#10b981' : '#ef4444',
+                              }}
+                            />
+                            {item.qr_status === 'active' ? 'Active' : 'Inactive'}
+                          </span>
+                        ) : (
+                          <span style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)' }}>—</span>
+                        )}
+                      </td>
+                      <td>
+                        {item.room_id ? (
+                          <button
+                            type="button"
+                            onClick={() => handleViewRoomStudents(item.room_id)}
+                            className="btn btn-ghost btn-sm"
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '0.35rem',
+                              fontSize: '0.78rem',
+                              fontWeight: 700,
+                              color: (item.checkins_count || 0) > 0 ? '#047857' : '#64748b',
+                              backgroundColor: (item.checkins_count || 0) > 0 ? '#ecfdf5' : '#f1f5f9',
+                              border: `1px solid ${(item.checkins_count || 0) > 0 ? '#a7f3d0' : '#e2e8f0'}`,
+                              padding: '0.25rem 0.55rem',
+                              borderRadius: '9999px',
+                              cursor: 'pointer',
+                            }}
+                            title="Click to view all candidates in this room"
+                          >
+                            <Users size={13} />
+                            <span>{item.checkins_count || 0} in Room</span>
+                          </button>
+                        ) : (
+                          <span style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)' }}>—</span>
+                        )}
+                      </td>
+                      <td style={{ textAlign: 'right' }}>
+                        {item.room_id ? (
+                          <div style={{ display: 'inline-flex', gap: '0.35rem', alignItems: 'center' }}>
+                            <button
+                              onClick={() => handleViewRoomStudents(item.room_id)}
+                              className="btn btn-outline btn-sm"
+                              style={{ gap: '0.3rem', fontSize: '0.76rem', padding: '0.25rem 0.5rem' }}
+                              title="View Candidates Inside Room"
+                            >
+                              <Users size={13} /> Students
+                            </button>
+                            <button
+                              onClick={() => handleViewQR(item.room_id)}
+                              className="btn btn-outline btn-sm"
+                              style={{ gap: '0.3rem', fontSize: '0.76rem', padding: '0.25rem 0.5rem' }}
+                              title="View Room QR Placard"
+                            >
+                              <QrCode size={13} /> QR
+                            </button>
+                          </div>
+                        ) : (
+                          <button
+                            onClick={handleOpenUploadModal}
+                            className="btn btn-primary btn-sm"
+                            style={{ fontSize: '0.78rem', padding: '0.3rem 0.6rem' }}
+                          >
+                            Allocate
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )
         ) : (
-          <div className="table-responsive">
-            <table className="data-table">
-              <thead>
-                <tr>
-                  <th style={{ width: '4%' }}>#</th>
-                  <th style={{ width: '28%' }}>Company Name</th>
-                  <th style={{ width: '20%' }}>Position / Sector</th>
-                  <th style={{ width: '16%' }}>Assigned Room</th>
-                  <th style={{ width: '14%' }}>QR Status</th>
-                  <th style={{ width: '18%', textAlign: 'right' }}>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredAllocations.map((item, index) => (
-                  <tr key={item.company_id}>
-                    <td style={{ color: 'var(--color-text-muted)', fontWeight: 600 }}>
-                      {index + 1}
-                    </td>
-                    <td>
-                      <Link
-                        to={`/admin/companies/${item.company_id}`}
-                        style={{
-                          fontWeight: 700,
-                          color: 'var(--color-brand-600)',
-                          textDecoration: 'none',
-                        }}
-                      >
-                        {item.company_name}
-                      </Link>
-                    </td>
-                    <td style={{ fontSize: '0.82rem', color: 'var(--color-text-muted)' }}>
-                      {item.job_position || item.sector || '—'}
-                    </td>
-                    <td>
-                      {item.room_id ? (
+          /* Live Room & Student Monitor View */
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+              <div style={{ fontSize: '0.9rem', color: 'var(--color-text-muted)' }}>
+                Showing <strong>{liveRoomsData.length}</strong> active interview rooms with live student check-ins.
+              </div>
+              <button
+                type="button"
+                onClick={loadLiveRooms}
+                className="btn btn-outline btn-sm"
+                style={{ gap: '0.4rem', fontSize: '0.8rem' }}
+                disabled={loadingLiveRooms}
+              >
+                <RefreshCw size={14} className={loadingLiveRooms ? 'spinner' : ''} />
+                <span>Refresh Live Check-Ins</span>
+              </button>
+            </div>
+
+            {loadingLiveRooms ? (
+              <div style={{ padding: '2rem 0', textAlign: 'center' }}>
+                <span className="spinner" style={{ width: 24, height: 24, margin: '0 auto 0.5rem' }} />
+                <p style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem' }}>Loading live room check-ins...</p>
+              </div>
+            ) : liveRoomsData.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '3rem 1rem', color: 'var(--color-text-muted)' }}>
+                <Users size={36} style={{ margin: '0 auto 0.5rem', opacity: 0.5 }} />
+                <p>No rooms matching your search.</p>
+              </div>
+            ) : (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))', gap: '1.25rem' }}>
+                {liveRoomsData.map((rm) => (
+                  <div
+                    key={rm.room_id}
+                    className="card"
+                    style={{
+                      padding: '1.25rem',
+                      border: rm.checkins_count > 0 ? '1.5px solid #a7f3d0' : '1px solid var(--color-border)',
+                      borderRadius: 'var(--radius-lg)',
+                      backgroundColor: rm.checkins_count > 0 ? '#f0fdf4' : '#ffffff',
+                    }}
+                  >
+                    {/* Room & Company Header */}
+                    <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '0.75rem', marginBottom: '0.75rem' }}>
+                      <div>
                         <span
                           style={{
                             display: 'inline-flex',
                             alignItems: 'center',
                             gap: '0.35rem',
-                            padding: '0.25rem 0.65rem',
-                            backgroundColor: '#ede9fe',
-                            color: '#6d28d9',
+                            padding: '0.2rem 0.65rem',
+                            backgroundColor: '#1e3a8a',
+                            color: '#ffffff',
                             borderRadius: 'var(--radius-sm)',
-                            fontWeight: 700,
-                            fontSize: '0.84rem',
-                            border: '1px solid #ddd6fe',
+                            fontWeight: 800,
+                            fontSize: '0.88rem',
                           }}
                         >
-                          <DoorClosed size={14} /> Room {item.room_number}
+                          <DoorClosed size={14} /> ROOM {rm.room_number}
                         </span>
-                      ) : (
-                        <span
-                          style={{
-                            fontSize: '0.78rem',
-                            color: '#dc2626',
-                            backgroundColor: '#fef2f2',
-                            padding: '0.2rem 0.5rem',
-                            borderRadius: 'var(--radius-sm)',
-                            fontWeight: 600,
-                          }}
-                        >
-                          Unallocated
-                        </span>
-                      )}
-                    </td>
-                    <td>
-                      {item.room_id ? (
+                        <h3 style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--color-primary-900)', margin: '0.4rem 0 0.15rem' }}>
+                          {rm.company?.name || 'Direct Interview Room'}
+                        </h3>
+                        {rm.company?.job_position && (
+                          <div style={{ fontSize: '0.78rem', color: 'var(--color-text-muted)' }}>
+                            Role: <strong>{rm.company.job_position}</strong> {rm.company.salary_ctc ? `• ${rm.company.salary_ctc}` : ''}
+                          </div>
+                        )}
+                      </div>
+
+                      <div style={{ textAlign: 'right' }}>
                         <span
                           style={{
                             display: 'inline-flex',
                             alignItems: 'center',
                             gap: '0.3rem',
-                            fontSize: '0.78rem',
-                            padding: '0.2rem 0.55rem',
+                            padding: '0.25rem 0.6rem',
                             borderRadius: 9999,
+                            fontSize: '0.78rem',
                             fontWeight: 700,
-                            backgroundColor: item.qr_status === 'active' ? '#ecfdf5' : '#fef2f2',
-                            color: item.qr_status === 'active' ? '#047857' : '#b91c1c',
-                            border: `1px solid ${item.qr_status === 'active' ? '#a7f3d0' : '#fecaca'}`,
+                            backgroundColor: rm.checkins_count > 0 ? '#10b981' : '#f1f5f9',
+                            color: rm.checkins_count > 0 ? '#ffffff' : '#64748b',
                           }}
                         >
-                          <span
-                            style={{
-                              width: 6,
-                              height: 6,
-                              borderRadius: '50%',
-                              backgroundColor: item.qr_status === 'active' ? '#10b981' : '#ef4444',
-                            }}
-                          />
-                          {item.qr_status === 'active' ? 'Active' : 'Inactive'}
+                          <Users size={12} /> {rm.checkins_count} Candidates
                         </span>
-                      ) : (
-                        <span style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)' }}>—</span>
-                      )}
-                    </td>
-                    <td style={{ textAlign: 'right' }}>
-                      {item.room_id ? (
-                        <div style={{ display: 'inline-flex', gap: '0.4rem', alignItems: 'center' }}>
-                          <button
-                            onClick={() => handleViewQR(item.room_id)}
-                            className="btn btn-outline btn-sm"
-                            style={{ gap: '0.35rem', fontSize: '0.78rem', padding: '0.3rem 0.6rem' }}
-                            title="View Room QR Placard"
-                          >
-                            <QrCode size={14} /> Room QR
-                          </button>
+                      </div>
+                    </div>
+
+                    {/* Students list */}
+                    {rm.students && rm.students.length > 0 ? (
+                      <div style={{ marginTop: '0.75rem', paddingTop: '0.75rem', borderTop: '1px solid rgba(0,0,0,0.06)' }}>
+                        <div style={{ fontSize: '0.72rem', fontWeight: 700, color: '#047857', textTransform: 'uppercase', marginBottom: '0.4rem' }}>
+                          Checked-In Students:
                         </div>
-                      ) : (
-                        <button
-                          onClick={handleOpenUploadModal}
-                          className="btn btn-primary btn-sm"
-                          style={{ fontSize: '0.78rem', padding: '0.3rem 0.6rem' }}
-                        >
-                          Allocate
-                        </button>
-                      )}
-                    </td>
-                  </tr>
+                        <div style={{ display: 'grid', gap: '0.4rem', maxHeight: 220, overflowY: 'auto' }}>
+                          {rm.students.map((st, i) => (
+                            <div
+                              key={i}
+                              style={{
+                                padding: '0.45rem 0.65rem',
+                                backgroundColor: '#ffffff',
+                                borderRadius: '6px',
+                                border: '1px solid #e2e8f0',
+                                fontSize: '0.78rem',
+                              }}
+                            >
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <strong style={{ color: 'var(--color-primary-900)' }}>{i + 1}. {st.full_name}</strong>
+                                <span style={{ fontSize: '0.7rem', color: '#059669', fontWeight: 600 }}>{st.checked_in_at.split(',')[0]}</span>
+                              </div>
+                              <div style={{ display: 'flex', gap: '0.65rem', fontSize: '0.72rem', color: '#64748b', marginTop: '0.15rem', flexWrap: 'wrap' }}>
+                                {st.hall_ticket_number && <span>HT: {st.hall_ticket_number}</span>}
+                                {st.mobile && <span>Ph: {st.mobile}</span>}
+                                {st.qualification && <span>{st.qualification}</span>}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ) : (
+                      <div style={{ padding: '0.65rem', backgroundColor: '#f8fafc', borderRadius: '6px', fontSize: '0.78rem', color: 'var(--color-text-muted)', textAlign: 'center' }}>
+                        No candidates have checked into this room yet.
+                      </div>
+                    )}
+
+                    <div style={{ marginTop: '0.75rem', display: 'flex', justifyContent: 'flex-end', gap: '0.4rem' }}>
+                      <button
+                        type="button"
+                        onClick={() => handleViewQR(rm.room_id)}
+                        className="btn btn-outline btn-sm"
+                        style={{ fontSize: '0.75rem', padding: '0.2rem 0.5rem' }}
+                      >
+                        <QrCode size={13} /> View QR
+                      </button>
+                    </div>
+                  </div>
                 ))}
-              </tbody>
-            </table>
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -992,6 +1268,25 @@ const AdminRoomAllocationPage = ({ onTabChange }) => {
                   {selectedRoomQR.qr_status === 'active' ? 'Disable QR' : 'Enable QR'}
                 </button>
               </div>
+
+              {/* Checked-in candidates summary in QR modal */}
+              {selectedRoomQR.students && selectedRoomQR.students.length > 0 && (
+                <div style={{ marginTop: '1.25rem', paddingTop: '1rem', borderTop: '1px solid #e2e8f0', textAlign: 'left' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                    <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#047857', textTransform: 'uppercase' }}>
+                      👥 Candidates in Room ({selectedRoomQR.students.length}):
+                    </div>
+                  </div>
+                  <div style={{ display: 'grid', gap: '0.35rem', maxHeight: 150, overflowY: 'auto' }}>
+                    {selectedRoomQR.students.map((st, i) => (
+                      <div key={i} style={{ padding: '0.4rem 0.65rem', backgroundColor: '#f0fdf4', borderRadius: '6px', fontSize: '0.78rem', display: 'flex', justifyContent: 'space-between' }}>
+                        <span><strong>{i + 1}. {st.full_name}</strong> {st.hall_ticket_number ? `(${st.hall_ticket_number})` : ''}</span>
+                        <span style={{ fontSize: '0.72rem', color: '#059669' }}>{st.checked_in_at.split(',')[0]}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
 
             <div className="modal-footer">
@@ -1087,6 +1382,129 @@ const AdminRoomAllocationPage = ({ onTabChange }) => {
               }}
             >
               {pdfProgress.name}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ROOM CANDIDATES MODAL */}
+      {selectedRoomStudents && (
+        <div className="modal-backdrop" onClick={() => setSelectedRoomStudents(null)}>
+          <div
+            className="modal-content"
+            style={{ maxWidth: 840, maxHeight: '92vh', overflowY: 'auto' }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="modal-header">
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+                <span
+                  style={{
+                    padding: '0.35rem 0.85rem',
+                    backgroundColor: '#1e3a8a',
+                    color: '#ffffff',
+                    borderRadius: 'var(--radius-sm)',
+                    fontWeight: 800,
+                    fontSize: '1rem',
+                  }}
+                >
+                  <DoorClosed size={15} style={{ verticalAlign: 'middle', marginRight: 4 }} />
+                  ROOM {selectedRoomStudents.room_number}
+                </span>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: '1.15rem', color: 'var(--color-primary-900)' }}>
+                    {selectedRoomStudents.assigned_company?.name || 'Direct Interview Room'}
+                  </h3>
+                  <div style={{ fontSize: '0.78rem', color: 'var(--color-text-muted)' }}>
+                    {selectedRoomStudents.assigned_company?.job_position && (
+                      <span>Role: <strong>{selectedRoomStudents.assigned_company.job_position}</strong> • </span>
+                    )}
+                    <span>Total Check-ins: <strong>{selectedRoomStudents.students?.length || 0} Candidates</strong></span>
+                  </div>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                className="btn btn-ghost btn-sm"
+                onClick={() => setSelectedRoomStudents(null)}
+                style={{ padding: '0.35rem', borderRadius: '50%' }}
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="modal-body" style={{ padding: '1.25rem 1.5rem' }}>
+              {selectedRoomStudents.students && selectedRoomStudents.students.length > 0 ? (
+                <div className="table-responsive">
+                  <table className="data-table" style={{ fontSize: '0.82rem' }}>
+                    <thead>
+                      <tr>
+                        <th style={{ width: '5%' }}>#</th>
+                        <th style={{ width: '22%' }}>Candidate Name</th>
+                        <th style={{ width: '18%' }}>Hall Ticket No</th>
+                        <th style={{ width: '15%' }}>Mobile</th>
+                        <th style={{ width: '22%' }}>Qualification / Branch</th>
+                        <th style={{ width: '18%', textAlign: 'right' }}>Check-in Time</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {selectedRoomStudents.students.map((st, idx) => (
+                        <tr key={st.id || idx}>
+                          <td style={{ color: 'var(--color-text-muted)', fontWeight: 600 }}>{idx + 1}</td>
+                          <td>
+                            <strong style={{ color: 'var(--color-primary-900)' }}>{st.full_name}</strong>
+                            <div style={{ fontSize: '0.72rem', color: 'var(--color-text-muted)' }}>{st.email}</div>
+                          </td>
+                          <td style={{ fontFamily: 'monospace', fontWeight: 600, color: '#0369a1' }}>
+                            {st.hall_ticket_number || '—'}
+                          </td>
+                          <td>{st.mobile || '—'}</td>
+                          <td>
+                            <div>{st.qualification || '—'}</div>
+                            {st.branch && <div style={{ fontSize: '0.72rem', color: '#64748b' }}>{st.branch}</div>}
+                          </td>
+                          <td style={{ textAlign: 'right', fontSize: '0.76rem', color: '#047857', fontWeight: 600 }}>
+                            {st.checked_in_at}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <div style={{ textAlign: 'center', padding: '3rem 1rem', color: 'var(--color-text-muted)' }}>
+                  <Users size={38} style={{ margin: '0 auto 0.5rem', opacity: 0.4 }} />
+                  <p style={{ fontWeight: 600, color: 'var(--color-primary-900)' }}>
+                    No candidates have checked into Room {selectedRoomStudents.room_number} yet.
+                  </p>
+                  <p style={{ fontSize: '0.8rem' }}>
+                    When students scan the placard outside this room, their live check-in details will appear here immediately.
+                  </p>
+                </div>
+              )}
+            </div>
+
+            <div className="modal-footer" style={{ justifyContent: 'space-between' }}>
+              <div style={{ fontSize: '0.78rem', color: 'var(--color-text-muted)' }}>
+                Rule: Students can attempt a maximum of <strong>3 companies</strong>.
+              </div>
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <button
+                  type="button"
+                  className="btn btn-outline"
+                  onClick={() => handleViewRoomStudents(selectedRoomStudents.id)}
+                  style={{ gap: '0.35rem', fontSize: '0.82rem' }}
+                >
+                  <RefreshCw size={14} className={loadingRoomStudents ? 'spinner' : ''} /> Refresh
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-primary"
+                  onClick={() => setSelectedRoomStudents(null)}
+                >
+                  Close
+                </button>
+              </div>
             </div>
           </div>
         </div>

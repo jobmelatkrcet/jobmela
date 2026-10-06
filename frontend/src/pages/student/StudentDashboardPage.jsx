@@ -17,7 +17,12 @@ import {
   ShieldCheck,
   Award,
   GraduationCap,
+  QrCode,
+  Camera,
+  DoorClosed,
 } from 'lucide-react';
+import roomService from '../../services/roomService';
+import StudentQRScannerModal from '../../components/StudentQRScannerModal';
 import StatsCard from '../../components/StatsCard';
 import Alert from '../../components/Alert';
 import ConfirmModal from '../../components/ConfirmModal';
@@ -39,6 +44,14 @@ const StudentDashboardPage = () => {
   const [stats, setStats] = useState({ total_companies: 0, applied_count: 0 });
   const [myApplications, setMyApplications] = useState([]);
   const [featuredCompanies, setFeaturedCompanies] = useState([]);
+  const [attemptsData, setAttemptsData] = useState({
+    attempts_count: 0,
+    max_attempts: 3,
+    remaining_attempts: 3,
+    can_attempt_more: true,
+    attempts: [],
+  });
+  const [isScannerOpen, setIsScannerOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [alert, setAlert] = useState(
     location.state?.message ? { type: 'success', message: location.state.message } : null
@@ -56,17 +69,19 @@ const StudentDashboardPage = () => {
   const fetchDashboardData = async () => {
     setLoading(true);
     try {
-      const [statsData, appsData, compsData, profileData] = await Promise.allSettled([
+      const [statsData, appsData, compsData, profileData, attemptsRes] = await Promise.allSettled([
         applicationService.getStudentStats(),
         applicationService.getMyApplications(),
         companyService.getCompanies({ page: 1, page_size: 6 }),
         authService.getProfile(),
+        roomService.getMyAttempts(),
       ]);
 
       if (statsData.status === 'fulfilled') setStats(statsData.value);
       if (appsData.status === 'fulfilled') setMyApplications(appsData.value.applications || []);
       if (compsData.status === 'fulfilled') setFeaturedCompanies(compsData.value.results || []);
       if (profileData.status === 'fulfilled') setProfile(profileData.value);
+      if (attemptsRes.status === 'fulfilled') setAttemptsData(attemptsRes.value);
     } catch (err) {
       console.error('Error loading dashboard data:', err);
     } finally {
@@ -247,11 +262,180 @@ const StudentDashboardPage = () => {
         </div>
       </div>
 
-      {/* 3 Metric Cards */}
+      {/* Interview Rounds Check-In Card (Max 3 Companies Allowed) */}
+      <div
+        className="card"
+        style={{
+          marginBottom: '2rem',
+          padding: '1.5rem',
+          background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
+          border: '1px solid #334155',
+          borderRadius: 'var(--radius-lg)',
+          boxShadow: '0 10px 25px -5px rgba(15, 23, 42, 0.4)',
+          color: '#f8fafc',
+        }}
+      >
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            gap: '1.25rem',
+          }}
+        >
+          {/* Left info */}
+          <div style={{ flex: '1 1 320px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.5rem' }}>
+              <div
+                style={{
+                  width: 36,
+                  height: 36,
+                  borderRadius: '8px',
+                  backgroundColor: 'rgba(56, 189, 248, 0.15)',
+                  color: '#38bdf8',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <Camera size={20} />
+              </div>
+              <div>
+                <h2 style={{ fontSize: '1.2rem', fontWeight: 800, margin: 0, color: '#f8fafc' }}>
+                  Interview Room QR Check-In
+                </h2>
+                <div style={{ fontSize: '0.78rem', color: '#94a3b8' }}>
+                  A candidate can apply to all companies, but can attempt <strong>maximum 3 companies</strong>.
+                </div>
+              </div>
+            </div>
+
+            {/* Quota Progress */}
+            <div style={{ marginTop: '1rem', display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+              <div
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  padding: '0.4rem 0.85rem',
+                  borderRadius: '6px',
+                  backgroundColor: attemptsData.attempts_count >= 3 ? 'rgba(239, 68, 68, 0.2)' : 'rgba(16, 185, 129, 0.2)',
+                  border: `1px solid ${attemptsData.attempts_count >= 3 ? '#ef4444' : '#10b981'}`,
+                  color: attemptsData.attempts_count >= 3 ? '#fca5a5' : '#6ee7b7',
+                  fontSize: '0.85rem',
+                  fontWeight: 700,
+                }}
+              >
+                Attempts: {attemptsData.attempts_count} of 3 Used
+              </div>
+
+              <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                {[1, 2, 3].map((slot) => {
+                  const filled = slot <= attemptsData.attempts_count;
+                  return (
+                    <div
+                      key={slot}
+                      style={{
+                        width: 28,
+                        height: 10,
+                        borderRadius: 5,
+                        backgroundColor: filled
+                          ? attemptsData.attempts_count >= 3
+                            ? '#ef4444'
+                            : '#10b981'
+                          : '#475569',
+                      }}
+                      title={`Attempt ${slot} ${filled ? 'Completed' : 'Available'}`}
+                    />
+                  );
+                })}
+              </div>
+
+              <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>
+                {attemptsData.attempts_count >= 3
+                  ? 'All 3 attempts completed (Limit Reached)'
+                  : `${attemptsData.remaining_attempts} attempt(s) remaining`}
+              </span>
+            </div>
+          </div>
+
+          {/* Right action button */}
+          <div>
+            <button
+              type="button"
+              onClick={() => setIsScannerOpen(true)}
+              className="btn btn-primary"
+              style={{
+                backgroundColor: attemptsData.attempts_count >= 3 ? '#475569' : '#0284c7',
+                color: '#ffffff',
+                fontWeight: 700,
+                fontSize: '0.95rem',
+                padding: '0.75rem 1.4rem',
+                borderRadius: 'var(--radius-md)',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.6rem',
+                boxShadow: attemptsData.attempts_count >= 3 ? 'none' : '0 4px 14px rgba(2, 132, 199, 0.4)',
+                border: 'none',
+                cursor: 'pointer',
+              }}
+            >
+              <QrCode size={19} />
+              <span>{attemptsData.attempts_count >= 3 ? 'View Attempted Rooms' : 'Scan Room QR to Check In'}</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Attempted companies listing */}
+        {attemptsData.attempts && attemptsData.attempts.length > 0 && (
+          <div
+            style={{
+              marginTop: '1.25rem',
+              paddingTop: '1rem',
+              borderTop: '1px solid rgba(255, 255, 255, 0.1)',
+            }}
+          >
+            <div style={{ fontSize: '0.76rem', color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase', marginBottom: '0.5rem' }}>
+              Checked-In Interview Rooms:
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '0.6rem' }}>
+              {attemptsData.attempts.map((att, i) => (
+                <div
+                  key={i}
+                  style={{
+                    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    borderRadius: '8px',
+                    padding: '0.65rem 0.85rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                  }}
+                >
+                  <div>
+                    <div style={{ fontWeight: 700, fontSize: '0.85rem', color: '#f8fafc' }}>
+                      {att.company_name}
+                    </div>
+                    <div style={{ fontSize: '0.75rem', color: '#38bdf8' }}>
+                      Room {att.room_number} {att.job_position ? `• ${att.job_position}` : ''}
+                    </div>
+                  </div>
+                  <span style={{ fontSize: '0.7rem', color: '#94a3b8' }}>
+                    {att.checked_in_at?.split(',')[0]}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* 4 Metric Cards */}
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 260px), 1fr))',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 240px), 1fr))',
           gap: '1.25rem',
           marginBottom: '2rem',
         }}
@@ -269,7 +453,15 @@ const StudentDashboardPage = () => {
           value={stats.applied_count}
           icon={FileCheck}
           color="emerald"
-          subtitle="Direct applications submitted"
+          subtitle="Direct applications submitted (unlimited)"
+        />
+
+        <StatsCard
+          title="Interview Attempts"
+          value={`${attemptsData.attempts_count} / 3`}
+          icon={DoorClosed}
+          color={attemptsData.attempts_count >= 3 ? 'red' : 'indigo'}
+          subtitle={attemptsData.attempts_count >= 3 ? 'Maximum 3 attempts reached' : `${attemptsData.remaining_attempts} attempt(s) remaining`}
         />
 
         <StatsCard
@@ -532,6 +724,16 @@ const StudentDashboardPage = () => {
         onCancel={() => {
           setIsModalOpen(false);
           setSelectedCompany(null);
+        }}
+      />
+
+      {/* QR Scanner Modal */}
+      <StudentQRScannerModal
+        isOpen={isScannerOpen}
+        onClose={() => setIsScannerOpen(false)}
+        onCheckInSuccess={() => {
+          setIsScannerOpen(false);
+          fetchDashboardData();
         }}
       />
     </div>
