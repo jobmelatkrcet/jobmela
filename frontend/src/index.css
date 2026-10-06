@@ -1361,7 +1361,7 @@ button, input, select, textarea {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 0.85rem 1.25rem;
+  padding: 1.5rem 1.25rem; /* Equal top and bottom padding */
   overflow: hidden;
   background-color: #061121;
   box-sizing: border-box;
@@ -1909,14 +1909,16 @@ button, input, select, textarea {
   .hero-ref-wrapper {
     min-height: calc(100vh - 108px);
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 0.25rem 1.5rem 0.75rem;
+    padding: 1.5rem 1.5rem; /* Equal padding top and bottom */
     box-sizing: border-box;
   }
 
   .hero-stage-container {
-    margin: -42px auto 0 !important;
+    margin: 0 auto !important;
+    min-height: auto !important;
   }
 
   .hero-ref-container {
@@ -2049,7 +2051,7 @@ button, input, select, textarea {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    padding: 0.5rem 0.5rem;
+    padding: 1.15rem 0.65rem; /* Equal top and bottom padding on mobile */
     overflow: hidden;
     contain: paint;
     box-sizing: border-box;
@@ -4735,13 +4737,13 @@ button, input, select, textarea {
   z-index: 5;
   width: 100%;
   max-width: 1200px;
-  margin: -42px auto 0; /* Upwards on desktop for true optical vertical center */
+  margin: 0 auto; /* Centered with equal top and bottom spacing */
   display: grid;
   grid-template-areas: "stage";
   grid-template-columns: minmax(0, 1fr);
   align-items: center;
   justify-items: center;
-  min-height: calc(100vh - 128px);
+  min-height: auto;
 }
 
 .hero-ref-container,
@@ -4798,7 +4800,7 @@ button, input, select, textarea {
 
 /* Crisp, Responsive High-Resolution Poster Image that GUARANTEED FITS IN THE SCREEN */
 .hero-stage-poster-img {
-  max-height: min(78vh, calc(100vh - 165px));
+  max-height: min(75vh, calc(100vh - 180px));
   max-width: min(88vw, 780px);
   width: auto;
   height: auto;
