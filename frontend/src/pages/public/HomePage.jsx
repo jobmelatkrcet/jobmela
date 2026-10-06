@@ -68,12 +68,13 @@ const HomePage = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [lightboxPoster, setLightboxPoster] = useState(null);
 
-  // Auto-advance slideshow smoothly every 5.5 seconds
+  // Auto-advance slideshow smoothly every 3 seconds:
+  // Slide 0: Designed hero (3s) -> Slide 1: Poster 1 only (3s) -> Slide 2: Poster 2 only (3s)
   useEffect(() => {
     if (lightboxPoster) return;
     const timer = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % 3);
-    }, 5500);
+    }, 3000);
     return () => clearInterval(timer);
   }, [lightboxPoster]);
 
@@ -306,96 +307,6 @@ const HomePage = () => {
                     )}
                   </motion.div>
 
-                  {/* Immediate Visual Official Posters Preview Strip */}
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: 0.38 }}
-                    className="hero-posters-preview-strip"
-                  >
-                    <div className="hero-posters-preview-header">
-                      <div className="hero-posters-preview-title">
-                        <Sparkles size={15} color="#38bdf8" /> Official Event Posters (Click to Zoom &amp; Inspect)
-                      </div>
-                      <div style={{ display: 'flex', gap: '0.65rem', alignItems: 'center' }}>
-                        <button
-                          type="button"
-                          onClick={() => setCurrentSlide(1)}
-                          style={{
-                            background: 'rgba(56, 189, 248, 0.15)',
-                            border: '1px solid rgba(56, 189, 248, 0.4)',
-                            borderRadius: '999px',
-                            color: '#38bdf8',
-                            fontSize: '0.74rem',
-                            fontWeight: 700,
-                            padding: '0.2rem 0.65rem',
-                            cursor: 'pointer',
-                          }}
-                        >
-                          Slide 2 →
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setCurrentSlide(2)}
-                          style={{
-                            background: 'rgba(74, 222, 128, 0.15)',
-                            border: '1px solid rgba(74, 222, 128, 0.4)',
-                            borderRadius: '999px',
-                            color: '#4ade80',
-                            fontSize: '0.74rem',
-                            fontWeight: 700,
-                            padding: '0.2rem 0.65rem',
-                            cursor: 'pointer',
-                          }}
-                        >
-                          Slide 3 →
-                        </button>
-                      </div>
-                    </div>
-
-                    <div className="hero-posters-preview-grid">
-                      {/* Mini Poster 1 Card */}
-                      <div
-                        className="hero-poster-mini-card"
-                        onClick={() =>
-                          setLightboxPoster({
-                            src: poster1Img,
-                            title: 'TKRCET Mega Job Mela 2026 - Chief Guest & Dignitaries Poster',
-                          })
-                        }
-                        title="Click to view Chief Guest Poster in Fullscreen"
-                      >
-                        <img src={poster1Img} alt="Chief Guest CM Revanth Reddy" className="hero-poster-mini-thumb" />
-                        <div className="hero-poster-mini-info">
-                          <span className="hero-poster-mini-tag">Chief Guest Launch</span>
-                          <span className="hero-poster-mini-name">Hon'ble CM Revanth Reddy</span>
-                          <span className="hero-poster-mini-sub">Click to Zoom / Slide 2</span>
-                        </div>
-                        <Maximize2 size={16} color="#38bdf8" style={{ marginLeft: 'auto', flexShrink: 0 }} />
-                      </div>
-
-                      {/* Mini Poster 2 Card */}
-                      <div
-                        className="hero-poster-mini-card"
-                        onClick={() =>
-                          setLightboxPoster({
-                            src: poster2Img,
-                            title: 'TKRCET 31st Oct Mega Job Mela - Guidelines & Eligibility Poster',
-                          })
-                        }
-                        title="Click to view Eligibility Poster in Fullscreen"
-                      >
-                        <img src={poster2Img} alt="Guidelines & Eligibility Poster" className="hero-poster-mini-thumb" />
-                        <div className="hero-poster-mini-info">
-                          <span className="hero-poster-mini-tag" style={{ color: '#4ade80' }}>Eligibility &amp; Drive</span>
-                          <span className="hero-poster-mini-name">10th, Inter, Diploma, Degree</span>
-                          <span className="hero-poster-mini-sub">Click to Zoom / Slide 3</span>
-                        </div>
-                        <Maximize2 size={16} color="#4ade80" style={{ marginLeft: 'auto', flexShrink: 0 }} />
-                      </div>
-                    </div>
-                  </motion.div>
-
                   {/* 6. Venue Card - Mobile Only */}
                   <motion.div
                     initial={{ opacity: 0 }}
@@ -428,300 +339,68 @@ const HomePage = () => {
             </motion.div>
           )}
 
-          {/* SLIDE 1: Official VIP Dignitaries Announcement Poster (CM Revanth Reddy & IT Minister Sridhar Babu) */}
+          {/* SLIDE 1: Poster 1 ONLY (Smooth slideshow, pure poster display) */}
           {currentSlide === 1 && (
             <motion.div
               key="hero-slide-poster-1"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.45 }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.5 }}
               style={{ width: '100%' }}
             >
-              <div
-                className="hero-poster-slide"
-                style={{
-                  background: 'radial-gradient(circle at 75% 25%, rgba(30, 58, 138, 0.45) 0%, #061121 75%)',
-                }}
-              >
-                <div className="hero-poster-grid">
-                  {/* Poster Image Frame */}
-                  <div
-                    className="hero-poster-frame"
-                    onClick={() =>
-                      setLightboxPoster({
-                        src: poster1Img,
-                        title: 'TKRCET Mega Job Mela 2026 - Chief Guest & Dignitaries Poster',
-                      })
-                    }
-                    title="Click to view full poster"
-                  >
-                    <img
-                      src={poster1Img}
-                      alt="Mega Job Mela 2026 - Chief Guest CM Revanth Reddy & Guest of Honour IT Minister Sridhar Babu"
-                      className="hero-poster-img"
-                    />
-                    <div className="hero-poster-hover-overlay">
-                      <Maximize2 size={34} />
-                      <span style={{ fontWeight: 700, fontSize: '0.95rem' }}>Click to View Full Poster</span>
-                    </div>
-                  </div>
-
-                  {/* Poster Details Content */}
-                  <div className="hero-poster-content">
-                    <div className="hero-poster-badge">
-                      <Sparkles size={14} /> Official Mega Job Mela 2026 Poster
-                    </div>
-
-                    <h1 className="hero-poster-title">
-                      MEGA JOB <span style={{ color: '#38bdf8' }}>MELA 2026</span>
-                    </h1>
-
-                    <p className="hero-poster-sub">
-                      Sponsored by <strong>TKR Educational Society</strong> • Approved by AICTE, Affiliated to JNTUH, Accredited by NBA Tier 1, NAAC A+ Grade.
-                      A grand employment drive for all unemployed youth from across Pan India!
-                    </p>
-
-                    {/* VIP Dignitaries Highlight Card */}
-                    <div className="hero-poster-dignitaries-box">
-                      <div className="hero-dignitary-item">
-                        <div className="hero-dignitary-icon" style={{ backgroundColor: 'rgba(239, 68, 68, 0.15)', color: '#ef4444' }}>
-                          <Award size={20} />
-                        </div>
-                        <div>
-                          <div style={{ fontSize: '0.74rem', color: '#f87171', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                            Chief Guest
-                          </div>
-                          <div style={{ fontSize: '1.05rem', fontWeight: 800, color: '#ffffff' }}>
-                            Sri Anumula Revanth Reddy
-                          </div>
-                          <div style={{ fontSize: '0.82rem', color: '#94a3b8' }}>
-                            Hon'ble Chief Minister of Telangana
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="hero-dignitary-item">
-                        <div className="hero-dignitary-icon" style={{ backgroundColor: 'rgba(56, 189, 248, 0.15)', color: '#38bdf8' }}>
-                          <Award size={20} />
-                        </div>
-                        <div>
-                          <div style={{ fontSize: '0.74rem', color: '#38bdf8', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                            Guest of Honour
-                          </div>
-                          <div style={{ fontSize: '1.05rem', fontWeight: 800, color: '#ffffff' }}>
-                            Sri Duddilla Sridhar Babu
-                          </div>
-                          <div style={{ fontSize: '0.82rem', color: '#94a3b8' }}>
-                            Hon'ble IT Minister of Telangana
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Highlights Pills */}
-                    <div className="hero-poster-pills-row">
-                      <div className="hero-poster-pill">
-                        <Building2 size={16} color="#38bdf8" />
-                        <span>More Than <strong>150+ Companies</strong></span>
-                      </div>
-                      <div className="hero-poster-pill">
-                        <Users size={16} color="#4ade80" />
-                        <span>Fabulous <strong>5,000+ Openings</strong></span>
-                      </div>
-                      <div className="hero-poster-pill">
-                        <Calendar size={16} color="#fbbf24" />
-                        <span>Date: <strong>OCT 31ST, 2026</strong></span>
-                      </div>
-                      <div className="hero-poster-pill">
-                        <MapPin size={16} color="#f472b6" />
-                        <span>Venue: <strong>TKRCET Campus</strong></span>
-                      </div>
-                    </div>
-
-                    {/* Buttons */}
-                    <div className="hero-poster-btn-row">
-                      <Link to="/register" className="hero-btn-register" style={{ padding: '0.75rem 1.6rem', fontSize: '0.95rem' }}>
-                        <span>REGISTER FOR FREE NOW</span>
-                        <ArrowRight size={17} />
-                      </Link>
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setLightboxPoster({
-                            src: poster1Img,
-                            title: 'TKRCET Mega Job Mela 2026 - Chief Guest & Dignitaries Poster',
-                          })
-                        }
-                        className="btn btn-outline"
-                        style={{
-                          borderColor: 'rgba(255, 255, 255, 0.3)',
-                          color: '#ffffff',
-                          gap: '0.5rem',
-                          padding: '0.75rem 1.25rem',
-                          fontSize: '0.92rem',
-                        }}
-                      >
-                        <Maximize2 size={16} /> View Fullscreen Poster
-                      </button>
-                    </div>
+              <div className="hero-pure-poster-slide">
+                <div
+                  className="hero-pure-poster-wrapper"
+                  onClick={() =>
+                    setLightboxPoster({
+                      src: poster1Img,
+                      title: 'TKRCET Mega Job Mela 2026 - Chief Guest & Dignitaries Poster',
+                    })
+                  }
+                  title="Click to zoom in high resolution"
+                >
+                  <img
+                    src={poster1Img}
+                    alt="Mega Job Mela 2026 Poster 1 - Chief Guest CM Revanth Reddy"
+                    className="hero-pure-poster-img"
+                  />
+                  <div className="hero-pure-poster-zoom-hint">
+                    <Maximize2 size={14} /> Click to Zoom
                   </div>
                 </div>
               </div>
             </motion.div>
           )}
 
-          {/* SLIDE 2: Official Guidelines, Eligibility & Coordinators Poster */}
+          {/* SLIDE 2: Poster 2 ONLY (Smooth slideshow, pure poster display) */}
           {currentSlide === 2 && (
             <motion.div
               key="hero-slide-poster-2"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.45 }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.5 }}
               style={{ width: '100%' }}
             >
-              <div
-                className="hero-poster-slide"
-                style={{
-                  background: 'radial-gradient(circle at 25% 25%, rgba(14, 116, 144, 0.4) 0%, #061121 75%)',
-                }}
-              >
-                <div className="hero-poster-grid">
-                  {/* Poster Image Frame */}
-                  <div
-                    className="hero-poster-frame"
-                    onClick={() =>
-                      setLightboxPoster({
-                        src: poster2Img,
-                        title: 'TKRCET 31st Oct Mega Job Mela - Guidelines & Eligibility Poster',
-                      })
-                    }
-                    title="Click to view full poster"
-                  >
-                    <img
-                      src={poster2Img}
-                      alt="31st Oct Mega Job Mela - Guidelines, Eligibility & Coordinators"
-                      className="hero-poster-img"
-                    />
-                    <div className="hero-poster-hover-overlay">
-                      <Maximize2 size={34} />
-                      <span style={{ fontWeight: 700, fontSize: '0.95rem' }}>Click to View Full Poster</span>
-                    </div>
-                  </div>
-
-                  {/* Poster Details Content */}
-                  <div className="hero-poster-content">
-                    <div
-                      className="hero-poster-badge"
-                      style={{
-                        backgroundColor: 'rgba(16, 185, 129, 0.15)',
-                        borderColor: 'rgba(16, 185, 129, 0.4)',
-                        color: '#34d399',
-                      }}
-                    >
-                      <Sparkles size={14} /> Complete Eligibility &amp; Event Drive
-                    </div>
-
-                    <h1 className="hero-poster-title">
-                      31<sup style={{ fontSize: '0.6em' }}>st</sup> Oct <span style={{ color: '#38bdf8' }}>MEGA JOB MELA</span>
-                    </h1>
-
-                    <p className="hero-poster-sub">
-                      <strong>One Platform • 150 Companies • Thousands of Career Opportunities</strong>
-                      <br />
-                      Sponsored by <strong>TKR Educational Society</strong> • Sri T. Krishna Reddy (Chairman), Dr. T. Harinath Reddy (Secretary), Dr. A. Ramaswami Reddy (Principal).
-                    </p>
-
-                    {/* Eligibility & Features Card */}
-                    <div className="hero-poster-dignitaries-box" style={{ gap: '0.75rem' }}>
-                      <div style={{ fontSize: '0.88rem', fontWeight: 700, color: '#38bdf8' }}>
-                        ELIGIBILITY (PAN INDIA CANDIDATES):
-                      </div>
-                      <div
-                        style={{
-                          display: 'grid',
-                          gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
-                          gap: '0.5rem',
-                          fontSize: '0.84rem',
-                          color: '#e2e8f0',
-                        }}
-                      >
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
-                          <CheckCircle size={15} color="#4ade80" /> 10th / 12th Passed
-                        </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
-                          <CheckCircle size={15} color="#4ade80" /> ITI / Diploma Holders
-                        </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
-                          <CheckCircle size={15} color="#4ade80" /> Graduates (Any Stream)
-                        </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
-                          <CheckCircle size={15} color="#4ade80" /> Freshers &amp; Experienced
-                        </div>
-                      </div>
-
-                      <div style={{ borderTop: '1px solid rgba(255, 255, 255, 0.1)', paddingTop: '0.65rem', marginTop: '0.25rem' }}>
-                        <div style={{ fontSize: '0.76rem', color: '#94a3b8', textTransform: 'uppercase', fontWeight: 700 }}>
-                          Event Highlights:
-                        </div>
-                        <div style={{ fontSize: '0.84rem', color: '#cbd5e1', marginTop: '0.2rem' }}>
-                          Top HRs Direct Interaction • Spot Offer Letters • Pan-India Aspirants • Free Entry
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Coordinators Quick Helpline Bar */}
-                    <div
-                      style={{
-                        background: 'rgba(15, 23, 42, 0.6)',
-                        border: '1px solid rgba(56, 189, 248, 0.25)',
-                        borderRadius: 12,
-                        padding: '0.75rem 1rem',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        flexWrap: 'wrap',
-                        gap: '0.5rem',
-                      }}
-                    >
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                        <Phone size={16} color="#38bdf8" />
-                        <span style={{ fontSize: '0.84rem', color: '#e2e8f0', fontWeight: 600 }}>
-                          Faculty Coordinators: V. Pranathi, Srinivas Reddy, Balakrishna, Ashwini Reddy, Gnanesh
-                        </span>
-                      </div>
-                      <Link to="/contact" style={{ color: '#38bdf8', fontSize: '0.82rem', fontWeight: 700, textDecoration: 'none' }}>
-                        View All Numbers →
-                      </Link>
-                    </div>
-
-                    {/* Buttons */}
-                    <div className="hero-poster-btn-row">
-                      <Link to="/register" className="hero-btn-register" style={{ padding: '0.75rem 1.6rem', fontSize: '0.95rem' }}>
-                        <span>REGISTER ONLINE FOR FREE</span>
-                        <ArrowRight size={17} />
-                      </Link>
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setLightboxPoster({
-                            src: poster2Img,
-                            title: 'TKRCET 31st Oct Mega Job Mela - Guidelines & Eligibility Poster',
-                          })
-                        }
-                        className="btn btn-outline"
-                        style={{
-                          borderColor: 'rgba(255, 255, 255, 0.3)',
-                          color: '#ffffff',
-                          gap: '0.5rem',
-                          padding: '0.75rem 1.25rem',
-                          fontSize: '0.92rem',
-                        }}
-                      >
-                        <Maximize2 size={16} /> View Fullscreen Poster
-                      </button>
-                    </div>
+              <div className="hero-pure-poster-slide">
+                <div
+                  className="hero-pure-poster-wrapper"
+                  onClick={() =>
+                    setLightboxPoster({
+                      src: poster2Img,
+                      title: 'TKRCET 31st Oct Mega Job Mela - Guidelines & Eligibility Poster',
+                    })
+                  }
+                  title="Click to zoom in high resolution"
+                >
+                  <img
+                    src={poster2Img}
+                    alt="Mega Job Mela 2026 Poster 2 - Guidelines & Eligibility"
+                    className="hero-pure-poster-img"
+                  />
+                  <div className="hero-pure-poster-zoom-hint">
+                    <Maximize2 size={14} /> Click to Zoom
                   </div>
                 </div>
               </div>
@@ -757,7 +436,7 @@ const HomePage = () => {
             onClick={() => setCurrentSlide(0)}
           >
             <span className="dot-circle" />
-            <span>1. Portal Overview</span>
+            <span>1. Hero Overview</span>
           </button>
           <button
             type="button"
@@ -765,7 +444,7 @@ const HomePage = () => {
             onClick={() => setCurrentSlide(1)}
           >
             <span className="dot-circle" />
-            <span>2. VIP Poster</span>
+            <span>2. Poster 1</span>
           </button>
           <button
             type="button"
@@ -773,7 +452,7 @@ const HomePage = () => {
             onClick={() => setCurrentSlide(2)}
           >
             <span className="dot-circle" />
-            <span>3. Eligibility Poster</span>
+            <span>3. Poster 2</span>
           </button>
         </div>
       </section>

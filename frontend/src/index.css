@@ -4707,4 +4707,69 @@ button, input, select, textarea {
   }
 }
 
+/* Clean Pure Poster Slide Styles (Pure poster only, centered, full height) */
+.hero-pure-poster-slide {
+  position: relative;
+  width: 100%;
+  min-height: calc(100vh - 72px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem 1rem 4rem;
+  box-sizing: border-box;
+  background: radial-gradient(circle at center, #091730 0%, #040c18 100%);
+  overflow: hidden;
+}
+
+.hero-pure-poster-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  max-height: calc(100vh - 130px);
+  max-width: 95vw;
+  cursor: pointer;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.hero-pure-poster-wrapper:hover {
+  transform: scale(1.012);
+}
+
+.hero-pure-poster-img {
+  max-height: calc(100vh - 130px);
+  max-width: 95vw;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  border-radius: 14px;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8), 0 0 35px rgba(56, 189, 248, 0.25);
+  border: 2px solid rgba(255, 255, 255, 0.16);
+  display: block;
+}
+
+.hero-pure-poster-zoom-hint {
+  position: absolute;
+  bottom: 14px;
+  right: 14px;
+  background: rgba(15, 23, 42, 0.82);
+  backdrop-filter: blur(8px);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 999px;
+  padding: 0.35rem 0.85rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  opacity: 0.85;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+}
+
+.hero-pure-poster-wrapper:hover .hero-pure-poster-zoom-hint {
+  opacity: 1;
+}
+
 
