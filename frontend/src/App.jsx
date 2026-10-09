@@ -33,8 +33,8 @@ import StudentCheckInPage from './pages/student/StudentCheckInPage';
 function App() {
   return (
     <AuthProvider>
-      <RegistrationModalProvider>
-        <BrowserRouter>
+      <BrowserRouter>
+        <RegistrationModalProvider>
         <Routes>
           {/* Public Routes with standard Layout */}
           <Route element={<PublicLayout />}>
@@ -82,8 +82,8 @@ function App() {
           {/* Fallback route */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
-        </BrowserRouter>
-      </RegistrationModalProvider>
+        </RegistrationModalProvider>
+      </BrowserRouter>
     </AuthProvider>
   );
 }

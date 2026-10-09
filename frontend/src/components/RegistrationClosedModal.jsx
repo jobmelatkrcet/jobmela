@@ -3,18 +3,32 @@ import { useNavigate } from 'react-router-dom';
 import { Calendar, Lock, AlertCircle, X, ArrowRight, Home } from 'lucide-react';
 
 const RegistrationClosedModal = ({ isOpen, onClose }) => {
-  const navigate = useNavigate();
+  let navigate = null;
+  try {
+    navigate = useNavigate();
+  } catch (e) {
+    // Fallback if rendered outside Router
+    navigate = null;
+  }
 
   if (!isOpen) return null;
 
   const handleGoHome = () => {
     onClose?.();
-    navigate('/');
+    if (navigate) {
+      navigate('/');
+    } else {
+      window.location.href = '/';
+    }
   };
 
   const handleGoLogin = () => {
     onClose?.();
-    navigate('/login');
+    if (navigate) {
+      navigate('/login');
+    } else {
+      window.location.href = '/login';
+    }
   };
 
   return (
