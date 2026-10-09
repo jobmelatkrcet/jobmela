@@ -1,8 +1,10 @@
 import React from 'react';
 import { Calendar, MapPin, CheckCircle, Award, Target, Building2, Users } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useRegistrationModal } from '../../context/RegistrationModalContext';
 
 const AboutPage = () => {
+  const { openRegistrationModal } = useRegistrationModal();
   return (
     <div style={{ padding: '3.5rem 0 5rem' }}>
       <div className="app-container">
@@ -154,9 +156,9 @@ const AboutPage = () => {
             Registration is completely free for all eligible students.
           </p>
           <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', flexWrap: 'wrap' }}>
-            <Link to="/register" className="btn btn-primary btn-lg">
+            <button type="button" onClick={openRegistrationModal} className="btn btn-primary btn-lg" style={{ cursor: 'pointer' }}>
               Register as Student
-            </Link>
+            </button>
             <Link to="/companies" className="btn btn-outline btn-lg" style={{ color: '#fff', borderColor: '#475569' }}>
               Browse Companies
             </Link>

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { useRegistrationModal } from '../../context/RegistrationModalContext';
 import { authService } from '../../services/authService';
 import { Mail, Lock, ArrowRight, ShieldCheck, UserCheck } from 'lucide-react';
 import Alert from '../../components/Alert';
@@ -9,6 +10,7 @@ const StudentLoginPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { login } = useAuth();
+  const { openRegistrationModal } = useRegistrationModal();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -170,9 +172,21 @@ const StudentLoginPage = () => {
           >
             <div>
               Don't have an account yet?{' '}
-              <Link to="/register" style={{ color: 'var(--color-brand-600)', fontWeight: 700 }}>
+              <button
+                type="button"
+                onClick={openRegistrationModal}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  padding: 0,
+                  color: 'var(--color-brand-600)',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  fontSize: 'inherit',
+                }}
+              >
                 Register as Student
-              </Link>
+              </button>
             </div>
 
             <div style={{ fontSize: '0.85rem' }}>

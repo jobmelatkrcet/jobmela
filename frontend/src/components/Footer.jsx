@@ -1,8 +1,10 @@
 import React from 'react';
 import { Calendar, MapPin, Phone, Award, ShieldCheck } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useRegistrationModal } from '../context/RegistrationModalContext';
 
 const Footer = () => {
+  const { openRegistrationModal } = useRegistrationModal();
   return (
     <footer
       style={{
@@ -159,9 +161,21 @@ const Footer = () => {
             </h4>
             <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
               <li>
-                <Link to="/register" style={{ color: '#cbd5e1', fontSize: '0.88rem' }}>
+                <button
+                  type="button"
+                  onClick={openRegistrationModal}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    padding: 0,
+                    color: '#cbd5e1',
+                    fontSize: '0.88rem',
+                    cursor: 'pointer',
+                    textAlign: 'left',
+                  }}
+                >
                   → Student Registration
-                </Link>
+                </button>
               </li>
               <li>
                 <Link to="/login" style={{ color: '#cbd5e1', fontSize: '0.88rem' }}>

@@ -17,8 +17,10 @@ import {
 } from 'lucide-react';
 import poster1Img from '../../assets/jobmela-poster-1.jpg';
 import poster2Img from '../../assets/jobmela-poster-2.jpg';
+import { useRegistrationModal } from '../../context/RegistrationModalContext';
 
 const PostersPage = () => {
+  const { openRegistrationModal } = useRegistrationModal();
   const [lightboxPoster, setLightboxPoster] = useState(null);
 
   const facultyCoordinators = [
@@ -527,10 +529,10 @@ const PostersPage = () => {
             </p>
           </div>
           <div style={{ display: 'flex', gap: '0.85rem', flexWrap: 'wrap' }}>
-            <Link to="/register" className="btn btn-warning" style={{ fontWeight: 800, padding: '0.85rem 1.75rem' }}>
+            <button type="button" onClick={openRegistrationModal} className="btn btn-warning" style={{ fontWeight: 800, padding: '0.85rem 1.75rem', cursor: 'pointer', border: 'none' }}>
               <span>REGISTER FOR FREE NOW</span>
               <ArrowRight size={17} style={{ marginLeft: '0.4rem' }} />
-            </Link>
+            </button>
             <Link to="/companies" className="btn btn-outline" style={{ borderColor: 'rgba(255, 255, 255, 0.4)', color: '#ffffff' }}>
               Browse 150+ Companies
             </Link>

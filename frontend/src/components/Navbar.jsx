@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useRegistrationModal } from '../context/RegistrationModalContext';
 import {
   Building2,
   FileCheck,
@@ -30,6 +31,7 @@ import StudentQRScannerModal from './StudentQRScannerModal';
 
 const Navbar = () => {
   const { user, isAuthenticated, isAdmin, isStudent, logout } = useAuth();
+  const { openRegistrationModal } = useRegistrationModal();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const [isScannerOpen, setIsScannerOpen] = useState(false);
@@ -172,9 +174,13 @@ const Navbar = () => {
                 <Link to="/login" className="btn btn-outline btn-sm login-btn">
                   Student Login
                 </Link>
-                <Link to="/register" className="btn btn-primary btn-sm register-btn">
+                <button
+                  type="button"
+                  onClick={openRegistrationModal}
+                  className="btn btn-primary btn-sm register-btn"
+                >
                   Register
-                </Link>
+                </button>
                 <Link to="/admin/login" className="admin-portal-link" title="Organizer Admin Access">
                   <ShieldCheck size={15} /> Admin
                 </Link>
@@ -237,15 +243,18 @@ const Navbar = () => {
             <div className="mobile-links">
               {/* Clean, compact quick actions */}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem', marginBottom: '0.75rem' }}>
-                <Link
-                  to="/register"
-                  onClick={closeMenu}
+                <button
+                  type="button"
+                  onClick={() => {
+                    closeMenu();
+                    openRegistrationModal();
+                  }}
                   className="btn btn-primary btn-sm"
                   style={{ justifyContent: 'center', gap: '0.4rem', fontWeight: 700 }}
                 >
                   <UserPlus size={15} />
                   <span>Register</span>
-                </Link>
+                </button>
                 <Link
                   to="/login"
                   onClick={closeMenu}

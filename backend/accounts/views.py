@@ -10,6 +10,17 @@ class RegisterView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
+        # Registrations locked until 10/10/2026
+        REGISTRATIONS_OPEN = False
+        if not REGISTRATIONS_OPEN:
+            return Response(
+                {
+                    "detail": "Registrations will be opened by 10/10/2026.",
+                    "message": "Registrations will be opened by 10/10/2026.",
+                },
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
         serializer = StudentRegistrationSerializer(data=request.data)
         if serializer.is_valid():
             user = serializer.save()

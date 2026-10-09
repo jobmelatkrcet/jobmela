@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
+import { RegistrationModalProvider } from './context/RegistrationModalContext';
 import ProtectedRoute from './components/ProtectedRoute';
 
 // Layouts
@@ -32,7 +33,8 @@ import StudentCheckInPage from './pages/student/StudentCheckInPage';
 function App() {
   return (
     <AuthProvider>
-      <BrowserRouter>
+      <RegistrationModalProvider>
+        <BrowserRouter>
         <Routes>
           {/* Public Routes with standard Layout */}
           <Route element={<PublicLayout />}>
@@ -80,7 +82,8 @@ function App() {
           {/* Fallback route */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
-      </BrowserRouter>
+        </BrowserRouter>
+      </RegistrationModalProvider>
     </AuthProvider>
   );
 }

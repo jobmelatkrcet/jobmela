@@ -16,14 +16,14 @@ class Command(BaseCommand):
         if not admin_user:
             admin_user = User.objects.create_superuser(
                 email=admin_email,
-                password="admin123",
+                password="admin@07",
                 full_name="TKRCET Job Mela Admin",
                 mobile="9949139414",
                 college="TKR College of Engineering & Technology",
             )
             self.stdout.write(
                 self.style.SUCCESS(
-                    f"Created superuser/admin: {admin_email} / admin123"
+                    f"Created superuser/admin: {admin_email} / admin@07"
                 )
             )
         else:

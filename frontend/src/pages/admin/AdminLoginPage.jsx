@@ -195,20 +195,6 @@ const AdminLoginPage = () => {
               )}
             </button>
           </form>
-
-          <div
-            style={{
-              marginTop: '1.75rem',
-              paddingTop: '1.25rem',
-              borderTop: '1px solid #334155',
-              fontSize: '0.82rem',
-              color: '#94a3b8',
-              textAlign: 'center',
-            }}
-          >
-            <div>Default Admin: <strong>admin@tkrcet.ac.in</strong></div>
-            <div style={{ marginTop: '0.25rem' }}>Default Password: <strong>admin123</strong></div>
-          </div>
         </div>
       </div>
     </div>

@@ -35,6 +35,7 @@ import {
 } from 'lucide-react';
 import { companyService } from '../../services/companyService';
 import { useAuth } from '../../context/AuthContext';
+import { useRegistrationModal } from '../../context/RegistrationModalContext';
 import { CATEGORIES, getCompanyCategory } from '../../utils/companyCategories';
 import { CompanyCardSkeleton } from '../../components/Skeleton';
 import poster1Img from '../../assets/jobmela-poster-1.jpg';
@@ -54,6 +55,7 @@ const CATEGORY_ICONS = {
 
 const HomePage = () => {
   const { isAuthenticated, isStudent, isAdmin } = useAuth();
+  const { openRegistrationModal } = useRegistrationModal();
   const [companies, setCompanies] = useState([]);
   const [totalCompanies, setTotalCompanies] = useState(0);
   const [search, setSearch] = useState('');
@@ -303,10 +305,10 @@ const HomePage = () => {
                   >
                     {!isAuthenticated ? (
                       <>
-                        <Link to="/register" className="hero-btn-register">
+                        <button type="button" onClick={openRegistrationModal} className="hero-btn-register" style={{ cursor: 'pointer', border: 'none' }}>
                           <span>REGISTER NOW</span>
                           <ArrowRight size={18} />
-                        </Link>
+                        </button>
                         <Link to="/login" className="hero-btn-login">
                           <span>STUDENT LOGIN</span>
                           <ArrowRight size={18} />
@@ -1027,9 +1029,9 @@ const HomePage = () => {
                       Browse &amp; Apply
                     </Link>
                   ) : (
-                    <Link to="/register" className="btn btn-outline btn-lg home-explore-sub-btn">
+                    <button type="button" onClick={openRegistrationModal} className="btn btn-outline btn-lg home-explore-sub-btn" style={{ cursor: 'pointer' }}>
                       Register as Candidate
-                    </Link>
+                    </button>
                   )}
                 </div>
               </div>
@@ -1221,9 +1223,9 @@ const HomePage = () => {
                       Browse &amp; Apply
                     </Link>
                   ) : (
-                    <Link to="/register" className="btn btn-outline btn-lg home-explore-sub-btn">
+                    <button type="button" onClick={openRegistrationModal} className="btn btn-outline btn-lg home-explore-sub-btn" style={{ cursor: 'pointer' }}>
                       Register as Candidate
-                    </Link>
+                    </button>
                   )}
                 </div>
               </div>
