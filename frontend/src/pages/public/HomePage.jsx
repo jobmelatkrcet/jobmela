@@ -38,7 +38,8 @@ import { useAuth } from '../../context/AuthContext';
 import { useRegistrationModal } from '../../context/RegistrationModalContext';
 import { CATEGORIES, getCompanyCategory } from '../../utils/companyCategories';
 import { CompanyCardSkeleton } from '../../components/Skeleton';
-import poster1Img from '../../assets/jobmela-poster-1.jpg';
+// Poster 1 (VIP & Dignitaries) removed per user instruction; Poster 2 (Guidelines & Eligibility) active:
+// import poster1Img from '../../assets/jobmela-poster-1.jpg';
 import poster2Img from '../../assets/jobmela-poster-2.jpg';
 
 const CATEGORY_ICONS = {
@@ -64,25 +65,22 @@ const HomePage = () => {
   const [viewMode, setViewMode] = useState('grid'); // Default to 'grid' for clean 10-company spotlight
 
   // Front Page Hero Slideshow State:
-  // Slide 0: Custom Designed Hero
-  // Slide 1: Poster 1 (VIP & Dignitaries - Hon'ble CM Revanth Reddy & IT Minister Sridhar Babu)
-  // Slide 2: Poster 2 (Schedule, Guidelines, Eligibility & Coordinators)
+  // Slide 0: Custom Designed Hero Text
+  // Slide 1: Official Guidelines & Eligibility Poster (Poster 2)
   const [currentSlide, setCurrentSlide] = useState(0);
   const [lightboxPoster, setLightboxPoster] = useState(null);
 
-  // Front Page Hero Smooth Fade Slideshow:
-  // Slide 0: Custom Designed Hero Text (5.5s)
-  // Slide 1: Official Poster 1 (4.5s)
-  // Slide 2: Official Poster 2 (4.5s)
-  // Continuous smooth loop: Text fades out -> Poster 1 fades in -> Poster 1 fades out -> Poster 2 fades in -> Poster 2 fades out -> Text fades back in
+  // Front Page Hero Smooth Fade Slideshow between Hero Text and Poster 2
   useEffect(() => {
     if (lightboxPoster) return;
     const duration = currentSlide === 0 ? 5500 : 4500;
     const timer = setTimeout(() => {
-      setCurrentSlide((prev) => (prev + 1) % 3);
+      setCurrentSlide((prev) => (prev === 0 ? 1 : 0));
     }, duration);
     return () => clearTimeout(timer);
   }, [currentSlide, lightboxPoster]);
+
+
 
   useEffect(() => {
     fetchFeaturedCompanies();
@@ -368,40 +366,8 @@ const HomePage = () => {
               </motion.div>
             )}
 
-            {/* STAGE 1: Poster 1 ONLY (Smoothly fades in right where the text was, over the college background) */}
+            {/* STAGE 1: Poster 2 ONLY (Guidelines & Eligibility - smoothly fades in over college campus background) */}
             {currentSlide === 1 && (
-              <motion.div
-                key="hero-poster-1-stage"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 1.1, ease: 'easeInOut' }}
-                className="hero-poster-fade-stage"
-              >
-                <div
-                  className="hero-stage-poster-card"
-                  onClick={() =>
-                    setLightboxPoster({
-                      src: poster1Img,
-                      title: 'TKRCET Mega Job Mela 2026 - Chief Guest & Dignitaries Poster',
-                    })
-                  }
-                  title="Click to zoom in high resolution"
-                >
-                  <img
-                    src={poster1Img}
-                    alt="Mega Job Mela 2026 Poster 1 - Chief Guest CM Revanth Reddy"
-                    className="hero-stage-poster-img"
-                  />
-                  <div className="hero-stage-zoom-badge">
-                    <Maximize2 size={13} /> Click to Zoom
-                  </div>
-                </div>
-              </motion.div>
-            )}
-
-            {/* STAGE 2: Poster 2 ONLY (Smoothly fades in right where the text was, over the college background) */}
-            {currentSlide === 2 && (
               <motion.div
                 key="hero-poster-2-stage"
                 initial={{ opacity: 0 }}

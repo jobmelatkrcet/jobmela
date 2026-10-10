@@ -1,3 +1,4 @@
+import os
 from django.core.management.base import BaseCommand
 from accounts.models import User
 from companies.models import Company
@@ -11,41 +12,57 @@ class Command(BaseCommand):
         self.stdout.write("Seeding TKRCET Job Mela 2026 data...")
 
         # Create Admin
-        admin_email = "admin@tkrcet.ac.in"
+        admin_email = os.environ.get("ADMIN_SEED_EMAIL", "admin@tkrcet.ac.in")
         admin_user = User.objects.filter(email=admin_email).first()
         if not admin_user:
-            admin_user = User.objects.create_superuser(
-                email=admin_email,
-                password="admin@07",
-                full_name="TKRCET Job Mela Admin",
-                mobile="9949139414",
-                college="TKR College of Engineering & Technology",
-            )
-            self.stdout.write(
-                self.style.SUCCESS(
-                    f"Created superuser/admin: {admin_email} / admin@07"
+            admin_password = os.environ.get("ADMIN_SEED_PASSWORD", "").strip()
+            if not admin_password:
+                self.stdout.write(
+                    self.style.WARNING(
+                        "Skipping seed admin creation: ADMIN_SEED_PASSWORD environment variable is not set."
+                    )
                 )
-            )
+            else:
+                admin_user = User.objects.create_superuser(
+                    email=admin_email,
+                    password=admin_password,
+                    full_name="TKRCET Job Mela Admin",
+                    mobile=os.environ.get("ADMIN_SEED_MOBILE", ""),
+                    college="TKR College of Engineering & Technology",
+                )
+                self.stdout.write(
+                    self.style.SUCCESS(
+                        f"Created superuser/admin: {admin_email}"
+                    )
+                )
         else:
             self.stdout.write(f"Admin already exists: {admin_email}")
 
         # Create Sample Student
-        student_email = "student@tkrcet.ac.in"
+        student_email = os.environ.get("STUDENT_SEED_EMAIL", "student@tkrcet.ac.in")
         student_user = User.objects.filter(email=student_email).first()
         if not student_user:
-            student_user = User.objects.create_user(
-                email=student_email,
-                password="student123",
-                full_name="Rahul Sharma",
-                mobile="9876543210",
-                qualification="B.Tech (CSE)",
-                college="TKR College of Engineering & Technology",
-            )
-            self.stdout.write(
-                self.style.SUCCESS(
-                    f"Created demo student: {student_email} / student123"
+            student_password = os.environ.get("STUDENT_SEED_PASSWORD", "").strip()
+            if not student_password:
+                self.stdout.write(
+                    self.style.WARNING(
+                        "Skipping seed student creation: STUDENT_SEED_PASSWORD environment variable is not set."
+                    )
                 )
-            )
+            else:
+                student_user = User.objects.create_user(
+                    email=student_email,
+                    password=student_password,
+                    full_name="Rahul Sharma",
+                    mobile="9876543210",
+                    qualification="B.Tech (CSE)",
+                    college="TKR College of Engineering & Technology",
+                )
+                self.stdout.write(
+                    self.style.SUCCESS(
+                        f"Created demo student: {student_email}"
+                    )
+                )
         else:
             self.stdout.write(f"Student already exists: {student_email}")
 

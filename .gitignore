@@ -29,9 +29,24 @@ Thumbs.db
 *.swp
 *.swo
 
-# Environment Variables
+# Environment Variables & Secrets
 .env
-.env.local
+.env.*
+*.env
+*.env.*
+backend/.env
+backend/.env.*
+frontend/.env
+frontend/.env.*
+!.env.example
+!*.env.example
+!backend/.env.example
+!frontend/.env.example
+
+# SQLite Databases & Local Data
+*.sqlite3
+*.db
+backend/db.sqlite3
 
 # Media Uploads
 backend/media/**
