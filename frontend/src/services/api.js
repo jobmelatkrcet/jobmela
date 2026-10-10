@@ -26,11 +26,20 @@ const api = axios.create({
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
-    if (token) {
-      config.headers.Authorization = `Token ${token}`;
+    if (token && config.headers) {
+      if (typeof config.headers.set === 'function') {
+        config.headers.set('Authorization', `Token ${token}`);
+      } else {
+        config.headers.Authorization = `Token ${token}`;
+      }
     }
-    if (config.data instanceof FormData) {
+    if (config.data instanceof FormData && config.headers) {
+      if (typeof config.headers.delete === 'function') {
+        config.headers.delete('Content-Type');
+        config.headers.delete('content-type');
+      }
       delete config.headers['Content-Type'];
+      delete config.headers['content-type'];
     }
     return config;
   },

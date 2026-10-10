@@ -1,7 +1,16 @@
 from rest_framework import serializers
 from django.contrib.auth import authenticate
+from django.core.files.storage import default_storage, FileSystemStorage
 from rest_framework.authtoken.models import Token
 from .models import User
+
+
+def is_cloud_storage_configured():
+    """
+    Returns True if a persistent cloud storage backend is configured for default_storage.
+    Returns False if only local FileSystemStorage is available (which cannot persist safely on serverless environments like Vercel).
+    """
+    return not isinstance(default_storage, FileSystemStorage)
 
 
 class StudentRegistrationSerializer(serializers.ModelSerializer):
@@ -35,6 +44,20 @@ class StudentRegistrationSerializer(serializers.ModelSerializer):
             "photo": {"required": False, "allow_null": True},
             "resume": {"required": False, "allow_null": True},
         }
+
+    def validate_photo(self, value):
+        if value and not is_cloud_storage_configured():
+            raise serializers.ValidationError(
+                "Photo uploads are currently unavailable because cloud storage is not configured. Please register without attaching a photo."
+            )
+        return value
+
+    def validate_resume(self, value):
+        if value and not is_cloud_storage_configured():
+            raise serializers.ValidationError(
+                "Resume uploads are currently unavailable because cloud storage is not configured. Please register without attaching a resume."
+            )
+        return value
 
     def validate_email(self, value):
         normalized_email = value.lower().strip()
@@ -83,6 +106,20 @@ class UserSerializer(serializers.ModelSerializer):
             "created_at",
         ]
         read_only_fields = ["id", "role", "is_staff", "created_at"]
+
+    def validate_photo(self, value):
+        if value and not is_cloud_storage_configured():
+            raise serializers.ValidationError(
+                "Photo uploads are currently unavailable because cloud storage is not configured."
+            )
+        return value
+
+    def validate_resume(self, value):
+        if value and not is_cloud_storage_configured():
+            raise serializers.ValidationError(
+                "Resume uploads are currently unavailable because cloud storage is not configured."
+            )
+        return value
 
 
 class LoginSerializer(serializers.Serializer):

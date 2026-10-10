@@ -60,6 +60,9 @@ const StudentRegisterPage = () => {
     const file = e.target.files?.[0];
     if (!file) return;
     setPhotoError('');
+    if (errors.photo) {
+      setErrors((prev) => ({ ...prev, photo: null }));
+    }
 
     const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg'];
     if (!validTypes.includes(file.type)) {
@@ -83,6 +86,9 @@ const StudentRegisterPage = () => {
     setPhotoFile(null);
     setPhotoPreview(null);
     setPhotoError('');
+    if (errors.photo) {
+      setErrors((prev) => ({ ...prev, photo: null }));
+    }
     if (photoInputRef.current) photoInputRef.current.value = '';
   };
 
@@ -90,6 +96,9 @@ const StudentRegisterPage = () => {
     const file = e.target.files?.[0];
     if (!file) return;
     setResumeError('');
+    if (errors.resume) {
+      setErrors((prev) => ({ ...prev, resume: null }));
+    }
 
     const validExtensions = ['.pdf', '.doc', '.docx'];
     const fileNameLower = file.name.toLowerCase();
@@ -110,6 +119,9 @@ const StudentRegisterPage = () => {
   const handleRemoveResume = () => {
     setResumeFile(null);
     setResumeError('');
+    if (errors.resume) {
+      setErrors((prev) => ({ ...prev, resume: null }));
+    }
     if (resumeInputRef.current) resumeInputRef.current.value = '';
   };
 
@@ -159,20 +171,33 @@ const StudentRegisterPage = () => {
 
     setLoading(true);
     try {
-      const payload = new FormData();
-      payload.append('full_name', formData.full_name.trim());
-      payload.append('email', formData.email.trim().toLowerCase());
-      payload.append('mobile', formData.mobile.trim());
-      payload.append('qualification', formData.qualification.trim());
-      payload.append('college', formData.college.trim());
-      payload.append('password', formData.password);
-      payload.append('confirm_password', formData.confirm_password);
+      let payload;
+      if (!photoFile && !resumeFile) {
+        payload = {
+          full_name: formData.full_name.trim(),
+          email: formData.email.trim().toLowerCase(),
+          mobile: formData.mobile.trim(),
+          qualification: formData.qualification.trim(),
+          college: formData.college.trim(),
+          password: formData.password,
+          confirm_password: formData.confirm_password,
+        };
+      } else {
+        payload = new FormData();
+        payload.append('full_name', formData.full_name.trim());
+        payload.append('email', formData.email.trim().toLowerCase());
+        payload.append('mobile', formData.mobile.trim());
+        payload.append('qualification', formData.qualification.trim());
+        payload.append('college', formData.college.trim());
+        payload.append('password', formData.password);
+        payload.append('confirm_password', formData.confirm_password);
 
-      if (photoFile) {
-        payload.append('photo', photoFile);
-      }
-      if (resumeFile) {
-        payload.append('resume', resumeFile);
+        if (photoFile) {
+          payload.append('photo', photoFile);
+        }
+        if (resumeFile) {
+          payload.append('resume', resumeFile);
+        }
       }
 
       const response = await authService.register(payload);
