@@ -12,6 +12,12 @@ from accounts.storage import (
     get_signed_file_url,
     validate_photo_file,
     validate_resume_file,
+    clean_supabase_url,
+    clean_supabase_key,
+    clean_bucket_name,
+    infer_supabase_url_from_db,
+    get_canonical_mime_type,
+    SupabaseStorageError,
 )
 
 
@@ -329,3 +335,120 @@ class StudentRegistrationTests(TestCase):
         res = self.client.get(f"/api/auth/students/{student_b.id}/document/resume/")
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertEqual(res.data["url"], mock_signed_url.return_value)
+
+    # 11. Storage configuration sanitization
+    def test_11_storage_configuration_sanitization(self):
+        """Test URL, key, bucket, and DB inference sanitization against whitespace, quotes, and invalid prefixes."""
+        # URL with quotes, spaces, trailing slash
+        self.assertEqual(
+            clean_supabase_url('  "https://xyz.supabase.co/"  '),
+            "https://xyz.supabase.co",
+        )
+        # URL missing scheme
+        self.assertEqual(
+            clean_supabase_url("xyz.supabase.co"),
+            "https://xyz.supabase.co",
+        )
+        # URL with accidental /storage/v1 subpath
+        self.assertEqual(
+            clean_supabase_url("https://xyz.supabase.co/storage/v1"),
+            "https://xyz.supabase.co",
+        )
+        # Key with quotes and whitespace
+        self.assertEqual(
+            clean_supabase_key("  'eyJh.service_role_secret' \n"),
+            "eyJh.service_role_secret",
+        )
+        # Bucket name with quotes and spaces
+        self.assertEqual(
+            clean_bucket_name('  "student-documents"  '),
+            "student-documents",
+        )
+        # DB URL project ref inference
+        with override_settings(
+            DATABASE_URL="postgresql://postgres.myproject123:mypassword@aws-0-us-east-1.pooler.supabase.com:6543/postgres"
+        ):
+            self.assertEqual(infer_supabase_url_from_db(), "https://myproject123.supabase.co")
+
+    # 12. Canonical MIME type resolution
+    def test_12_canonical_mime_type_resolution(self):
+        """Test that file extensions map to canonical MIME types allowed by Supabase storage."""
+        self.assertEqual(get_canonical_mime_type(".jpg"), "image/jpeg")
+        self.assertEqual(get_canonical_mime_type(".jpeg"), "image/jpeg")
+        self.assertEqual(get_canonical_mime_type(".png"), "image/png")
+        self.assertEqual(get_canonical_mime_type(".webp"), "image/webp")
+        self.assertEqual(get_canonical_mime_type(".pdf"), "application/pdf")
+        self.assertEqual(get_canonical_mime_type(".doc"), "application/msword")
+        self.assertEqual(
+            get_canonical_mime_type(".docx"),
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        )
+
+    # 13. Storage permission error (403 / RLS) handling
+    @override_settings(
+        SUPABASE_URL="https://test.supabase.co",
+        SUPABASE_SERVICE_ROLE_KEY="test-key",
+    )
+    def test_13_storage_permission_error_handling(self):
+        """Test clear field-level message when Supabase returns a 403 or policy error without leaking secrets."""
+        with patch("accounts.serializers.upload_file_to_supabase") as mock_upload:
+            mock_upload.side_effect = SupabaseStorageError(
+                user_message="Storage permission error while uploading photograph. Please contact the administrator or register without attachments.",
+                technical_message="Storage upload error (status=403, bucket=student-documents): row-level security policy violated",
+                status_code=403,
+            )
+            payload = self.valid_payload.copy()
+            payload["photo"] = self.get_valid_photo()
+            res = self.client.post(self.register_url, data=payload, format="multipart")
+            self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+            self.assertIn("photo", res.data)
+            self.assertIn("Storage permission error while uploading photograph", str(res.data["photo"]))
+            # Never leak internal technical status or database policy details to the client
+            self.assertNotIn("row-level security", str(res.data["photo"]))
+            self.assertNotIn("test-key", str(res.data["photo"]))
+
+    # 14. Storage bucket not found (404) handling
+    @override_settings(
+        SUPABASE_URL="https://test.supabase.co",
+        SUPABASE_SERVICE_ROLE_KEY="test-key",
+    )
+    def test_14_storage_bucket_not_found_handling(self):
+        """Test clear field-level message when Supabase bucket is missing."""
+        with patch("accounts.serializers.upload_file_to_supabase") as mock_upload:
+            mock_upload.side_effect = SupabaseStorageError(
+                user_message="Storage bucket 'student-documents' was not found. Please contact the administrator or register without attachments.",
+                technical_message="Storage upload error (status=404, bucket=student-documents): Bucket not found",
+                status_code=404,
+            )
+            payload = self.valid_payload.copy()
+            payload["photo"] = self.get_valid_photo()
+            res = self.client.post(self.register_url, data=payload, format="multipart")
+            self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+            self.assertIn("photo", res.data)
+            self.assertIn("Storage bucket 'student-documents' was not found", str(res.data["photo"]))
+
+    # 15. Direct upload_file_to_supabase execution with mocked Supabase client
+    @override_settings(
+        SUPABASE_URL="https://test.supabase.co",
+        SUPABASE_SERVICE_ROLE_KEY="test-service-key",
+        SUPABASE_STORAGE_BUCKET="student-documents",
+    )
+    @patch("accounts.storage.get_supabase_client")
+    def test_15_upload_file_to_supabase_direct_success(self, mock_get_client):
+        """Test upload_file_to_supabase calls client upload with canonical MIME type and upsert enabled."""
+        mock_client = MagicMock()
+        mock_bucket = MagicMock()
+        mock_client.storage.from_.return_value = mock_bucket
+        mock_get_client.return_value = mock_client
+
+        photo = self.get_valid_photo("candidate.jpg")
+        stored_path = upload_file_to_supabase(photo, folder_prefix="photos")
+
+        self.assertTrue(stored_path.startswith("photos/"))
+        self.assertTrue(stored_path.endswith(".jpg"))
+
+        mock_bucket.upload.assert_called_once()
+        _, kwargs = mock_bucket.upload.call_args
+        self.assertEqual(kwargs["path"], stored_path)
+        self.assertEqual(kwargs["file_options"]["content-type"], "image/jpeg")
+        self.assertEqual(kwargs["file_options"]["upsert"], "true")

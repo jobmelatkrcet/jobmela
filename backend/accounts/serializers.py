@@ -1,3 +1,4 @@
+import logging
 from rest_framework import serializers
 from django.contrib.auth import authenticate
 from rest_framework.authtoken.models import Token
@@ -9,7 +10,10 @@ from .storage import (
     upload_file_to_supabase,
     delete_file_from_supabase,
     get_signed_file_url,
+    SupabaseStorageError,
 )
+
+logger = logging.getLogger(__name__)
 
 
 class StudentRegistrationSerializer(serializers.ModelSerializer):
@@ -88,7 +92,11 @@ class StudentRegistrationSerializer(serializers.ModelSerializer):
                 try:
                     photo_path = upload_file_to_supabase(photo_file, folder_prefix="photos")
                     uploaded_cleanup.append(photo_path)
-                except Exception:
+                except SupabaseStorageError as sse:
+                    logger.warning("Candidate photo upload failed: %s", sse.technical_message)
+                    raise serializers.ValidationError({"photo": sse.user_message})
+                except Exception as exc:
+                    logger.exception("Unexpected error uploading candidate photograph: %s", str(exc))
                     raise serializers.ValidationError(
                         {"photo": "Failed to upload photograph to storage. Please try again."}
                     )
@@ -97,7 +105,13 @@ class StudentRegistrationSerializer(serializers.ModelSerializer):
                 try:
                     resume_path = upload_file_to_supabase(resume_file, folder_prefix="resumes")
                     uploaded_cleanup.append(resume_path)
-                except Exception:
+                except SupabaseStorageError as sse:
+                    logger.warning("Candidate resume upload failed: %s", sse.technical_message)
+                    for p in uploaded_cleanup:
+                        delete_file_from_supabase(p)
+                    raise serializers.ValidationError({"resume": sse.user_message})
+                except Exception as exc:
+                    logger.exception("Unexpected error uploading candidate resume: %s", str(exc))
                     for p in uploaded_cleanup:
                         delete_file_from_supabase(p)
                     raise serializers.ValidationError(

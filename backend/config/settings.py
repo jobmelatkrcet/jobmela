@@ -144,9 +144,13 @@ MEDIA_URL = "media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
 # Supabase Cloud Storage Configuration (Server-side private storage bucket)
-SUPABASE_URL = os.environ.get("SUPABASE_URL", "").strip()
-SUPABASE_SERVICE_ROLE_KEY = os.environ.get("SUPABASE_SERVICE_ROLE_KEY", "").strip()
-SUPABASE_STORAGE_BUCKET = os.environ.get("SUPABASE_STORAGE_BUCKET", "student-documents").strip() or "student-documents"
+def _clean_env_val(val, default=""):
+    v = (val if val is not None else default).strip()
+    return v.strip("'\"").strip()
+
+SUPABASE_URL = _clean_env_val(os.environ.get("SUPABASE_URL", ""))
+SUPABASE_SERVICE_ROLE_KEY = _clean_env_val(os.environ.get("SUPABASE_SERVICE_ROLE_KEY", ""))
+SUPABASE_STORAGE_BUCKET = _clean_env_val(os.environ.get("SUPABASE_STORAGE_BUCKET", ""), "student-documents") or "student-documents"
 
 
 # REST Framework configuration
