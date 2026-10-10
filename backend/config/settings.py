@@ -167,15 +167,19 @@ REST_FRAMEWORK = {
 }
 
 # Cross-Origin Resource Sharing (CORS) Configuration
-CORS_ALLOW_ALL_ORIGINS = False
-CORS_ALLOW_CREDENTIALS = False  # DRF TokenAuthentication uses Authorization header; session cookies not required across origins
+# Allow all origins for the public API since authentication is stateless TokenAuthentication
+CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_CREDENTIALS = False
 
-# Legitimate production frontend origin
-default_cors_origins = [
-    "https://jobmela.vercel.app",
+CORS_ALLOWED_ORIGIN_REGEXES = [
+    r"^https://.*\.vercel\.app$",
 ]
 
-# Configurable through environment variable (CORS_ALLOWED_ORIGINS or FRONTEND_URL)
+default_cors_origins = [
+    "https://jobmela.vercel.app",
+    "https://www.jobmela.vercel.app",
+]
+
 custom_cors = os.environ.get("CORS_ALLOWED_ORIGINS", "").strip()
 frontend_url = os.environ.get("FRONTEND_URL", "").strip()
 
@@ -186,7 +190,6 @@ else:
     if frontend_url and frontend_url not in cors_list:
         cors_list.append(frontend_url)
 
-# Localhost origins available for development only when DEBUG is enabled
 if DEBUG:
     dev_origins = [
         "http://localhost:5173",
@@ -204,7 +207,11 @@ CORS_ALLOWED_ORIGINS = cors_list
 
 # CSRF Trusted Origins matching allowed frontend origins
 CSRF_TRUSTED_ORIGINS = [
-    origin for origin in CORS_ALLOWED_ORIGINS if origin.startswith("http")
+    "https://jobmela.vercel.app",
+    "https://www.jobmela.vercel.app",
 ]
+for origin in CORS_ALLOWED_ORIGINS:
+    if origin.startswith("http") and origin not in CSRF_TRUSTED_ORIGINS:
+        CSRF_TRUSTED_ORIGINS.append(origin)
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"

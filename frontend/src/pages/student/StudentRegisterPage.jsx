@@ -170,6 +170,13 @@ const StudentRegisterPage = () => {
       return;
     }
 
+    // Prevent exceeding Vercel 4.5MB payload limit
+    const totalAttachmentBytes = (photoFile?.size || 0) + (resumeFile?.size || 0);
+    if (totalAttachmentBytes > 4 * 1024 * 1024) {
+      setGeneralError('Combined size of photograph and resume exceeds 4MB. Please upload smaller files.');
+      return;
+    }
+
     setLoading(true);
     try {
       let payload;
@@ -229,8 +236,12 @@ const StudentRegisterPage = () => {
         } else {
           setGeneralError('Registration failed. Please check your information and try again.');
         }
+      } else if (err.code === 'ECONNABORTED' || err.message?.toLowerCase().includes('timeout')) {
+        setGeneralError('Registration request timed out. Please check your internet connection and try again.');
+      } else if (err.message?.includes('413') || err.response?.status === 413) {
+        setGeneralError('Uploaded files are too large. Please upload smaller attachments (under 2MB) and try again.');
       } else {
-        setGeneralError('Network error. Please make sure backend server is running.');
+        setGeneralError('Unable to connect to the registration server. Please check your internet connection or try again.');
       }
     } finally {
       setLoading(false);
