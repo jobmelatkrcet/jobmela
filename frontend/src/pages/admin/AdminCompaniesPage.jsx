@@ -11,7 +11,6 @@ import {
   FileSpreadsheet,
   X,
   ArrowRight,
-  Trash2,
   Briefcase,
   MapPin,
   IndianRupee,
@@ -23,7 +22,6 @@ import {
 } from 'lucide-react';
 import Pagination from '../../components/Pagination';
 import Alert from '../../components/Alert';
-import ConfirmModal from '../../components/ConfirmModal';
 import { TableSkeleton } from '../../components/Skeleton';
 
 const hasValue = (val) => {
@@ -48,11 +46,8 @@ const AdminCompaniesPage = ({ onTabChange }) => {
   const [uploading, setUploading] = useState(false);
   const [uploadResult, setUploadResult] = useState(null);
   const [uploadError, setUploadError] = useState('');
-  const [clearExisting, setClearExisting] = useState(false);
   const [previewData, setPreviewData] = useState(null);
   const [loadingPreview, setLoadingPreview] = useState(false);
-  const [showClearConfirmModal, setShowClearConfirmModal] = useState(false);
-  const [clearing, setClearing] = useState(false);
   const [alert, setAlert] = useState(null);
 
   const fileInputRef = useRef(null);
@@ -87,7 +82,6 @@ const AdminCompaniesPage = ({ onTabChange }) => {
     setPreviewData(null);
     setUploadError('');
     setUploadResult(null);
-    setClearExisting(false);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -98,7 +92,6 @@ const AdminCompaniesPage = ({ onTabChange }) => {
     setPreviewData(null);
     setUploadError('');
     setUploadResult(null);
-    setClearExisting(false);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -147,7 +140,7 @@ const AdminCompaniesPage = ({ onTabChange }) => {
     setUploadResult(null);
 
     try {
-      const result = await adminService.uploadCompaniesExcel(uploadFile, clearExisting);
+      const result = await adminService.uploadCompaniesExcel(uploadFile, false);
       setUploadResult(result);
       // Refresh list
       loadCompanies(1, search, orderBy);
@@ -159,28 +152,6 @@ const AdminCompaniesPage = ({ onTabChange }) => {
       setUploadError(errMsg);
     } finally {
       setUploading(false);
-    }
-  };
-
-  const handleClearAllSubmit = async () => {
-    setClearing(true);
-    try {
-      const res = await adminService.clearAllCompanies();
-      setShowClearConfirmModal(false);
-      setAlert({
-        type: 'success',
-        message: res.message || 'All companies have been successfully erased.',
-      });
-      setCurrentPage(1);
-      loadCompanies(1, search, orderBy);
-    } catch (err) {
-      console.error('Failed to clear companies:', err);
-      setAlert({
-        type: 'danger',
-        message: err.response?.data?.error || 'Failed to clear companies.',
-      });
-    } finally {
-      setClearing(false);
     }
   };
 
@@ -233,21 +204,6 @@ const AdminCompaniesPage = ({ onTabChange }) => {
             >
               <DoorClosed size={16} /> Room Allocation
             </Link>
-          )}
-
-          {totalCompanies > 0 && (
-            <button
-              onClick={() => setShowClearConfirmModal(true)}
-              className="btn btn-outline"
-              style={{
-                gap: '0.4rem',
-                color: 'var(--color-danger-600)',
-                borderColor: '#fca5a5',
-              }}
-              title="Erase all pre-existing sample companies"
-            >
-              <Trash2 size={16} /> Erase All Companies
-            </button>
           )}
         </div>
       </div>
@@ -747,65 +703,6 @@ const AdminCompaniesPage = ({ onTabChange }) => {
                 </div>
               )}
 
-              {/* Option to clear pre-existing companies */}
-              {!uploadResult && (
-                <div
-                  style={{
-                    marginTop: '1.25rem',
-                    padding: '0.85rem 1rem',
-                    backgroundColor: clearExisting ? '#fef2f2' : 'var(--color-bg-main)',
-                    border: `1.5px solid ${clearExisting ? '#f87171' : 'var(--color-border)'}`,
-                    borderRadius: 'var(--radius-md)',
-                    display: 'flex',
-                    alignItems: 'flex-start',
-                    gap: '0.75rem',
-                    cursor: 'pointer',
-                    transition: 'all 0.15s ease',
-                  }}
-                  onClick={() => setClearExisting(!clearExisting)}
-                >
-                  <input
-                    type="checkbox"
-                    id="clearExistingCheckbox"
-                    checked={clearExisting}
-                    onChange={(e) => setClearExisting(e.target.checked)}
-                    onClick={(e) => e.stopPropagation()}
-                    style={{
-                      marginTop: '0.2rem',
-                      width: 18,
-                      height: 18,
-                      accentColor: '#dc2626',
-                      cursor: 'pointer',
-                    }}
-                  />
-                  <div>
-                    <label
-                      htmlFor="clearExistingCheckbox"
-                      style={{
-                        fontWeight: 600,
-                        fontSize: '0.88rem',
-                        color: clearExisting ? '#991b1b' : 'var(--color-text-main)',
-                        cursor: 'pointer',
-                        display: 'block',
-                      }}
-                    >
-                      Erase all pre-existing companies before importing
-                    </label>
-                    <p
-                      style={{
-                        margin: '0.2rem 0 0',
-                        fontSize: '0.78rem',
-                        color: clearExisting ? '#b91c1c' : 'var(--color-text-muted)',
-                        lineHeight: 1.4,
-                      }}
-                    >
-                      {clearExisting
-                        ? 'Recommended if you want a clean slate for this Job Mela: All current companies will be replaced by the Excel.'
-                        : 'Unchecked (Default): Preserves existing database and merges or adds companies non-destructively.'}
-                    </p>
-                  </div>
-                </div>
-              )}
             </div>
 
             <div className="modal-footer">
@@ -840,19 +737,6 @@ const AdminCompaniesPage = ({ onTabChange }) => {
           </div>
         </div>
       )}
-
-      {/* Confirm Clear All Companies Modal */}
-      <ConfirmModal
-        isOpen={showClearConfirmModal}
-        title="Erase All Pre-existing Companies?"
-        message={`Are you sure you want to permanently erase all ${totalCompanies} pre-existing companies from the database? This will clear all sample companies so you can start with a fresh roster. This action cannot be undone.`}
-        confirmText="Yes, Erase All Companies"
-        cancelText="Keep Companies"
-        variant="danger"
-        loading={clearing}
-        onConfirm={handleClearAllSubmit}
-        onCancel={() => setShowClearConfirmModal(false)}
-      />
     </div>
   );
 };
