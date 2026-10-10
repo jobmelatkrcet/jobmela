@@ -303,10 +303,10 @@ const HomePage = () => {
                   >
                     {!isAuthenticated ? (
                       <>
-                        <button type="button" onClick={openRegistrationModal} className="hero-btn-register" style={{ cursor: 'pointer', border: 'none' }}>
+                        <Link to="/register" className="hero-btn-register">
                           <span>REGISTER NOW</span>
                           <ArrowRight size={18} />
-                        </button>
+                        </Link>
                         <Link to="/login" className="hero-btn-login">
                           <span>STUDENT LOGIN</span>
                           <ArrowRight size={18} />
@@ -995,9 +995,9 @@ const HomePage = () => {
                       Browse &amp; Apply
                     </Link>
                   ) : (
-                    <button type="button" onClick={openRegistrationModal} className="btn btn-outline btn-lg home-explore-sub-btn" style={{ cursor: 'pointer' }}>
+                    <Link to="/register" className="btn btn-outline btn-lg home-explore-sub-btn">
                       Register as Candidate
-                    </button>
+                    </Link>
                   )}
                 </div>
               </div>
@@ -1189,9 +1189,9 @@ const HomePage = () => {
                       Browse &amp; Apply
                     </Link>
                   ) : (
-                    <button type="button" onClick={openRegistrationModal} className="btn btn-outline btn-lg home-explore-sub-btn" style={{ cursor: 'pointer' }}>
+                    <Link to="/register" className="btn btn-outline btn-lg home-explore-sub-btn">
                       Register as Candidate
-                    </button>
+                    </Link>
                   )}
                 </div>
               </div>

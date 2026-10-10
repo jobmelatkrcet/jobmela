@@ -161,21 +161,9 @@ const Footer = () => {
             </h4>
             <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
               <li>
-                <button
-                  type="button"
-                  onClick={openRegistrationModal}
-                  style={{
-                    background: 'none',
-                    border: 'none',
-                    padding: 0,
-                    color: '#cbd5e1',
-                    fontSize: '0.88rem',
-                    cursor: 'pointer',
-                    textAlign: 'left',
-                  }}
-                >
+                <Link to="/register" style={{ color: '#cbd5e1', fontSize: '0.88rem' }}>
                   → Student Registration
-                </button>
+                </Link>
               </li>
               <li>
                 <Link to="/login" style={{ color: '#cbd5e1', fontSize: '0.88rem' }}>

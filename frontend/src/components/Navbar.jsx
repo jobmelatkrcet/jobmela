@@ -174,13 +174,9 @@ const Navbar = () => {
                 <Link to="/login" className="btn btn-outline btn-sm login-btn">
                   Student Login
                 </Link>
-                <button
-                  type="button"
-                  onClick={openRegistrationModal}
-                  className="btn btn-primary btn-sm register-btn"
-                >
+                <Link to="/register" className="btn btn-primary btn-sm register-btn">
                   Register
-                </button>
+                </Link>
                 <Link to="/admin/login" className="admin-portal-link" title="Organizer Admin Access">
                   <ShieldCheck size={15} /> Admin
                 </Link>
@@ -243,18 +239,15 @@ const Navbar = () => {
             <div className="mobile-links">
               {/* Clean, compact quick actions */}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem', marginBottom: '0.75rem' }}>
-                <button
-                  type="button"
-                  onClick={() => {
-                    closeMenu();
-                    openRegistrationModal();
-                  }}
+                <Link
+                  to="/register"
+                  onClick={closeMenu}
                   className="btn btn-primary btn-sm"
                   style={{ justifyContent: 'center', gap: '0.4rem', fontWeight: 700 }}
                 >
                   <UserPlus size={15} />
                   <span>Register</span>
-                </button>
+                </Link>
                 <Link
                   to="/login"
                   onClick={closeMenu}

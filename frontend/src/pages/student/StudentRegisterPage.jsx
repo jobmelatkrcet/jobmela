@@ -19,14 +19,10 @@ import {
   FileCheck,
 } from 'lucide-react';
 import Alert from '../../components/Alert';
-import RegistrationClosedModal from '../../components/RegistrationClosedModal';
-import { Calendar, Home, ArrowLeft } from 'lucide-react';
 
 const StudentRegisterPage = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
-  const [modalOpen, setModalOpen] = useState(true);
-  const REGISTRATION_OPEN = false;
 
   const [formData, setFormData] = useState({
     full_name: '',
@@ -214,106 +210,6 @@ const StudentRegisterPage = () => {
       setLoading(false);
     }
   };
-
-  if (!REGISTRATION_OPEN) {
-    return (
-      <div style={{ padding: '3.5rem 0 5.5rem', backgroundColor: '#f8fafc', minHeight: '80vh' }}>
-        <div className="app-container" style={{ maxWidth: 540 }}>
-          <div style={{ marginBottom: '1.25rem' }}>
-            <Link
-              to="/"
-              style={{
-                color: 'var(--color-text-muted)',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '0.4rem',
-                fontSize: '0.88rem',
-              }}
-            >
-              <ArrowLeft size={16} /> Return to Home
-            </Link>
-          </div>
-
-          <div
-            className="card"
-            style={{
-              padding: '2.75rem 2rem',
-              textAlign: 'center',
-              boxShadow: 'var(--shadow-lg)',
-              border: '1px solid #e2e8f0',
-              borderRadius: '16px',
-            }}
-          >
-            <div
-              style={{
-                width: 64,
-                height: 64,
-                borderRadius: '16px',
-                backgroundColor: '#fef3c7',
-                color: '#d97706',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                margin: '0 auto 1.25rem',
-              }}
-            >
-              <Lock size={32} />
-            </div>
-
-            <div
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '0.4rem',
-                backgroundColor: '#fef3c7',
-                color: '#b45309',
-                padding: '0.3rem 0.85rem',
-                borderRadius: '9999px',
-                fontSize: '0.8rem',
-                fontWeight: 700,
-                marginBottom: '1rem',
-              }}
-            >
-              <Calendar size={14} /> Registration Notice
-            </div>
-
-            <h1 style={{ fontSize: '1.65rem', color: '#0f172a', marginBottom: '0.75rem', fontWeight: 800 }}>
-              Registrations will be opened by 10/10/2026
-            </h1>
-
-            <p style={{ color: '#64748b', fontSize: '0.95rem', lineHeight: 1.6, marginBottom: '2rem' }}>
-              Student registration for TKRCET Job Mela 2026 is temporarily closed.
-              Candidate registration will officially open on <strong>10/10/2026</strong>.
-            </p>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-              <button
-                type="button"
-                onClick={() => navigate('/')}
-                className="btn btn-primary btn-lg"
-                style={{ width: '100%', justifyContent: 'center' }}
-              >
-                <Home size={18} /> Return to Home
-              </button>
-              <button
-                type="button"
-                onClick={() => setModalOpen(true)}
-                className="btn btn-outline"
-                style={{ width: '100%', justifyContent: 'center' }}
-              >
-                View Notice Popup
-              </button>
-            </div>
-          </div>
-
-          <RegistrationClosedModal
-            isOpen={modalOpen}
-            onClose={() => setModalOpen(false)}
-          />
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div style={{ padding: '2.5rem 0 4.5rem', backgroundColor: '#f8fafc' }}>

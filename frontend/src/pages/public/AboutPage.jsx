@@ -156,9 +156,9 @@ const AboutPage = () => {
             Registration is completely free for all eligible students.
           </p>
           <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', flexWrap: 'wrap' }}>
-            <button type="button" onClick={openRegistrationModal} className="btn btn-primary btn-lg" style={{ cursor: 'pointer' }}>
+            <Link to="/register" className="btn btn-primary btn-lg">
               Register as Student
-            </button>
+            </Link>
             <Link to="/companies" className="btn btn-outline btn-lg" style={{ color: '#fff', borderColor: '#475569' }}>
               Browse Companies
             </Link>

@@ -1,5 +1,5 @@
-import React, { createContext, useContext, useState } from 'react';
-import RegistrationClosedModal from '../components/RegistrationClosedModal';
+import React, { createContext, useContext } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const RegistrationModalContext = createContext({
   isOpen: false,
@@ -8,21 +8,22 @@ const RegistrationModalContext = createContext({
 });
 
 export const RegistrationModalProvider = ({ children }) => {
-  const [isOpen, setIsOpen] = useState(false);
+  const navigate = useNavigate();
 
-  const openRegistrationModal = () => setIsOpen(true);
-  const closeRegistrationModal = () => setIsOpen(false);
+  const openRegistrationModal = () => {
+    navigate('/register');
+  };
+  const closeRegistrationModal = () => {};
 
   return (
     <RegistrationModalContext.Provider
       value={{
-        isOpen,
+        isOpen: false,
         openRegistrationModal,
         closeRegistrationModal,
       }}
     >
       {children}
-      <RegistrationClosedModal isOpen={isOpen} onClose={closeRegistrationModal} />
     </RegistrationModalContext.Provider>
   );
 };

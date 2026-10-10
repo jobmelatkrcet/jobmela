@@ -172,21 +172,16 @@ const StudentLoginPage = () => {
           >
             <div>
               Don't have an account yet?{' '}
-              <button
-                type="button"
-                onClick={openRegistrationModal}
+              <Link
+                to="/register"
                 style={{
-                  background: 'none',
-                  border: 'none',
-                  padding: 0,
                   color: 'var(--color-brand-600)',
                   fontWeight: 700,
-                  cursor: 'pointer',
                   fontSize: 'inherit',
                 }}
               >
                 Register as Student
-              </button>
+              </Link>
             </div>
 
             <div style={{ fontSize: '0.85rem' }}>
