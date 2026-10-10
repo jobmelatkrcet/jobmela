@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from accounts.models import User
+from accounts.storage import get_signed_file_url
 from companies.models import Company, Room, RoomCheckIn
 from applications.models import Application
 
@@ -21,6 +22,16 @@ class AdminStudentListSerializer(serializers.ModelSerializer):
             "applications_count",
             "created_at",
         ]
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        if instance.photo:
+            signed = get_signed_file_url(instance.photo.name)
+            data["photo"] = signed or instance.photo.name
+        if instance.resume:
+            signed = get_signed_file_url(instance.resume.name)
+            data["resume"] = signed or instance.resume.name
+        return data
 
 
 class AdminApplicationBriefSerializer(serializers.ModelSerializer):
@@ -51,6 +62,16 @@ class AdminStudentDetailSerializer(serializers.ModelSerializer):
             "applications_count",
             "applications",
         ]
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        if instance.photo:
+            signed = get_signed_file_url(instance.photo.name)
+            data["photo"] = signed or instance.photo.name
+        if instance.resume:
+            signed = get_signed_file_url(instance.resume.name)
+            data["resume"] = signed or instance.resume.name
+        return data
 
 
 class AdminCompanyListSerializer(serializers.ModelSerializer):
@@ -155,6 +176,17 @@ class AdminCompanyStudentSerializer(serializers.ModelSerializer):
             "resume",
             "applied_at",
         ]
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        student = getattr(instance, "student", None)
+        if student and student.photo:
+            signed = get_signed_file_url(student.photo.name)
+            data["photo"] = signed or student.photo.name
+        if student and student.resume:
+            signed = get_signed_file_url(student.resume.name)
+            data["resume"] = signed or student.resume.name
+        return data
 
 
 from .models import JobMelaRequirement

@@ -161,6 +161,7 @@ const StudentRegisterPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (loading) return;
     setGeneralError('');
 
     const formErrors = validate();

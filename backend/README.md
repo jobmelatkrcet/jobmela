@@ -87,3 +87,44 @@ This creates:
 - Superuser: `admin@tkrcet.ac.in` / `admin123`
 - Demo student: `student@tkrcet.ac.in` / `student123`
 - 30 Top Participating Companies
+
+---
+
+## ☁️ Supabase Storage Configuration (Student Documents)
+
+Candidate passport photographs and resumes are stored securely in Supabase Cloud Storage instead of Vercel serverless local disk.
+
+### 1. Bucket Setup in Supabase Dashboard
+1. Log into your project at [https://supabase.com/dashboard](https://supabase.com/dashboard).
+2. Navigate to **Storage** -> **New Bucket**.
+3. Name the bucket: `student-documents`.
+4. **Set Bucket Access:** Ensure **Public bucket** is **OFF / Disabled** (this must remain a strictly private bucket).
+5. Allowed MIME types:
+   - Images: `image/jpeg, image/png, image/webp`
+   - Documents: `application/pdf, application/msword, application/vnd.openxmlformats-officedocument.wordprocessingml.document`
+6. Maximum file size: `5MB` (or leave default).
+
+### 2. Environment Variables in Vercel
+Add the following environment variables to your backend Vercel project under **Project Settings** -> **Environment Variables**:
+
+| Variable | Description | Example / Format |
+| :--- | :--- | :--- |
+| `SUPABASE_URL` | Supabase Project API URL | `https://your-project-ref.supabase.co` |
+| `SUPABASE_SERVICE_ROLE_KEY` | Supabase Service Role Secret Key (Server-side privileged access) | `eyJhbGciOi...` (Find in Dashboard -> Project Settings -> API -> `service_role secret`) |
+| `SUPABASE_STORAGE_BUCKET` | Name of the private storage bucket | `student-documents` |
+
+> ⚠️ **SECURITY WARNING:** The `service_role` key must **NEVER** be shared, committed to Git, or exposed in frontend Vite/React code. It is used strictly server-side by Django.
+
+### 3. Access Control & Signed URLs
+- Files in `student-documents` cannot be accessed publicly.
+- When authenticated students view their profile (`/api/auth/profile/`) or admins view the candidate directory (`/api/admin/students/`), Django generates short-lived signed URLs with cryptographic HMAC tokens.
+- Authenticated download endpoints:
+  - `GET /api/auth/document/<photo|resume>/`: Authenticated student retrieves their own signed document URL.
+  - `GET /api/auth/students/<student_id>/document/<photo|resume>/`: Administrators can access any candidate document; students are forbidden (`403`) from accessing other students' files.
+
+### 4. Post-Deployment Verification
+1. Navigate to `https://jobmela.vercel.app/register`.
+2. Fill out the student registration form and attach a passport photo (`.jpg`/`.png` < 3MB) and resume (`.pdf`/`.docx` < 5MB).
+3. Submit registration. Verify that the student is logged in and redirected to `/dashboard`.
+4. Verify that the candidate photograph renders on the Admit Card and the resume download link works.
+5. In Supabase Dashboard -> Storage -> `student-documents`, verify the files are present in `photos/` and `resumes/`.
