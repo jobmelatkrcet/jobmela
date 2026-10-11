@@ -38,6 +38,7 @@ class StudentRegistrationSerializer(serializers.ModelSerializer):
             "mobile",
             "qualification",
             "college",
+            "heard_about",
             "photo",
             "resume",
             "password",
@@ -46,6 +47,7 @@ class StudentRegistrationSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             "photo": {"required": False, "allow_null": True},
             "resume": {"required": False, "allow_null": True},
+            "heard_about": {"required": False, "allow_blank": True},
         }
 
     def validate_photo(self, value):
@@ -75,6 +77,9 @@ class StudentRegistrationSerializer(serializers.ModelSerializer):
     def validate(self, data):
         if data.get("password") != data.get("confirm_password"):
             raise serializers.ValidationError({"confirm_password": "Passwords do not match."})
+        # Support referral_source as alias for heard_about if provided
+        if not data.get("heard_about") and self.initial_data.get("referral_source"):
+            data["heard_about"] = str(self.initial_data.get("referral_source")).strip()
         return data
 
     def create(self, validated_data):
@@ -125,6 +130,7 @@ class StudentRegistrationSerializer(serializers.ModelSerializer):
                 mobile=validated_data.get("mobile", "").strip(),
                 qualification=validated_data.get("qualification", "").strip(),
                 college=validated_data.get("college", "").strip(),
+                heard_about=validated_data.get("heard_about", "").strip(),
                 role="student",
             )
 
@@ -155,6 +161,7 @@ class UserSerializer(serializers.ModelSerializer):
             "mobile",
             "qualification",
             "college",
+            "heard_about",
             "photo",
             "resume",
             "role",

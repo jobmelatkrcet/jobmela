@@ -452,3 +452,40 @@ class StudentRegistrationTests(TestCase):
         self.assertEqual(kwargs["path"], stored_path)
         self.assertEqual(kwargs["file_options"]["content-type"], "image/jpeg")
         self.assertEqual(kwargs["file_options"]["upsert"], "true")
+
+    # 16. Registration with heard_about set to WhatsApp Ads
+    def test_16_registration_with_heard_about_whatsapp(self):
+        """Test registration successfully saves 'WhatsApp Ads' as heard_about source."""
+        payload = self.valid_payload.copy()
+        payload["email"] = "whatsapp_cand@tkrcet.ac.in"
+        payload["heard_about"] = "WhatsApp Ads"
+        response = self.client.post(self.register_url, data=payload, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data["user"]["heard_about"], "WhatsApp Ads")
+        user = User.objects.get(email="whatsapp_cand@tkrcet.ac.in")
+        self.assertEqual(user.heard_about, "WhatsApp Ads")
+        self.assertEqual(user.referral_source, "WhatsApp Ads")
+
+    # 17. Registration with heard_about set to Instagram Ads / Reels
+    def test_17_registration_with_heard_about_instagram(self):
+        """Test registration successfully saves 'Instagram Ads / Reels' as heard_about source."""
+        payload = self.valid_payload.copy()
+        payload["email"] = "insta_cand@tkrcet.ac.in"
+        payload["heard_about"] = "Instagram Ads / Reels"
+        response = self.client.post(self.register_url, data=payload, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data["user"]["heard_about"], "Instagram Ads / Reels")
+        user = User.objects.get(email="insta_cand@tkrcet.ac.in")
+        self.assertEqual(user.heard_about, "Instagram Ads / Reels")
+
+    # 18. Registration with custom manual Others entry
+    def test_18_registration_with_heard_about_other_manual(self):
+        """Test registration successfully saves custom manual input for Others."""
+        payload = self.valid_payload.copy()
+        payload["email"] = "other_cand@tkrcet.ac.in"
+        payload["heard_about"] = "Other: College Notice Board"
+        response = self.client.post(self.register_url, data=payload, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data["user"]["heard_about"], "Other: College Notice Board")
+        user = User.objects.get(email="other_cand@tkrcet.ac.in")
+        self.assertEqual(user.heard_about, "Other: College Notice Board")

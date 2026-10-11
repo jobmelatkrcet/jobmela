@@ -424,6 +424,7 @@ const AdminCompanyStudentsPage = () => {
                   <th>Mobile</th>
                   <th>Qualification</th>
                   <th>College / Institution</th>
+                  <th>Heard About</th>
                   <th style={{ textAlign: 'center' }}>Resume</th>
                   <th>Applied Date & Time</th>
                 </tr>
@@ -485,6 +486,15 @@ const AdminCompanyStudentsPage = () => {
                     </td>
                     <td style={{ maxWidth: 220, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                       {item.college || '—'}
+                    </td>
+                    <td>
+                      {item.heard_about ? (
+                        <span className="badge badge-blue" style={{ fontSize: '0.78rem' }}>
+                          {item.heard_about}
+                        </span>
+                      ) : (
+                        <span style={{ fontSize: '0.78rem', color: 'var(--color-text-muted)' }}>—</span>
+                      )}
                     </td>
                     <td style={{ textAlign: 'center' }}>
                       {item.resume ? (

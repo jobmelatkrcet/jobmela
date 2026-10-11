@@ -17,6 +17,7 @@ class AdminStudentListSerializer(serializers.ModelSerializer):
             "mobile",
             "qualification",
             "college",
+            "heard_about",
             "photo",
             "resume",
             "applications_count",
@@ -56,6 +57,7 @@ class AdminStudentDetailSerializer(serializers.ModelSerializer):
             "mobile",
             "qualification",
             "college",
+            "heard_about",
             "photo",
             "resume",
             "created_at",
@@ -158,6 +160,9 @@ class AdminCompanyStudentSerializer(serializers.ModelSerializer):
         source="student.qualification", read_only=True
     )
     college = serializers.CharField(source="student.college", read_only=True)
+    heard_about = serializers.CharField(
+        source="student.heard_about", read_only=True, default=""
+    )
 
     photo = serializers.FileField(source="student.photo", read_only=True)
     resume = serializers.FileField(source="student.resume", read_only=True)
@@ -172,6 +177,7 @@ class AdminCompanyStudentSerializer(serializers.ModelSerializer):
             "mobile",
             "qualification",
             "college",
+            "heard_about",
             "photo",
             "resume",
             "applied_at",

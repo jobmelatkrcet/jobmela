@@ -17,7 +17,10 @@ import {
   X,
   CheckCircle2,
   FileCheck,
+  Megaphone,
+  PenLine,
 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import Alert from '../../components/Alert';
 
 const StudentRegisterPage = () => {
@@ -30,6 +33,8 @@ const StudentRegisterPage = () => {
     mobile: '',
     qualification: '',
     college: '',
+    heard_about: '',
+    other_heard_about: '',
     password: '',
     confirm_password: '',
   });
@@ -50,7 +55,14 @@ const StudentRegisterPage = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    if (name === 'heard_about' && value !== 'Others') {
+      setFormData((prev) => ({ ...prev, heard_about: value, other_heard_about: '' }));
+      if (errors.other_heard_about) {
+        setErrors((prev) => ({ ...prev, other_heard_about: null }));
+      }
+    } else {
+      setFormData((prev) => ({ ...prev, [name]: value }));
+    }
     if (errors[name]) {
       setErrors((prev) => ({ ...prev, [name]: null }));
     }
@@ -148,6 +160,11 @@ const StudentRegisterPage = () => {
     }
     if (!formData.qualification.trim()) errs.qualification = 'Please select or enter your qualification.';
     if (!formData.college.trim()) errs.college = 'College or institution name is required.';
+    if (!formData.heard_about.trim()) {
+      errs.heard_about = 'Please select where you heard about Job Mela.';
+    } else if (formData.heard_about === 'Others' && !formData.other_heard_about.trim()) {
+      errs.other_heard_about = 'Please specify where you heard about Job Mela.';
+    }
     if (!formData.password) {
       errs.password = 'Password is required.';
     } else if (formData.password.length < 6) {
@@ -179,6 +196,11 @@ const StudentRegisterPage = () => {
 
     setLoading(true);
     try {
+      const resolvedHeardAbout =
+        formData.heard_about === 'Others'
+          ? (formData.other_heard_about.trim() ? `Other: ${formData.other_heard_about.trim()}` : 'Others')
+          : formData.heard_about.trim();
+
       let payload;
       if (!photoFile && !resumeFile) {
         payload = {
@@ -187,6 +209,7 @@ const StudentRegisterPage = () => {
           mobile: formData.mobile.trim(),
           qualification: formData.qualification.trim(),
           college: formData.college.trim(),
+          heard_about: resolvedHeardAbout,
           password: formData.password,
           confirm_password: formData.confirm_password,
         };
@@ -197,6 +220,7 @@ const StudentRegisterPage = () => {
         payload.append('mobile', formData.mobile.trim());
         payload.append('qualification', formData.qualification.trim());
         payload.append('college', formData.college.trim());
+        payload.append('heard_about', resolvedHeardAbout);
         payload.append('password', formData.password);
         payload.append('confirm_password', formData.confirm_password);
 
@@ -434,6 +458,100 @@ const StudentRegisterPage = () => {
               </div>
               {errors.college && <span className="form-error">{errors.college}</span>}
             </div>
+
+            {/* Where did you hear about Job Mela */}
+            <div className="form-group">
+              <label className="form-label" htmlFor="heard_about">
+                Where did you hear about Job Mela? *
+              </label>
+              <div style={{ position: 'relative' }}>
+                <select
+                  id="heard_about"
+                  name="heard_about"
+                  className="form-control"
+                  value={formData.heard_about}
+                  onChange={handleChange}
+                  style={{ paddingLeft: '2.5rem' }}
+                >
+                  <option value="">-- Select where you heard about Job Mela --</option>
+                  <option value="WhatsApp Ads">WhatsApp Ads</option>
+                  <option value="Instagram Ads / Reels">Instagram Ads / Reels</option>
+                  <option value="Others">Others</option>
+                </select>
+                <Megaphone
+                  size={18}
+                  style={{
+                    position: 'absolute',
+                    left: 12,
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    color: 'var(--color-text-light)',
+                  }}
+                />
+              </div>
+              {errors.heard_about && <span className="form-error">{errors.heard_about}</span>}
+            </div>
+
+            {/* Manual input when "Others" is selected */}
+            <AnimatePresence>
+              {formData.heard_about === 'Others' && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0, marginTop: 0 }}
+                  animate={{ opacity: 1, height: 'auto', marginTop: '-0.25rem' }}
+                  exit={{ opacity: 0, height: 0, marginTop: 0 }}
+                  transition={{ duration: 0.25, ease: 'easeOut' }}
+                  className="form-group"
+                  style={{ overflow: 'hidden' }}
+                >
+                  <div
+                    style={{
+                      backgroundColor: 'rgba(238, 242, 255, 0.75)',
+                      border: '1px solid rgba(199, 210, 254, 0.95)',
+                      borderRadius: 'var(--radius-md)',
+                      padding: '1rem 1.15rem',
+                      boxShadow: '0 2px 6px -1px rgba(79, 70, 229, 0.08)',
+                    }}
+                  >
+                    <label
+                      className="form-label"
+                      htmlFor="other_heard_about"
+                      style={{
+                        marginBottom: '0.45rem',
+                        color: 'var(--color-brand-800, #3730a3)',
+                        fontWeight: 600,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.45rem',
+                      }}
+                    >
+                      <PenLine size={15} color="var(--color-brand-600, #4f46e5)" />
+                      Please specify where you heard about Job Mela *
+                    </label>
+                    <div style={{ position: 'relative' }}>
+                      <input
+                        id="other_heard_about"
+                        name="other_heard_about"
+                        type="text"
+                        className="form-control"
+                        placeholder="e.g. College circular, Friend, Telegram group, Newspaper..."
+                        value={formData.other_heard_about}
+                        onChange={handleChange}
+                        autoFocus
+                        style={{
+                          backgroundColor: '#ffffff',
+                          borderColor: errors.other_heard_about ? 'var(--color-danger, #ef4444)' : 'var(--color-brand-300, #a5b4fc)',
+                        }}
+                      />
+                    </div>
+                    {errors.other_heard_about && (
+                      <span className="form-error" style={{ display: 'block', marginTop: '0.35rem' }}>
+                        {errors.other_heard_about}
+                      </span>
+                    )}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
             {/* CANDIDATE PHOTOGRAPH UPLOAD */}
             <div className="form-group" style={{ marginBottom: '1.5rem' }}>

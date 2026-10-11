@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { authService } from '../../services/authService';
-import { User, Mail, Phone, GraduationCap, Building2, Calendar, Edit3, Check, Save } from 'lucide-react';
+import { User, Mail, Phone, GraduationCap, Building2, Calendar, Edit3, Check, Save, Megaphone } from 'lucide-react';
 import Alert from '../../components/Alert';
 
 const StudentProfilePage = () => {
@@ -13,6 +13,7 @@ const StudentProfilePage = () => {
     mobile: '',
     qualification: '',
     college: '',
+    heard_about: '',
   });
   const [loading, setLoading] = useState(false);
   const [alert, setAlert] = useState(null);
@@ -24,6 +25,7 @@ const StudentProfilePage = () => {
         mobile: user.mobile || '',
         qualification: user.qualification || '',
         college: user.college || '',
+        heard_about: user.heard_about || '',
       });
     }
   }, [user]);
@@ -181,6 +183,16 @@ const StudentProfilePage = () => {
 
             <div className="form-group" style={{ gridColumn: '1 / -1', marginBottom: 0 }}>
               <span className="form-label" style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', textTransform: 'uppercase' }}>
+                Heard About Job Mela
+              </span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '1.05rem', fontWeight: 600, color: 'var(--color-brand-700)' }}>
+                <Megaphone size={18} color="var(--color-brand-600)" />
+                {user?.heard_about || 'Not provided'}
+              </div>
+            </div>
+
+            <div className="form-group" style={{ gridColumn: '1 / -1', marginBottom: 0 }}>
+              <span className="form-label" style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', textTransform: 'uppercase' }}>
                 Registration Date
               </span>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.95rem', color: 'var(--color-text-muted)' }}>
@@ -268,6 +280,21 @@ const StudentProfilePage = () => {
                 value={formData.college}
                 onChange={handleChange}
                 required
+              />
+            </div>
+
+            <div className="form-group">
+              <label className="form-label" htmlFor="heard_about">
+                Where did you hear about Job Mela?
+              </label>
+              <input
+                id="heard_about"
+                name="heard_about"
+                type="text"
+                className="form-control"
+                value={formData.heard_about}
+                onChange={handleChange}
+                placeholder="e.g. WhatsApp Ads, Instagram Ads / Reels, etc."
               />
             </div>
 

@@ -129,7 +129,7 @@ const AdminStudentsPage = () => {
             <input
               type="text"
               className="form-control"
-              placeholder="Search by student name, email, mobile, qualification, college..."
+              placeholder="Search by student name, email, mobile, qualification, college, source..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               style={{ paddingLeft: '2.5rem' }}
@@ -476,6 +476,15 @@ const AdminStudentsPage = () => {
                         </div>
                         <div style={{ fontWeight: 600, color: 'var(--color-primary-900)' }}>
                           {selectedStudent.college || '—'}
+                        </div>
+                      </div>
+
+                      <div>
+                        <div style={{ fontSize: '0.78rem', color: 'var(--color-text-muted)', textTransform: 'uppercase' }}>
+                          Heard About Job Mela
+                        </div>
+                        <div style={{ fontWeight: 600, color: 'var(--color-brand-700)' }}>
+                          {selectedStudent.heard_about || '—'}
                         </div>
                       </div>
                     </div>

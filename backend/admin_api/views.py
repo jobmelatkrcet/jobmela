@@ -95,6 +95,7 @@ class AdminStudentsListView(APIView):
                 | Q(mobile__icontains=search_query)
                 | Q(qualification__icontains=search_query)
                 | Q(college__icontains=search_query)
+                | Q(heard_about__icontains=search_query)
             )
 
         paginator = AdminPagination()
@@ -335,13 +336,13 @@ class AdminCompanyExcelExportView(APIView):
         )
 
         # Header rows
-        ws.merge_cells("A1:G1")
+        ws.merge_cells("A1:I1")
         ws["A1"] = "TKR COLLEGE OF ENGINEERING & TECHNOLOGY — JOB MELA 2026"
         ws["A1"].font = title_font
         ws["A1"].alignment = Alignment(horizontal="center", vertical="center")
         ws.row_dimensions[1].height = 28
 
-        ws.merge_cells("A2:G2")
+        ws.merge_cells("A2:I2")
         ws["A2"] = (
             f"Participating Company: {company.name.upper()} | Total Registered Students: {applications.count()}"
         )
@@ -349,7 +350,7 @@ class AdminCompanyExcelExportView(APIView):
         ws["A2"].alignment = Alignment(horizontal="center", vertical="center")
         ws.row_dimensions[2].height = 20
 
-        ws.merge_cells("A3:G3")
+        ws.merge_cells("A3:I3")
         ws["A3"] = (
             f"Report Generated: {datetime.now().strftime('%d-%m-%Y %I:%M %p')} | Venue: TKRCET Campus"
         )
@@ -368,6 +369,7 @@ class AdminCompanyExcelExportView(APIView):
             "Mobile",
             "Qualification",
             "College",
+            "Heard About",
             "Resume Uploaded",
             "Applied Date",
         ]
@@ -378,7 +380,7 @@ class AdminCompanyExcelExportView(APIView):
             cell.font = white_bold_font
             cell.fill = navy_header
             cell.alignment = Alignment(
-                horizontal="center" if col_idx in (1, 4, 7, 8) else "left",
+                horizontal="center" if col_idx in (1, 4, 8, 9) else "left",
                 vertical="center",
             )
             cell.border = cell_border
@@ -397,6 +399,7 @@ class AdminCompanyExcelExportView(APIView):
                 student.mobile or "N/A",
                 student.qualification or "N/A",
                 student.college or "N/A",
+                student.heard_about or "N/A",
                 resume_status,
                 app.applied_at.strftime("%d-%m-%Y %I:%M %p"),
             ]
@@ -410,9 +413,10 @@ class AdminCompanyExcelExportView(APIView):
                 if fill.fill_type:
                     cell.fill = fill
                 cell.alignment = Alignment(
-                    horizontal="center" if col_idx in (1, 4, 7) else "left",
+                    horizontal="center" if col_idx in (1, 4, 8, 9) else "left",
                     vertical="center",
                 )
+                cell.border = cell_border
 
         # Auto-adjust column widths
         for col in ws.columns:

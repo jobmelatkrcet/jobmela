@@ -41,6 +41,7 @@ class User(AbstractUser):
     mobile = models.CharField(max_length=20, blank=True, default="")
     qualification = models.CharField(max_length=100, blank=True, default="")
     college = models.CharField(max_length=255, blank=True, default="")
+    heard_about = models.CharField(max_length=255, blank=True, default="", verbose_name="Heard About Job Mela")
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, default="student")
     photo = models.FileField(upload_to="photos/", blank=True, null=True)
     resume = models.FileField(upload_to="resumes/", blank=True, null=True)
@@ -58,3 +59,11 @@ class User(AbstractUser):
     @property
     def is_admin_user(self):
         return self.role == "admin" or self.is_staff or self.is_superuser
+
+    @property
+    def referral_source(self):
+        return self.heard_about
+
+    @referral_source.setter
+    def referral_source(self, val):
+        self.heard_about = val
