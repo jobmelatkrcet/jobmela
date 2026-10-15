@@ -92,7 +92,7 @@ const StudentLoginPage = () => {
                   id="email"
                   type="email"
                   className="form-control"
-                  placeholder="e.g. student@tkrcet.ac.in"
+                  placeholder="student@gmail.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   style={{ paddingLeft: '2.5rem' }}

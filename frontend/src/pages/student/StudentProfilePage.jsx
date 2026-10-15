@@ -294,7 +294,7 @@ const StudentProfilePage = () => {
                 className="form-control"
                 value={formData.heard_about}
                 onChange={handleChange}
-                placeholder="e.g. WhatsApp Ads, Instagram Ads / Reels, etc."
+                placeholder="e.g. Instagram, Instagram Ads, WhatsApp, WhatsApp Ads, etc."
               />
             </div>
 

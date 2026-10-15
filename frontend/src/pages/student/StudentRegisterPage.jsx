@@ -307,7 +307,7 @@ const StudentRegisterPage = () => {
                   name="full_name"
                   type="text"
                   className="form-control"
-                  placeholder="e.g. Rahul Sharma"
+                  placeholder="e.g. Rushi Badavath"
                   value={formData.full_name}
                   onChange={handleChange}
                   style={{ paddingLeft: '2.5rem' }}
@@ -474,8 +474,10 @@ const StudentRegisterPage = () => {
                   style={{ paddingLeft: '2.5rem' }}
                 >
                   <option value="">-- Select where you heard about Job Mela --</option>
+                  <option value="Instagram">Instagram</option>
+                  <option value="Instagram Ads">Instagram Ads</option>
+                  <option value="WhatsApp">WhatsApp</option>
                   <option value="WhatsApp Ads">WhatsApp Ads</option>
-                  <option value="Instagram Ads / Reels">Instagram Ads / Reels</option>
                   <option value="Others">Others</option>
                 </select>
                 <Megaphone
