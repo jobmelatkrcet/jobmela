@@ -253,19 +253,19 @@ const StudentRegisterPage = () => {
           }
           setErrors(formattedErrors);
           if (backendErrors.non_field_errors) {
-            setGeneralError(backendErrors.non_field_errors.join(' '));
+            setGeneralError(`${backendErrors.non_field_errors.join(' ')} (If any issue persists, please contact 8019792661)`);
           } else if (backendErrors.detail) {
-            setGeneralError(backendErrors.detail);
+            setGeneralError(`${backendErrors.detail} (If any issue persists, please contact 8019792661)`);
           }
         } else {
-          setGeneralError('Registration failed. Please check your information and try again.');
+          setGeneralError('Registration failed. Please check your information and try again. If any issue regarding registration, please contact 8019792661.');
         }
       } else if (err.code === 'ECONNABORTED' || err.message?.toLowerCase().includes('timeout')) {
-        setGeneralError('Registration request timed out. Please check your internet connection and try again.');
+        setGeneralError('Registration request timed out. Please check your internet connection or contact 8019792661 for assistance.');
       } else if (err.message?.includes('413') || err.response?.status === 413) {
-        setGeneralError('Uploaded files are too large. Please upload smaller attachments (under 2MB) and try again.');
+        setGeneralError('Uploaded files are too large. Please upload smaller attachments (under 2MB) or contact 8019792661.');
       } else {
-        setGeneralError('Unable to connect to the registration server. Please check your internet connection or try again.');
+        setGeneralError('Unable to connect to the registration server. If any issue regarding registration, please contact 8019792661.');
       }
     } finally {
       setLoading(false);
@@ -295,6 +295,51 @@ const StudentRegisterPage = () => {
         )}
 
         <div className="card">
+          {/* Registration Helpline Support Notice */}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.85rem',
+              backgroundColor: '#eff6ff',
+              border: '1px solid #bfdbfe',
+              borderRadius: 'var(--radius-md, 8px)',
+              padding: '0.85rem 1.15rem',
+              marginBottom: '1.75rem',
+              fontSize: '0.92rem',
+            }}
+          >
+            <div
+              style={{
+                width: 36,
+                height: 36,
+                borderRadius: '50%',
+                backgroundColor: '#dbeafe',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexShrink: 0,
+                color: 'var(--color-brand-600)',
+              }}
+            >
+              <Phone size={18} />
+            </div>
+            <div style={{ color: '#1e293b' }}>
+              <span>If any issue regarding registration, please contact </span>
+              <a
+                href="tel:8019792661"
+                style={{
+                  fontWeight: 700,
+                  color: 'var(--color-brand-600)',
+                  textDecoration: 'underline',
+                  letterSpacing: '0.02em',
+                }}
+              >
+                8019792661
+              </a>
+            </div>
+          </div>
+
           <form onSubmit={handleSubmit} noValidate>
             {/* Full Name */}
             <div className="form-group">
@@ -773,12 +818,42 @@ const StudentRegisterPage = () => {
               paddingTop: '1.25rem',
               fontSize: '0.92rem',
               color: 'var(--color-text-muted)',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '0.75rem',
+              alignItems: 'center',
             }}
           >
-            Already registered?{' '}
-            <Link to="/login" style={{ color: 'var(--color-brand-600)', fontWeight: 700 }}>
-              Login to Student Portal
-            </Link>
+            <div>
+              Already registered?{' '}
+              <Link to="/login" style={{ color: 'var(--color-brand-600)', fontWeight: 700 }}>
+                Login to Student Portal
+              </Link>
+            </div>
+            <div
+              style={{
+                fontSize: '0.86rem',
+                color: 'var(--color-text-muted)',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.45rem',
+              }}
+            >
+              <Phone size={14} style={{ color: 'var(--color-brand-600)' }} />
+              <span>
+                If any issue regarding registration, please contact{' '}
+                <a
+                  href="tel:8019792661"
+                  style={{
+                    color: 'var(--color-brand-600)',
+                    fontWeight: 700,
+                    textDecoration: 'none',
+                  }}
+                >
+                  8019792661
+                </a>
+              </span>
+            </div>
           </div>
         </div>
       </div>
