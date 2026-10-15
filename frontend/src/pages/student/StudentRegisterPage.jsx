@@ -337,7 +337,7 @@ const StudentRegisterPage = () => {
                   name="email"
                   type="email"
                   className="form-control"
-                  placeholder="e.g. rahul@gmail.com"
+                  placeholder="rushi@gmail.com"
                   value={formData.email}
                   onChange={handleChange}
                   style={{ paddingLeft: '2.5rem' }}
