@@ -1,6 +1,14 @@
 {
   "rewrites": [
     {
+      "source": "/api",
+      "destination": "https://jobmela-z1tj.vercel.app/api/"
+    },
+    {
+      "source": "/api/:path*/",
+      "destination": "https://jobmela-z1tj.vercel.app/api/:path*/"
+    },
+    {
       "source": "/api/:path*",
       "destination": "https://jobmela-z1tj.vercel.app/api/:path*"
     },
