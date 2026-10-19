@@ -1,7 +1,8 @@
 import io
 from unittest.mock import patch, MagicMock
-from django.test import TestCase, override_settings
+from django.test import TestCase, override_settings, RequestFactory
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.core.exceptions import DisallowedHost
 from rest_framework import status
 from rest_framework.test import APIClient
 from rest_framework.authtoken.models import Token
@@ -819,5 +820,65 @@ class StudentRegistrationTests(TestCase):
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn("The combined size of photo and resume exceeds 4MB. Please reduce attachment sizes.", str(res.data))
         self.assertFalse(User.objects.filter(email="combined_over@tkrcet.ac.in").exists())
+
+
+class VercelAllowedHostsTests(TestCase):
+    """Automated tests for Vercel deployment hostnames and custom domains in ALLOWED_HOSTS."""
+
+    def setUp(self):
+        self.rf = RequestFactory()
+        self.client = APIClient()
+
+    def test_stable_backend_hostname_accepted(self):
+        """Stable backend hostname 'jobmela-z1tj.vercel.app' is accepted."""
+        res = self.client.get("/api/auth/profile/", HTTP_HOST="jobmela-z1tj.vercel.app")
+        # Should reach DRF authentication and return 401 Unauthorized, NOT 400 DisallowedHost
+        self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_deployment_specific_hostname_accepted(self):
+        """Changing deployment-specific Vercel URLs for jobmela-z1tj are accepted without manual addition."""
+        deployment_urls = [
+            "jobmela-z1tj-kx0dawdyb-jobmela.vercel.app",
+            "jobmela-z1tj-of2fcjb4f-jobmela.vercel.app",
+            "jobmela-z1tj-git-fix-safe-api-rewrite-jobmela.vercel.app",
+            "jobmela-z1tj-xyz789.vercel.app",
+        ]
+        for url in deployment_urls:
+            with self.subTest(url=url):
+                res = self.client.get("/api/auth/profile/", HTTP_HOST=url)
+                # Successful host resolution reaches endpoint (returns 401 Unauthorized, NOT 400 DisallowedHost)
+                self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_custom_domains_accepted(self):
+        """Canonical custom domains tkrcetjobmela.in and www.tkrcetjobmela.in are accepted."""
+        for domain in ("tkrcetjobmela.in", "www.tkrcetjobmela.in"):
+            with self.subTest(domain=domain):
+                res = self.client.get("/api/auth/profile/", HTTP_HOST=domain)
+                self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_local_development_hosts_accepted(self):
+        """Localhost, 127.0.0.1, and [::1] are accepted."""
+        for host in ("localhost", "127.0.0.1", "[::1]", "testserver"):
+            with self.subTest(host=host):
+                res = self.client.get("/api/auth/profile/", HTTP_HOST=host)
+                self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_arbitrary_vercel_app_rejected(self):
+        """Arbitrary external Vercel applications and third-party domains are rejected with DisallowedHost."""
+        bad_hosts = [
+            "attacker-jobmela.vercel.app",
+            "attacker.vercel.app",
+            "random-user.vercel.app",
+            "jobmela-z1tj.attacker.com",
+            "tkrcetjobmela.in.attacker.com",
+            "evil.com",
+        ]
+        for host in bad_hosts:
+            with self.subTest(host=host):
+                res = self.client.get("/api/auth/profile/", HTTP_HOST=host)
+                # DisallowedHost returns 400 Bad Request
+                self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+
+
 
 

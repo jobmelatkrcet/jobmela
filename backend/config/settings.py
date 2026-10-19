@@ -25,24 +25,40 @@ if not SECRET_KEY:
 # Production Debug Mode (Default: False for security)
 DEBUG = os.environ.get("DEBUG", "False").strip().lower() in ("true", "1", "yes")
 
+# Canonical project hostnames trusted in production
+DEFAULT_ALLOWED_HOSTS = [
+    "jobmela-z1tj.vercel.app",
+    "tkrcetjobmela.in",
+    "www.tkrcetjobmela.in",
+    "jobmela.vercel.app",
+    "www.jobmela.vercel.app",
+    "localhost",
+    "127.0.0.1",
+    "[::1]",
+    "testserver",
+]
+
 # Allowed hosts configuration
 raw_hosts = os.environ.get("ALLOWED_HOSTS", "").strip()
+configured_hosts = list(DEFAULT_ALLOWED_HOSTS)
+
+# Incorporate Vercel system-provided environment variables if available
+for vercel_env_var in ("VERCEL_URL", "VERCEL_PROJECT_PRODUCTION_URL", "VERCEL_BRANCH_URL"):
+    v_url = os.environ.get(vercel_env_var, "").strip()
+    if v_url and v_url not in configured_hosts:
+        configured_hosts.append(v_url)
+
 if raw_hosts:
-    ALLOWED_HOSTS = [h.strip() for h in raw_hosts.split(",") if h.strip()]
-    if not DEBUG and "*" in ALLOWED_HOSTS:
+    custom_hosts = [h.strip() for h in raw_hosts.split(",") if h.strip()]
+    if not DEBUG and "*" in custom_hosts:
         raise ImproperlyConfigured(
             "Wildcard '*' in ALLOWED_HOSTS is not permitted in production."
         )
-    for canonical_domain in ("tkrcetjobmela.in", "www.tkrcetjobmela.in"):
-        if canonical_domain not in ALLOWED_HOSTS:
-            ALLOWED_HOSTS.append(canonical_domain)
-elif DEBUG:
-    ALLOWED_HOSTS = ["localhost", "127.0.0.1", "[::1]", "tkrcetjobmela.in", "www.tkrcetjobmela.in"]
-else:
-    raise ImproperlyConfigured(
-        "ALLOWED_HOSTS environment variable is required in production (when DEBUG=False). "
-        "Please configure comma-separated trusted hostnames (e.g. '.vercel.app,jobmela-z1tj.vercel.app')."
-    )
+    for host in custom_hosts:
+        if host not in configured_hosts:
+            configured_hosts.append(host)
+
+ALLOWED_HOSTS = configured_hosts
 
 
 # Application definition
@@ -66,6 +82,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    "config.middleware.VercelHostValidationMiddleware",
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
