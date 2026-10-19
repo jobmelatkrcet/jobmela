@@ -198,7 +198,24 @@ const Footer = () => {
           }}
         >
           <div>
-            © 2026 TKR College of Engineering &amp; Technology (TKRCET). All Rights Reserved.
+            <span>© 2026 TKR College of Engineering &amp; Technology (TKRCET). All Rights Reserved.</span>
+            <span style={{ margin: '0 0.5rem', opacity: 0.5 }}>•</span>
+            <span>
+              Developed by{' '}
+              <a
+                href="https://sparcx.in"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  color: 'inherit',
+                  textDecoration: 'none',
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.textDecoration = 'underline')}
+                onMouseLeave={(e) => (e.currentTarget.style.textDecoration = 'none')}
+              >
+                sparcx
+              </a>
+            </span>
           </div>
           <div style={{ display: 'flex', gap: '1rem', color: '#cbd5e1', flexWrap: 'wrap' }}>
             <span>EAMCET Code: <strong>TKRC</strong></span>
