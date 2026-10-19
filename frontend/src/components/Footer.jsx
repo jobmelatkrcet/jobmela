@@ -213,7 +213,7 @@ const Footer = () => {
                 onMouseEnter={(e) => (e.currentTarget.style.textDecoration = 'underline')}
                 onMouseLeave={(e) => (e.currentTarget.style.textDecoration = 'none')}
               >
-                sparcx
+                sparcx solutions
               </a>
             </span>
           </div>
