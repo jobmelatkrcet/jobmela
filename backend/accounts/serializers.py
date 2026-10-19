@@ -1,5 +1,7 @@
 import logging
 from rest_framework import serializers
+from concurrent.futures import ThreadPoolExecutor
+from django.db import transaction
 from django.contrib.auth import authenticate
 from rest_framework.authtoken.models import Token
 from .models import User
@@ -52,20 +54,20 @@ class StudentRegistrationSerializer(serializers.ModelSerializer):
 
     def validate_photo(self, value):
         if value:
+            validate_photo_file(value)
             if not is_cloud_storage_configured():
                 raise serializers.ValidationError(
                     "Photo uploads are currently unavailable because cloud storage is not configured. Please register without attaching a photo."
                 )
-            validate_photo_file(value)
         return value
 
     def validate_resume(self, value):
         if value:
+            validate_resume_file(value)
             if not is_cloud_storage_configured():
                 raise serializers.ValidationError(
                     "Resume uploads are currently unavailable because cloud storage is not configured. Please register without attaching a resume."
                 )
-            validate_resume_file(value)
         return value
 
     def validate_email(self, value):
@@ -80,6 +82,17 @@ class StudentRegistrationSerializer(serializers.ModelSerializer):
         # Support referral_source as alias for heard_about if provided
         if not data.get("heard_about") and self.initial_data.get("referral_source"):
             data["heard_about"] = str(self.initial_data.get("referral_source")).strip()
+
+        # Enforce combined attachment ceiling to protect against serverless request-body drops
+        photo = data.get("photo")
+        resume = data.get("resume")
+        if photo and resume:
+            p_size = getattr(photo, "size", 0) or 0
+            r_size = getattr(resume, "size", 0) or 0
+            if p_size + r_size > 4 * 1024 * 1024:
+                raise serializers.ValidationError(
+                    {"non_field_errors": ["The combined size of photo and resume exceeds 4MB. Please reduce attachment sizes."]}
+                )
         return data
 
     def create(self, validated_data):
@@ -92,62 +105,113 @@ class StudentRegistrationSerializer(serializers.ModelSerializer):
         photo_path = None
         resume_path = None
 
+        def _upload_photo():
+            try:
+                path = upload_file_to_supabase(photo_file, folder_prefix="photos")
+                return ("photo", path, None)
+            except SupabaseStorageError as sse:
+                logger.warning("Candidate photo upload failed: %s", sse.technical_message)
+                return ("photo", None, serializers.ValidationError({"photo": sse.user_message}))
+            except Exception as exc:
+                logger.exception("Unexpected error uploading candidate photograph: %s", str(exc))
+                return (
+                    "photo",
+                    None,
+                    serializers.ValidationError({"photo": "Failed to upload photograph to storage. Please try again."}),
+                )
+
+        def _upload_resume():
+            try:
+                path = upload_file_to_supabase(resume_file, folder_prefix="resumes")
+                return ("resume", path, None)
+            except SupabaseStorageError as sse:
+                logger.warning("Candidate resume upload failed: %s", sse.technical_message)
+                return ("resume", None, serializers.ValidationError({"resume": sse.user_message}))
+            except Exception as exc:
+                logger.exception("Unexpected error uploading candidate resume: %s", str(exc))
+                return (
+                    "resume",
+                    None,
+                    serializers.ValidationError({"resume": "Failed to upload resume to storage. Please try again."}),
+                )
+
         try:
-            if photo_file:
-                try:
-                    photo_path = upload_file_to_supabase(photo_file, folder_prefix="photos")
-                    uploaded_cleanup.append(photo_path)
-                except SupabaseStorageError as sse:
-                    logger.warning("Candidate photo upload failed: %s", sse.technical_message)
-                    raise serializers.ValidationError({"photo": sse.user_message})
-                except Exception as exc:
-                    logger.exception("Unexpected error uploading candidate photograph: %s", str(exc))
-                    raise serializers.ValidationError(
-                        {"photo": "Failed to upload photograph to storage. Please try again."}
-                    )
+            # Upload files to Supabase Storage (concurrently if both are present to reduce serverless latency)
+            if photo_file and resume_file:
+                with ThreadPoolExecutor(max_workers=2) as executor:
+                    f_photo = executor.submit(_upload_photo)
+                    f_resume = executor.submit(_upload_resume)
+                    _, p_path, p_err = f_photo.result()
+                    _, r_path, r_err = f_resume.result()
 
-            if resume_file:
-                try:
-                    resume_path = upload_file_to_supabase(resume_file, folder_prefix="resumes")
-                    uploaded_cleanup.append(resume_path)
-                except SupabaseStorageError as sse:
-                    logger.warning("Candidate resume upload failed: %s", sse.technical_message)
-                    for p in uploaded_cleanup:
-                        delete_file_from_supabase(p)
-                    raise serializers.ValidationError({"resume": sse.user_message})
-                except Exception as exc:
-                    logger.exception("Unexpected error uploading candidate resume: %s", str(exc))
-                    for p in uploaded_cleanup:
-                        delete_file_from_supabase(p)
-                    raise serializers.ValidationError(
-                        {"resume": "Failed to upload resume to storage. Please try again."}
-                    )
+                if p_path:
+                    photo_path = p_path
+                    uploaded_cleanup.append(p_path)
+                if r_path:
+                    resume_path = r_path
+                    uploaded_cleanup.append(r_path)
 
-            user = User.objects.create_user(
-                email=validated_data["email"],
-                password=password,
-                full_name=validated_data.get("full_name", "").strip(),
-                mobile=validated_data.get("mobile", "").strip(),
-                qualification=validated_data.get("qualification", "").strip(),
-                college=validated_data.get("college", "").strip(),
-                heard_about=validated_data.get("heard_about", "").strip(),
-                role="student",
-            )
+                # Report both upload failures if both failed
+                if p_err and r_err:
+                    combined_errors = {}
+                    if hasattr(p_err, "detail") and isinstance(p_err.detail, dict):
+                        combined_errors.update(p_err.detail)
+                    else:
+                        combined_errors["photo"] = str(p_err)
 
-            if photo_path:
-                user.photo = photo_path
-            if resume_path:
-                user.resume = resume_path
-            if photo_path or resume_path:
-                user.save(update_fields=["photo", "resume"])
+                    if hasattr(r_err, "detail") and isinstance(r_err.detail, dict):
+                        combined_errors.update(r_err.detail)
+                    else:
+                        combined_errors["resume"] = str(r_err)
+
+                    raise serializers.ValidationError(combined_errors)
+                elif p_err:
+                    raise p_err
+                elif r_err:
+                    raise r_err
+
+            elif photo_file:
+                _, p_path, p_err = _upload_photo()
+                if p_err:
+                    raise p_err
+                photo_path = p_path
+                uploaded_cleanup.append(p_path)
+
+            elif resume_file:
+                _, r_path, r_err = _upload_resume()
+                if r_err:
+                    raise r_err
+                resume_path = r_path
+                uploaded_cleanup.append(r_path)
+
+            # Atomic database transaction ensures no partially created accounts are left behind
+            with transaction.atomic():
+                user = User.objects.create_user(
+                    email=validated_data["email"],
+                    password=password,
+                    full_name=validated_data.get("full_name", "").strip(),
+                    mobile=validated_data.get("mobile", "").strip(),
+                    qualification=validated_data.get("qualification", "").strip(),
+                    college=validated_data.get("college", "").strip(),
+                    heard_about=validated_data.get("heard_about", "").strip(),
+                    role="student",
+                )
+
+                if photo_path:
+                    user.photo = photo_path
+                if resume_path:
+                    user.resume = resume_path
+                if photo_path or resume_path:
+                    user.save(update_fields=["photo", "resume"])
 
             return user
 
-        except serializers.ValidationError:
-            raise
         except Exception as exc:
             for p in uploaded_cleanup:
-                delete_file_from_supabase(p)
+                try:
+                    delete_file_from_supabase(p)
+                except Exception as clean_err:
+                    logger.warning("Failed to clean up file %s during rollback: %s", p, str(clean_err))
             raise exc
 
 
@@ -172,20 +236,20 @@ class UserSerializer(serializers.ModelSerializer):
 
     def validate_photo(self, value):
         if value:
+            validate_photo_file(value)
             if not is_cloud_storage_configured():
                 raise serializers.ValidationError(
                     "Photo uploads are currently unavailable because cloud storage is not configured."
                 )
-            validate_photo_file(value)
         return value
 
     def validate_resume(self, value):
         if value:
+            validate_resume_file(value)
             if not is_cloud_storage_configured():
                 raise serializers.ValidationError(
                     "Resume uploads are currently unavailable because cloud storage is not configured."
                 )
-            validate_resume_file(value)
         return value
 
     def to_representation(self, instance):
