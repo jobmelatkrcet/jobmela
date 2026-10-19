@@ -207,11 +207,21 @@ const Footer = () => {
                 target="_blank"
                 rel="noopener noreferrer"
                 style={{
-                  color: 'inherit',
+                  color: '#38bdf8',
+                  fontWeight: 700,
                   textDecoration: 'none',
+                  transition: 'all 0.2s ease',
                 }}
-                onMouseEnter={(e) => (e.currentTarget.style.textDecoration = 'underline')}
-                onMouseLeave={(e) => (e.currentTarget.style.textDecoration = 'none')}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.color = '#ffffff';
+                  e.currentTarget.style.textDecoration = 'underline';
+                  e.currentTarget.style.textShadow = '0 0 8px rgba(56, 189, 248, 0.6)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.color = '#38bdf8';
+                  e.currentTarget.style.textDecoration = 'none';
+                  e.currentTarget.style.textShadow = 'none';
+                }}
               >
                 sparcx solutions
               </a>
