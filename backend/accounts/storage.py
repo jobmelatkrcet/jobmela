@@ -173,8 +173,20 @@ def validate_photo_file(file_obj):
     if not file_obj:
         return None
 
+    # Determine actual file size from size attribute and underlying stream/bytes
+    file_size = getattr(file_obj, "size", None)
+    if hasattr(file_obj, "seek") and hasattr(file_obj, "tell"):
+        pos = file_obj.tell()
+        file_obj.seek(0, os.SEEK_END)
+        actual_stream_size = file_obj.tell()
+        file_obj.seek(pos)
+        if file_size is None or actual_stream_size > file_size:
+            file_size = actual_stream_size
+    elif file_size is None and isinstance(file_obj, (bytes, bytearray)):
+        file_size = len(file_obj)
+
     # Enforce size limit (3MB)
-    if hasattr(file_obj, "size") and file_obj.size > PHOTO_MAX_BYTES:
+    if file_size is not None and file_size > PHOTO_MAX_BYTES:
         raise serializers.ValidationError("Photo file size exceeds 3MB limit.")
 
     # Enforce extension whitelist
@@ -211,8 +223,20 @@ def validate_resume_file(file_obj):
     if not file_obj:
         return None
 
+    # Determine actual file size from size attribute and underlying stream/bytes
+    file_size = getattr(file_obj, "size", None)
+    if hasattr(file_obj, "seek") and hasattr(file_obj, "tell"):
+        pos = file_obj.tell()
+        file_obj.seek(0, os.SEEK_END)
+        actual_stream_size = file_obj.tell()
+        file_obj.seek(pos)
+        if file_size is None or actual_stream_size > file_size:
+            file_size = actual_stream_size
+    elif file_size is None and isinstance(file_obj, (bytes, bytearray)):
+        file_size = len(file_obj)
+
     # Enforce size limit (5MB)
-    if hasattr(file_obj, "size") and file_obj.size > RESUME_MAX_BYTES:
+    if file_size is not None and file_size > RESUME_MAX_BYTES:
         raise serializers.ValidationError("Resume file size exceeds 5MB limit.")
 
     # Enforce extension whitelist

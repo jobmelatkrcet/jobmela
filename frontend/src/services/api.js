@@ -4,19 +4,14 @@ const getBaseURL = () => {
   if (import.meta.env.VITE_API_URL) {
     return import.meta.env.VITE_API_URL;
   }
-  if (typeof window !== 'undefined') {
-    const host = window.location.hostname;
-    if (host === 'localhost' || host === '127.0.0.1') {
-      return '/api';
-    }
-    // Default to the live Vercel Django backend
-    return 'https://jobmela-z1tj.vercel.app/api';
-  }
   return '/api';
 };
 
+export const DEFAULT_API_TIMEOUT = 30000; // 30 seconds: accommodates mobile uploads while preventing indefinite hangs
+
 const api = axios.create({
   baseURL: getBaseURL(),
+  timeout: DEFAULT_API_TIMEOUT,
   headers: {
     'Content-Type': 'application/json',
   },

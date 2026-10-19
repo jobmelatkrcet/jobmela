@@ -23,6 +23,200 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import Alert from '../../components/Alert';
 
+export const MAX_PHOTO_BYTES = 3 * 1024 * 1024; // 3 MB (3,145,728 bytes)
+export const PHOTO_SIZE_ERROR_MESSAGE = 'Photo file size exceeds 3MB limit.';
+export const VALID_PHOTO_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg'];
+
+export const validatePhotoFile = (file) => {
+  if (!file) return null;
+  if (!VALID_PHOTO_TYPES.includes(file.type)) {
+    return 'Please upload a valid image file (JPG, PNG, or WebP).';
+  }
+  if (file.size > MAX_PHOTO_BYTES) {
+    return PHOTO_SIZE_ERROR_MESSAGE;
+  }
+  return null;
+};
+
+export const MAX_RESUME_BYTES = 3.5 * 1024 * 1024; // 3.5 MB (3,670,016 bytes) - safe margin under Vercel Serverless Function 4.5MB request limit
+export const RESUME_SIZE_ERROR_MESSAGE = 'Resume file size exceeds 3.5MB limit.';
+export const VALID_RESUME_TYPES = [
+  'application/pdf',
+  'application/msword',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+];
+export const VALID_RESUME_EXTENSIONS = ['.pdf', '.doc', '.docx'];
+
+export const validateResumeFile = (file) => {
+  if (!file) return null;
+  const fileNameLower = (file.name || '').toLowerCase();
+  const hasValidExt = VALID_RESUME_EXTENSIONS.some((ext) => fileNameLower.endsWith(ext));
+  if (!VALID_RESUME_TYPES.includes(file.type) && !hasValidExt) {
+    return 'Please upload a PDF, DOC, or DOCX document.';
+  }
+  if (file.size > MAX_RESUME_BYTES) {
+    return RESUME_SIZE_ERROR_MESSAGE;
+  }
+  return null;
+};
+
+export const MAX_COMBINED_BYTES = 4 * 1024 * 1024; // 4 MB combined ceiling to respect Vercel Serverless Function 4.5MB payload limit
+export const COMBINED_SIZE_ERROR_MESSAGE = 'The combined size of photo and resume exceeds 4MB. Please reduce attachment sizes.';
+
+export const SUPPORT_PHONE = '8019792661';
+
+export const sanitizeErrorMessage = (msg) => {
+  if (!msg || typeof msg !== 'string') return '';
+  const trimmed = msg.trim();
+
+  // If HTML document or snippet was returned (e.g. Nginx / Vercel error page)
+  if (/<[a-z][\s\S]*>/i.test(trimmed)) {
+    return `The server returned an unexpected response. Please try again shortly or contact support at ${SUPPORT_PHONE}.`;
+  }
+
+  // Detect sensitive technical details, SQL errors, or stack traces
+  const technicalSignatures = [
+    /traceback/i,
+    /operationalerror/i,
+    /programmingerror/i,
+    /integrityerror/i,
+    /syntaxerror/i,
+    /typeerror/i,
+    /attributeerror/i,
+    /django/i,
+    /postgres/i,
+    /psycopg/i,
+    /supabase/i,
+    /select\s+.+\s+from/i,
+    /insert\s+into/i,
+    /update\s+.+\s+set/i,
+    /delete\s+from/i,
+    /secret/i,
+    /token\s+[a-f0-9]{20,}/i,
+    /connection\s+refused/i,
+  ];
+
+  for (const sig of technicalSignatures) {
+    if (sig.test(trimmed)) {
+      return `A server error occurred. Please try again shortly or contact support at ${SUPPORT_PHONE}.`;
+    }
+  }
+
+  return trimmed;
+};
+
+export const parseRegistrationError = (err) => {
+  // 1. HTTP 413 Payload Too Large
+  if (err?.response?.status === 413 || err?.message?.includes('413')) {
+    return {
+      fieldErrors: {},
+      generalError: 'Uploaded files are too large. Please ensure photo is under 3 MB, resume is under 3.5 MB, and combined attachments do not exceed 4 MB.',
+    };
+  }
+
+  // 2. Request Timeout
+  if (
+    err?.code === 'ECONNABORTED' ||
+    err?.code === 'ETIMEDOUT' ||
+    err?.message?.toLowerCase().includes('timeout')
+  ) {
+    return {
+      fieldErrors: {},
+      generalError: 'Registration request timed out. Please check your internet connection and try again.',
+    };
+  }
+
+  // 3. Network Failure (no response received from server)
+  if (
+    (!err?.response && err?.request) ||
+    err?.code === 'ERR_NETWORK' ||
+    err?.message === 'Network Error' ||
+    (err && !err.response && !err.status)
+  ) {
+    return {
+      fieldErrors: {},
+      generalError: 'Unable to connect to the server. Please check your internet connection and try again.',
+    };
+  }
+
+  const status = err?.response?.status;
+  const data = err?.response?.data;
+
+  // 4. HTTP 429 Too Many Requests (Rate limit)
+  if (status === 429) {
+    return {
+      fieldErrors: {},
+      generalError: 'Too many registration attempts. Please wait a moment and try again.',
+    };
+  }
+
+  // 5. HTTP 500, 502, 503, 504 Server Errors or Gateway issues
+  if (status >= 500 && status <= 504) {
+    const msg =
+      status === 500
+        ? 'Our registration server encountered an unexpected error. Please try again shortly.'
+        : 'The registration server is temporarily unavailable. Please try again in a few moments.';
+    return {
+      fieldErrors: {},
+      generalError: `${msg} If the issue persists, contact support at ${SUPPORT_PHONE}.`,
+    };
+  }
+
+  // 6. Structured Field Errors from Django / DRF (typically 400 Bad Request)
+  if (data && typeof data === 'object' && !Array.isArray(data)) {
+    const fieldErrors = {};
+    let generalMsg = '';
+    let hasDuplicateEmail = false;
+    let hasDuplicateMobile = false;
+
+    for (const key in data) {
+      if (key === 'non_field_errors') {
+        const raw = Array.isArray(data[key]) ? data[key].join(' ') : String(data[key]);
+        generalMsg = sanitizeErrorMessage(raw);
+      } else if (key === 'detail') {
+        const raw = Array.isArray(data[key]) ? data[key].join(' ') : String(data[key]);
+        generalMsg = sanitizeErrorMessage(raw);
+      } else {
+        const raw = Array.isArray(data[key]) ? data[key].join(' ') : String(data[key]);
+        const sanitized = sanitizeErrorMessage(raw);
+        fieldErrors[key] = sanitized;
+
+        const lower = raw.toLowerCase();
+        if (key === 'email' && (lower.includes('already exists') || lower.includes('already registered'))) {
+          hasDuplicateEmail = true;
+        }
+        if (key === 'mobile' && (lower.includes('already exists') || lower.includes('already registered') || lower.includes('in use'))) {
+          hasDuplicateMobile = true;
+        }
+      }
+    }
+
+    if (hasDuplicateEmail) {
+      generalMsg = 'An account with this email address already exists. Please log in to your account.';
+    } else if (hasDuplicateMobile) {
+      generalMsg = 'This mobile number is already registered. Please check your number or log in.';
+    } else if (!generalMsg && Object.keys(fieldErrors).length > 0) {
+      generalMsg = 'Please correct the errors highlighted below and try again.';
+    }
+
+    return { fieldErrors, generalError: generalMsg };
+  }
+
+  // 7. Plain text / String error
+  if (typeof data === 'string' && data.trim()) {
+    return {
+      fieldErrors: {},
+      generalError: sanitizeErrorMessage(data),
+    };
+  }
+
+  // 8. Fallback for unexpected failures
+  return {
+    fieldErrors: {},
+    generalError: `Registration could not be completed. Please try again or contact support at ${SUPPORT_PHONE}.`,
+  };
+};
+
 const StudentRegisterPage = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
@@ -76,13 +270,20 @@ const StudentRegisterPage = () => {
       setErrors((prev) => ({ ...prev, photo: null }));
     }
 
-    const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg'];
-    if (!validTypes.includes(file.type)) {
-      setPhotoError('Please upload a valid image file (JPG, PNG, or WebP).');
+    const validationError = validatePhotoFile(file);
+    if (validationError) {
+      setPhotoError(validationError);
+      setPhotoFile(null);
+      setPhotoPreview(null);
+      if (photoInputRef.current) photoInputRef.current.value = '';
       return;
     }
-    if (file.size > 3 * 1024 * 1024) {
-      setPhotoError('Photo file size exceeds 3MB limit.');
+
+    if (resumeFile && file.size + resumeFile.size > MAX_COMBINED_BYTES) {
+      setPhotoError(COMBINED_SIZE_ERROR_MESSAGE);
+      setPhotoFile(null);
+      setPhotoPreview(null);
+      if (photoInputRef.current) photoInputRef.current.value = '';
       return;
     }
 
@@ -112,16 +313,18 @@ const StudentRegisterPage = () => {
       setErrors((prev) => ({ ...prev, resume: null }));
     }
 
-    const validExtensions = ['.pdf', '.doc', '.docx'];
-    const fileNameLower = file.name.toLowerCase();
-    const isValid = validExtensions.some((ext) => fileNameLower.endsWith(ext));
-
-    if (!isValid) {
-      setResumeError('Please upload a PDF, DOC, or DOCX document.');
+    const validationError = validateResumeFile(file);
+    if (validationError) {
+      setResumeError(validationError);
+      setResumeFile(null);
+      if (resumeInputRef.current) resumeInputRef.current.value = '';
       return;
     }
-    if (file.size > 5 * 1024 * 1024) {
-      setResumeError('Resume file size exceeds 5MB limit.');
+
+    if (photoFile && file.size + photoFile.size > MAX_COMBINED_BYTES) {
+      setResumeError(COMBINED_SIZE_ERROR_MESSAGE);
+      setResumeFile(null);
+      if (resumeInputRef.current) resumeInputRef.current.value = '';
       return;
     }
 
@@ -173,6 +376,21 @@ const StudentRegisterPage = () => {
     if (formData.password !== formData.confirm_password) {
       errs.confirm_password = 'Passwords do not match.';
     }
+    if (photoFile) {
+      const photoValidationError = validatePhotoFile(photoFile);
+      if (photoValidationError) {
+        errs.photo = photoValidationError;
+      }
+    }
+    if (resumeFile) {
+      const resumeValidationError = validateResumeFile(resumeFile);
+      if (resumeValidationError) {
+        errs.resume = resumeValidationError;
+      }
+    }
+    if (photoFile && resumeFile && photoFile.size + resumeFile.size > MAX_COMBINED_BYTES) {
+      errs.photo = COMBINED_SIZE_ERROR_MESSAGE;
+    }
     return errs;
   };
 
@@ -181,16 +399,30 @@ const StudentRegisterPage = () => {
     if (loading) return;
     setGeneralError('');
 
+    if (photoError || resumeError) {
+      return;
+    }
+
     const formErrors = validate();
     if (Object.keys(formErrors).length > 0) {
       setErrors(formErrors);
       return;
     }
 
+    // Additional safeguard before submission
+    if (photoFile && photoFile.size > MAX_PHOTO_BYTES) {
+      setPhotoError(PHOTO_SIZE_ERROR_MESSAGE);
+      return;
+    }
+    if (resumeFile && resumeFile.size > MAX_RESUME_BYTES) {
+      setResumeError(RESUME_SIZE_ERROR_MESSAGE);
+      return;
+    }
+
     // Prevent exceeding Vercel 4.5MB payload limit
     const totalAttachmentBytes = (photoFile?.size || 0) + (resumeFile?.size || 0);
-    if (totalAttachmentBytes > 4 * 1024 * 1024) {
-      setGeneralError('Combined size of photograph and resume exceeds 4MB. Please upload smaller files.');
+    if (totalAttachmentBytes > MAX_COMBINED_BYTES) {
+      setGeneralError(COMBINED_SIZE_ERROR_MESSAGE);
       return;
     }
 
@@ -240,33 +472,9 @@ const StudentRegisterPage = () => {
       });
     } catch (err) {
       console.error('Registration error:', err);
-      if (err.response?.data) {
-        const backendErrors = err.response.data;
-        if (typeof backendErrors === 'object') {
-          const formattedErrors = {};
-          for (const key in backendErrors) {
-            if (Array.isArray(backendErrors[key])) {
-              formattedErrors[key] = backendErrors[key].join(' ');
-            } else if (typeof backendErrors[key] === 'string') {
-              formattedErrors[key] = backendErrors[key];
-            }
-          }
-          setErrors(formattedErrors);
-          if (backendErrors.non_field_errors) {
-            setGeneralError(`${backendErrors.non_field_errors.join(' ')} (If any issue persists, please contact 8019792661)`);
-          } else if (backendErrors.detail) {
-            setGeneralError(`${backendErrors.detail} (If any issue persists, please contact 8019792661)`);
-          }
-        } else {
-          setGeneralError('Registration failed. Please check your information and try again. If any issue regarding registration, please contact 8019792661.');
-        }
-      } else if (err.code === 'ECONNABORTED' || err.message?.toLowerCase().includes('timeout')) {
-        setGeneralError('Registration request timed out. Please check your internet connection or contact 8019792661 for assistance.');
-      } else if (err.message?.includes('413') || err.response?.status === 413) {
-        setGeneralError('Uploaded files are too large. Please upload smaller attachments (under 2MB) or contact 8019792661.');
-      } else {
-        setGeneralError('Unable to connect to the registration server. If any issue regarding registration, please contact 8019792661.');
-      }
+      const { fieldErrors, generalError: parsedGeneralError } = parseRegistrationError(err);
+      setErrors(fieldErrors);
+      setGeneralError(parsedGeneralError);
     } finally {
       setLoading(false);
     }
@@ -341,6 +549,9 @@ const StudentRegisterPage = () => {
           </div>
 
           <form onSubmit={handleSubmit} noValidate>
+            <p style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)', marginBottom: '1.25rem' }}>
+              * Required fields
+            </p>
             {/* Full Name */}
             <div className="form-group">
               <label className="form-label" htmlFor="full_name">
@@ -604,7 +815,7 @@ const StudentRegisterPage = () => {
             <div className="form-group" style={{ marginBottom: '1.5rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.4rem' }}>
                 <label className="form-label" style={{ margin: 0 }}>
-                  Candidate Photograph <span style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)', fontWeight: 400 }}>(Optional, recommended)</span>
+                  Candidate Photograph *
                 </label>
                 <span style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>JPG, PNG or WebP &lt; 3MB</span>
               </div>
@@ -661,16 +872,18 @@ const StudentRegisterPage = () => {
                 </div>
               )}
               {photoError && <span className="form-error" style={{ marginTop: '0.35rem' }}>{photoError}</span>}
-              {errors.photo && <span className="form-error" style={{ marginTop: '0.35rem' }}>{errors.photo}</span>}
+              {errors.photo && errors.photo !== photoError && (
+                <span className="form-error" style={{ marginTop: '0.35rem' }}>{errors.photo}</span>
+              )}
             </div>
 
             {/* CANDIDATE RESUME / CV UPLOAD */}
             <div className="form-group" style={{ marginBottom: '1.5rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.4rem' }}>
                 <label className="form-label" style={{ margin: 0 }}>
-                  Resume / Curriculum Vitae (CV) <span style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)', fontWeight: 400 }}>(Optional, recommended)</span>
+                  Resume / Curriculum Vitae *
                 </label>
-                <span style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>PDF or DOCX &lt; 5MB</span>
+                <span style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>PDF, DOC or DOCX &lt; 3.5MB (Max 4MB combined)</span>
               </div>
 
               <input
@@ -795,12 +1008,21 @@ const StudentRegisterPage = () => {
             <button
               type="submit"
               className="btn btn-primary btn-lg"
-              style={{ width: '100%', marginTop: '1.25rem' }}
+              style={{
+                width: '100%',
+                marginTop: '1.25rem',
+                cursor: loading ? 'not-allowed' : 'pointer',
+                opacity: loading ? 0.75 : 1,
+              }}
               disabled={loading}
+              aria-busy={loading}
             >
               {loading ? (
                 <>
-                  <span className="spinner" style={{ width: 18, height: 18 }} /> Registering Candidate...
+                  <span className="spinner" style={{ width: 18, height: 18 }} />{' '}
+                  {photoFile || resumeFile
+                    ? 'Uploading Files & Registering...'
+                    : 'Registering Candidate...'}
                 </>
               ) : (
                 <>

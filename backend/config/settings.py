@@ -33,8 +33,11 @@ if raw_hosts:
         raise ImproperlyConfigured(
             "Wildcard '*' in ALLOWED_HOSTS is not permitted in production."
         )
+    for canonical_domain in ("tkrcetjobmela.in", "www.tkrcetjobmela.in"):
+        if canonical_domain not in ALLOWED_HOSTS:
+            ALLOWED_HOSTS.append(canonical_domain)
 elif DEBUG:
-    ALLOWED_HOSTS = ["localhost", "127.0.0.1", "[::1]"]
+    ALLOWED_HOSTS = ["localhost", "127.0.0.1", "[::1]", "tkrcetjobmela.in", "www.tkrcetjobmela.in"]
 else:
     raise ImproperlyConfigured(
         "ALLOWED_HOSTS environment variable is required in production (when DEBUG=False). "
@@ -167,8 +170,9 @@ REST_FRAMEWORK = {
 }
 
 # Cross-Origin Resource Sharing (CORS) Configuration
-# Allow all origins for the public API since authentication is stateless TokenAuthentication
-CORS_ALLOW_ALL_ORIGINS = True
+# Disallow unrestricted CORS by default; restrict to authorized project domains
+raw_cors_all = os.environ.get("CORS_ALLOW_ALL_ORIGINS", "False").strip().lower()
+CORS_ALLOW_ALL_ORIGINS = raw_cors_all in ("true", "1", "yes")
 CORS_ALLOW_CREDENTIALS = False
 
 CORS_ALLOWED_ORIGIN_REGEXES = [
@@ -176,6 +180,8 @@ CORS_ALLOWED_ORIGIN_REGEXES = [
 ]
 
 default_cors_origins = [
+    "https://www.tkrcetjobmela.in",
+    "https://tkrcetjobmela.in",
     "https://jobmela.vercel.app",
     "https://www.jobmela.vercel.app",
 ]
@@ -207,6 +213,8 @@ CORS_ALLOWED_ORIGINS = cors_list
 
 # CSRF Trusted Origins matching allowed frontend origins
 CSRF_TRUSTED_ORIGINS = [
+    "https://www.tkrcetjobmela.in",
+    "https://tkrcetjobmela.in",
     "https://jobmela.vercel.app",
     "https://www.jobmela.vercel.app",
 ]

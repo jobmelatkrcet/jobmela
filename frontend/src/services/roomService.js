@@ -11,11 +11,7 @@ export const roomService = {
   async previewRoomExcel(file) {
     const formData = new FormData();
     formData.append('file', file);
-    const res = await api.post('/admin/rooms/upload-preview/', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
+    const res = await api.post('/admin/rooms/upload-preview/', formData);
     return res.data;
   },
 

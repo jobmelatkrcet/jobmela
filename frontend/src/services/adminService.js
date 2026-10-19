@@ -45,11 +45,7 @@ export const adminService = {
     const formData = new FormData();
     formData.append('file', file);
     formData.append('preview', 'true');
-    const res = await api.post('/admin/companies/upload/', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
+    const res = await api.post('/admin/companies/upload/', formData);
     return res.data;
   },
 
@@ -59,11 +55,7 @@ export const adminService = {
     if (clearExisting) {
       formData.append('clear_existing', 'true');
     }
-    const res = await api.post('/admin/companies/upload/', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
+    const res = await api.post('/admin/companies/upload/', formData);
     return res.data;
   },
 

@@ -5,8 +5,10 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from rest_framework import status
 from rest_framework.test import APIClient
 from rest_framework.authtoken.models import Token
+from rest_framework.exceptions import ValidationError
 from accounts.models import User
 from accounts.storage import (
+    PHOTO_MAX_BYTES,
     upload_file_to_supabase,
     delete_file_from_supabase,
     get_signed_file_url,
@@ -163,8 +165,8 @@ class StudentRegistrationTests(TestCase):
     )
     def test_6_invalid_file_types_and_size_limits(self):
         """Test backend validation enforces size limits and authentic file types."""
-        # Photo exceeds 3MB
-        large_photo = SimpleUploadedFile("big.jpg", b"\xff\xd8\xff\xe0" + b"x" * (3 * 1024 * 1024 + 10), content_type="image/jpeg")
+        # Photo exceeds 3MB limit
+        large_photo = SimpleUploadedFile("big.jpg", b"\xff\xd8\xff\xe0" + b"x" * (PHOTO_MAX_BYTES + 10), content_type="image/jpeg")
         payload = self.valid_payload.copy()
         payload["photo"] = large_photo
         res = self.client.post(self.register_url, data=payload, format="multipart")
@@ -489,3 +491,333 @@ class StudentRegistrationTests(TestCase):
         self.assertEqual(response.data["user"]["heard_about"], "Other: College Notice Board")
         user = User.objects.get(email="other_cand@tkrcet.ac.in")
         self.assertEqual(user.heard_about, "Other: College Notice Board")
+
+    # 19. Photo below 3 MB accepted by size validation
+    @override_settings(
+        SUPABASE_URL="https://test-project.supabase.co",
+        SUPABASE_SERVICE_ROLE_KEY="test-service-role-key",
+        SUPABASE_STORAGE_BUCKET="student-documents",
+    )
+    @patch("accounts.serializers.upload_file_to_supabase")
+    @patch("accounts.serializers.get_signed_file_url")
+    def test_19_photo_below_3mb_accepted(self, mock_signed_url, mock_upload):
+        """Test a photo below 3 MB (e.g. 1 MB) is accepted by size validation and registration succeeds."""
+        mock_upload.return_value = "photos/token/photo_below_3m.jpg"
+        mock_signed_url.return_value = "https://test.supabase.co/storage/v1/photo_below_3m.jpg"
+
+        photo_1m_bytes = b"\xff\xd8\xff\xe0" + b"\x00" * (1024 * 1024 - 4)
+        photo_1m = SimpleUploadedFile("candidate_1m.jpg", photo_1m_bytes, content_type="image/jpeg")
+
+        # Direct storage validation check
+        self.assertEqual(validate_photo_file(photo_1m), photo_1m)
+
+        # Endpoint registration check
+        payload = self.valid_payload.copy()
+        payload["email"] = "below3m@tkrcet.ac.in"
+        payload["photo"] = photo_1m
+        res = self.client.post(self.register_url, data=payload, format="multipart")
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+        self.assertTrue(User.objects.filter(email="below3m@tkrcet.ac.in").exists())
+
+    # 20. Photo exactly at 3 MB (3,145,728 bytes) accepted
+    @override_settings(
+        SUPABASE_URL="https://test-project.supabase.co",
+        SUPABASE_SERVICE_ROLE_KEY="test-service-role-key",
+        SUPABASE_STORAGE_BUCKET="student-documents",
+    )
+    @patch("accounts.serializers.upload_file_to_supabase")
+    @patch("accounts.serializers.get_signed_file_url")
+    def test_20_photo_exactly_at_3mb_accepted(self, mock_signed_url, mock_upload):
+        """Test a photo exactly at the 3 MB limit (3,145,728 bytes) is accepted by size validation."""
+        mock_upload.return_value = "photos/token/photo_exact_3m.jpg"
+        mock_signed_url.return_value = "https://test.supabase.co/storage/v1/photo_exact_3m.jpg"
+
+        exact_3m_bytes = b"\xff\xd8\xff\xe0" + b"\x00" * (PHOTO_MAX_BYTES - 4)
+        self.assertEqual(len(exact_3m_bytes), PHOTO_MAX_BYTES)
+        photo_exact = SimpleUploadedFile("exact_3m.jpg", exact_3m_bytes, content_type="image/jpeg")
+
+        # Direct storage validation check
+        self.assertEqual(validate_photo_file(photo_exact), photo_exact)
+
+        # Endpoint registration check
+        payload = self.valid_payload.copy()
+        payload["email"] = "exact3m@tkrcet.ac.in"
+        payload["photo"] = photo_exact
+        res = self.client.post(self.register_url, data=payload, format="multipart")
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+        self.assertTrue(User.objects.filter(email="exact3m@tkrcet.ac.in").exists())
+
+    # 21. Photo above 3 MB (e.g. 3,145,729 bytes) rejected by backend
+    def test_21_photo_above_3mb_rejected(self):
+        """Test a photo above 3 MB is rejected with the exact validation error message."""
+        over_3m_bytes = b"\xff\xd8\xff\xe0" + b"\x00" * (PHOTO_MAX_BYTES - 3)  # 3,145,729 bytes
+        self.assertEqual(len(over_3m_bytes), PHOTO_MAX_BYTES + 1)
+        photo_over = SimpleUploadedFile("over_3m.jpg", over_3m_bytes, content_type="image/jpeg")
+
+        # Direct storage validation check
+        with self.assertRaises(ValidationError) as cm:
+            validate_photo_file(photo_over)
+        self.assertIn("Photo file size exceeds 3MB limit.", str(cm.exception))
+
+        # Endpoint registration check
+        payload = self.valid_payload.copy()
+        payload["email"] = "over3m@tkrcet.ac.in"
+        payload["photo"] = photo_over
+        res = self.client.post(self.register_url, data=payload, format="multipart")
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("photo", res.data)
+        self.assertIn("Photo file size exceeds 3MB limit.", str(res.data["photo"]))
+        self.assertFalse(User.objects.filter(email="over3m@tkrcet.ac.in").exists())
+
+    # 22. Request bypassing frontend validation still rejected by Django
+    def test_22_request_bypassing_frontend_rejected_by_django(self):
+        """Test an API client bypassing frontend checks and submitting an oversized photo is rejected by Django."""
+        # 4 MB image submitted directly via HTTP client
+        bypassing_bytes = b"\xff\xd8\xff\xe0" + b"\x00" * (4 * 1024 * 1024)
+        bypassing_photo = SimpleUploadedFile("bypass.jpg", bypassing_bytes, content_type="image/jpeg")
+
+        payload = self.valid_payload.copy()
+        payload["email"] = "bypasser@tkrcet.ac.in"
+        payload["photo"] = bypassing_photo
+
+        res = self.client.post(self.register_url, data=payload, format="multipart")
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("photo", res.data)
+        self.assertEqual(
+            res.data["photo"],
+            ["Photo file size exceeds 3MB limit."],
+        )
+        self.assertFalse(User.objects.filter(email="bypasser@tkrcet.ac.in").exists())
+
+    # 23. Spoofed size attribute bypassing client still rejected by Django
+    def test_23_photo_with_spoofed_size_attribute_rejected_by_stream_inspection(self):
+        """Test that if file.size is falsely reported as small, actual stream length is measured and rejected."""
+        stream_bytes = b"\xff\xd8\xff\xe0" + b"\x00" * (3500 * 1024)
+        spoofed_photo = SimpleUploadedFile("spoofed.jpg", stream_bytes, content_type="image/jpeg")
+        spoofed_photo.size = 100  # Spoofed attribute claiming it's only 100 bytes!
+
+        with self.assertRaises(ValidationError) as cm:
+            validate_photo_file(spoofed_photo)
+        self.assertIn("Photo file size exceeds 3MB limit.", str(cm.exception))
+
+    # 24. Concurrent upload of both photo and resume succeeds
+    @override_settings(
+        SUPABASE_URL="https://test-project.supabase.co",
+        SUPABASE_SERVICE_ROLE_KEY="test-service-role-key",
+        SUPABASE_STORAGE_BUCKET="student-documents",
+    )
+    @patch("accounts.serializers.upload_file_to_supabase")
+    @patch("accounts.serializers.get_signed_file_url")
+    def test_24_concurrent_upload_both_files_success(self, mock_signed_url, mock_upload):
+        """Test concurrent upload of both photo and resume attaches both files to the new candidate."""
+        def upload_mock_handler(file_obj, folder_prefix="documents"):
+            return f"{folder_prefix}/test_token/{getattr(file_obj, 'name', 'file')}"
+
+        mock_upload.side_effect = upload_mock_handler
+        mock_signed_url.side_effect = lambda path: f"https://signed-url.com/{path}"
+
+        payload = self.valid_payload.copy()
+        payload["email"] = "concurrent_upload@tkrcet.ac.in"
+        payload["photo"] = self.get_valid_photo("candidate.jpg")
+        payload["resume"] = self.get_valid_resume("resume.pdf")
+
+        res = self.client.post(self.register_url, data=payload, format="multipart")
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+
+        user = User.objects.get(email="concurrent_upload@tkrcet.ac.in")
+        self.assertTrue(user.photo.name.startswith("photos/"))
+        self.assertTrue(user.resume.name.startswith("resumes/"))
+        self.assertEqual(mock_upload.call_count, 2)
+
+    # 25. Storage failure on photo cleans up uploaded resume
+    @override_settings(
+        SUPABASE_URL="https://test-project.supabase.co",
+        SUPABASE_SERVICE_ROLE_KEY="test-service-role-key",
+    )
+    @patch("accounts.serializers.delete_file_from_supabase")
+    @patch("accounts.serializers.upload_file_to_supabase")
+    def test_25_storage_failure_photo_cleans_up_resume(self, mock_upload, mock_delete):
+        """Test that if photo upload fails while resume succeeds, the uploaded resume is cleaned up."""
+        def upload_mock_handler(file_obj, folder_prefix="documents"):
+            if folder_prefix == "photos":
+                raise SupabaseStorageError(
+                    user_message="Storage error on photo upload.",
+                    technical_message="Simulated 500 error",
+                )
+            return "resumes/token/resume.pdf"
+
+        mock_upload.side_effect = upload_mock_handler
+
+        payload = self.valid_payload.copy()
+        payload["email"] = "photo_fail@tkrcet.ac.in"
+        payload["photo"] = self.get_valid_photo("candidate.jpg")
+        payload["resume"] = self.get_valid_resume("resume.pdf")
+
+        res = self.client.post(self.register_url, data=payload, format="multipart")
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("photo", res.data)
+        self.assertIn("Storage error on photo upload.", str(res.data["photo"]))
+
+        # Verify any uploaded resume was deleted from storage
+        mock_delete.assert_called_with("resumes/token/resume.pdf")
+        self.assertFalse(User.objects.filter(email="photo_fail@tkrcet.ac.in").exists())
+
+    # 26. Storage failure on resume cleans up uploaded photo
+    @override_settings(
+        SUPABASE_URL="https://test-project.supabase.co",
+        SUPABASE_SERVICE_ROLE_KEY="test-service-role-key",
+    )
+    @patch("accounts.serializers.delete_file_from_supabase")
+    @patch("accounts.serializers.upload_file_to_supabase")
+    def test_26_storage_failure_resume_cleans_up_photo(self, mock_upload, mock_delete):
+        """Test that if resume upload fails while photo succeeds, the uploaded photo is cleaned up."""
+        def upload_mock_handler(file_obj, folder_prefix="documents"):
+            if folder_prefix == "resumes":
+                raise SupabaseStorageError(
+                    user_message="Storage error on resume upload.",
+                    technical_message="Simulated 503 error",
+                )
+            return "photos/token/photo.jpg"
+
+        mock_upload.side_effect = upload_mock_handler
+
+        payload = self.valid_payload.copy()
+        payload["email"] = "resume_fail@tkrcet.ac.in"
+        payload["photo"] = self.get_valid_photo("candidate.jpg")
+        payload["resume"] = self.get_valid_resume("resume.pdf")
+
+        res = self.client.post(self.register_url, data=payload, format="multipart")
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("resume", res.data)
+        self.assertIn("Storage error on resume upload.", str(res.data["resume"]))
+
+        # Verify uploaded photo was deleted from storage
+        mock_delete.assert_called_with("photos/token/photo.jpg")
+        self.assertFalse(User.objects.filter(email="resume_fail@tkrcet.ac.in").exists())
+
+    # 27. Database failure rolls back user and cleans up all uploaded files
+    @override_settings(
+        SUPABASE_URL="https://test-project.supabase.co",
+        SUPABASE_SERVICE_ROLE_KEY="test-service-role-key",
+    )
+    @patch("accounts.serializers.delete_file_from_supabase")
+    @patch("accounts.models.CustomUserManager.create_user")
+    @patch("accounts.serializers.upload_file_to_supabase")
+    def test_27_db_failure_cleans_up_all_uploaded_files(self, mock_upload, mock_create_user, mock_delete):
+        """Test atomic rollback: if DB user creation fails, all uploaded files are cleaned up from storage."""
+        mock_upload.side_effect = [
+            "photos/token/photo.jpg",
+            "resumes/token/resume.pdf",
+        ]
+        mock_create_user.side_effect = Exception("Simulated database connection crash")
+
+        payload = self.valid_payload.copy()
+        payload["email"] = "db_crash@tkrcet.ac.in"
+        payload["photo"] = self.get_valid_photo("candidate.jpg")
+        payload["resume"] = self.get_valid_resume("resume.pdf")
+
+        with self.assertRaises(Exception) as cm:
+            self.client.post(self.register_url, data=payload, format="multipart")
+        self.assertIn("Simulated database connection crash", str(cm.exception))
+
+        # Both files must be cleaned up from storage
+        delete_calls = [call[0][0] for call in mock_delete.call_args_list]
+        self.assertIn("photos/token/photo.jpg", delete_calls)
+        self.assertIn("resumes/token/resume.pdf", delete_calls)
+        self.assertFalse(User.objects.filter(email="db_crash@tkrcet.ac.in").exists())
+
+    # 28. Exact trailing slash routing for registration endpoint
+    def test_28_routing_registration_endpoint_requires_trailing_slash(self):
+        """Test OPTIONS on exact /api/auth/register/ responds with 200 without redirecting."""
+        res = self.client.options(self.register_url)
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertIn("POST", res.headers.get("Allow", ""))
+
+    # 29. Canonical domains are present in ALLOWED_HOSTS
+    def test_29_routing_allowed_hosts_includes_canonical_domains(self):
+        """Test ALLOWED_HOSTS configuration includes both canonical tkrcetjobmela.in domains."""
+        from django.conf import settings
+        self.assertIn("tkrcetjobmela.in", settings.ALLOWED_HOSTS)
+        self.assertIn("www.tkrcetjobmela.in", settings.ALLOWED_HOSTS)
+
+    # 30. CORS settings disallow unrestricted wildcard and trust canonical domain
+    def test_30_cors_settings_disallow_unrestricted_wildcard(self):
+        """Test CORS does not permit unrestricted wildcard '*' by default and trusts tkrcetjobmela.in."""
+        from django.conf import settings
+        self.assertFalse(settings.CORS_ALLOW_ALL_ORIGINS)
+        self.assertIn("https://www.tkrcetjobmela.in", settings.CORS_ALLOWED_ORIGINS)
+        self.assertIn("https://tkrcetjobmela.in", settings.CORS_ALLOWED_ORIGINS)
+        self.assertIn("https://www.tkrcetjobmela.in", settings.CSRF_TRUSTED_ORIGINS)
+
+    # 31. Preflight OPTIONS CORS request from canonical domain
+    def test_31_options_preflight_for_canonical_domain(self):
+        """Test OPTIONS preflight request with Origin header from canonical domain returns CORS headers."""
+        res = self.client.options(
+            self.register_url,
+            HTTP_ORIGIN="https://www.tkrcetjobmela.in",
+            HTTP_ACCESS_CONTROL_REQUEST_METHOD="POST",
+        )
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertEqual(res.headers.get("Access-Control-Allow-Origin"), "https://www.tkrcetjobmela.in")
+
+    # 32. Concurrent upload where both files fail reports both errors
+    @override_settings(
+        SUPABASE_URL="https://test-project.supabase.co",
+        SUPABASE_SERVICE_ROLE_KEY="test-service-role-key",
+    )
+    @patch("accounts.serializers.upload_file_to_supabase")
+    def test_32_concurrent_upload_both_fail_reports_both_errors(self, mock_upload):
+        """Test concurrent upload reporting: when both photo and resume fail, both errors are returned."""
+        def upload_mock_handler(file_obj, folder_prefix="documents"):
+            if folder_prefix == "photos":
+                raise SupabaseStorageError(
+                    user_message="Photo upload server error.",
+                    technical_message="Simulated 500 error",
+                )
+            if folder_prefix == "resumes":
+                raise SupabaseStorageError(
+                    user_message="Resume upload server error.",
+                    technical_message="Simulated 503 error",
+                )
+            return "documents/token/file.bin"
+
+        mock_upload.side_effect = upload_mock_handler
+
+        payload = self.valid_payload.copy()
+        payload["email"] = "both_fail@tkrcet.ac.in"
+        payload["photo"] = self.get_valid_photo("candidate.jpg")
+        payload["resume"] = self.get_valid_resume("resume.pdf")
+
+        res = self.client.post(self.register_url, data=payload, format="multipart")
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("photo", res.data)
+        self.assertIn("resume", res.data)
+        self.assertIn("Photo upload server error.", str(res.data["photo"]))
+        self.assertIn("Resume upload server error.", str(res.data["resume"]))
+        self.assertFalse(User.objects.filter(email="both_fail@tkrcet.ac.in").exists())
+
+    # 33. Combined attachments exceeding 4 MB rejected
+    @override_settings(
+        SUPABASE_URL="https://test-project.supabase.co",
+        SUPABASE_SERVICE_ROLE_KEY="test-service-role-key",
+        SUPABASE_STORAGE_BUCKET="student-documents",
+    )
+    def test_33_combined_attachments_exceeding_4mb_rejected(self):
+        """Test backend validation rejects requests where combined photo and resume exceed 4 MB."""
+        photo_bytes = b"\xff\xd8\xff\xe0" + b"\x00" * (2500 * 1024 - 4)  # 2.5 MB photo
+        resume_bytes = b"%PDF-1.4\n" + b"\x00" * (2000 * 1024 - 9)       # 2.0 MB resume (Total: 4.5 MB)
+
+        large_photo = SimpleUploadedFile("cand.jpg", photo_bytes, content_type="image/jpeg")
+        large_resume = SimpleUploadedFile("cv.pdf", resume_bytes, content_type="application/pdf")
+
+        payload = self.valid_payload.copy()
+        payload["email"] = "combined_over@tkrcet.ac.in"
+        payload["photo"] = large_photo
+        payload["resume"] = large_resume
+
+        res = self.client.post(self.register_url, data=payload, format="multipart")
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("The combined size of photo and resume exceeds 4MB. Please reduce attachment sizes.", str(res.data))
+        self.assertFalse(User.objects.filter(email="combined_over@tkrcet.ac.in").exists())
+
+
