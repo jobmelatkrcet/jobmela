@@ -35,51 +35,51 @@ const {
   validatePhotoFile,
 } = mod.exports;
 
-test('Frontend Validation: MAX_PHOTO_BYTES is configured to exactly 3 MB (3,145,728 bytes)', () => {
-  assert.equal(MAX_PHOTO_BYTES, 3 * 1024 * 1024);
+test('Frontend Validation: MAX_PHOTO_BYTES is configured to exactly 200 KB (204,800 bytes)', () => {
+  assert.equal(MAX_PHOTO_BYTES, 200 * 1024);
 });
 
 test('Frontend Validation: PHOTO_SIZE_ERROR_MESSAGE matches exact required text', () => {
   assert.equal(
     PHOTO_SIZE_ERROR_MESSAGE,
-    'Photo file size exceeds 3MB limit.'
+    'Photo file size exceeds 200KB limit.'
   );
 });
 
-test('Frontend Validation: A photo below 3 MB (e.g. 1 MB, 2 MB) is accepted', () => {
-  const photo1mb = { name: 'photo.jpg', type: 'image/jpeg', size: 1024 * 1024 };
-  const photo2mb = { name: 'photo.png', type: 'image/png', size: 2 * 1024 * 1024 };
-  const photoSmallWebp = { name: 'photo.webp', type: 'image/webp', size: 50000 };
+test('Frontend Validation: A photo below 200 KB (e.g. 50 KB, 150 KB) is accepted', () => {
+  const photo50kb = { name: 'photo.jpg', type: 'image/jpeg', size: 50 * 1024 };
+  const photo150kb = { name: 'photo.png', type: 'image/png', size: 150 * 1024 };
+  const photoSmallWebp = { name: 'photo.webp', type: 'image/webp', size: 25000 };
 
-  assert.equal(validatePhotoFile(photo1mb), null);
-  assert.equal(validatePhotoFile(photo2mb), null);
+  assert.equal(validatePhotoFile(photo50kb), null);
+  assert.equal(validatePhotoFile(photo150kb), null);
   assert.equal(validatePhotoFile(photoSmallWebp), null);
 });
 
-test('Frontend Validation: A photo exactly at 3 MB limit (3,145,728 bytes) is accepted', () => {
-  const photoExact = { name: 'exact.jpg', type: 'image/jpeg', size: 3 * 1024 * 1024 };
+test('Frontend Validation: A photo exactly at 200 KB limit (204,800 bytes) is accepted', () => {
+  const photoExact = { name: 'exact.jpg', type: 'image/jpeg', size: 200 * 1024 };
   assert.equal(validatePhotoFile(photoExact), null);
 });
 
-test('Frontend Validation: A photo above 3 MB (3,145,729 bytes) is rejected with clear error', () => {
-  const photoOverOneByte = { name: 'over.jpg', type: 'image/jpeg', size: 3 * 1024 * 1024 + 1 };
+test('Frontend Validation: A photo above 200 KB (204,801 bytes) is rejected with clear error', () => {
+  const photoOverOneByte = { name: 'over.jpg', type: 'image/jpeg', size: 200 * 1024 + 1 };
   assert.equal(
     validatePhotoFile(photoOverOneByte),
-    'Photo file size exceeds 3MB limit.'
+    'Photo file size exceeds 200KB limit.'
   );
 });
 
-test('Frontend Validation: A photo well above 3 MB (e.g. 4 MB, 5 MB) is rejected', () => {
-  const photo4mb = { name: 'large.jpg', type: 'image/jpeg', size: 4 * 1024 * 1024 };
-  const photo5mb = { name: 'huge.png', type: 'image/png', size: 5 * 1024 * 1024 };
+test('Frontend Validation: A photo well above 200 KB (e.g. 1 MB, 3 MB) is rejected', () => {
+  const photo1mb = { name: 'large.jpg', type: 'image/jpeg', size: 1024 * 1024 };
+  const photo3mb = { name: 'huge.png', type: 'image/png', size: 3 * 1024 * 1024 };
 
   assert.equal(
-    validatePhotoFile(photo4mb),
-    'Photo file size exceeds 3MB limit.'
+    validatePhotoFile(photo1mb),
+    'Photo file size exceeds 200KB limit.'
   );
   assert.equal(
-    validatePhotoFile(photo5mb),
-    'Photo file size exceeds 3MB limit.'
+    validatePhotoFile(photo3mb),
+    'Photo file size exceeds 200KB limit.'
   );
 });
 

@@ -23,8 +23,8 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import Alert from '../../components/Alert';
 
-export const MAX_PHOTO_BYTES = 3 * 1024 * 1024; // 3 MB (3,145,728 bytes)
-export const PHOTO_SIZE_ERROR_MESSAGE = 'Photo file size exceeds 3MB limit.';
+export const MAX_PHOTO_BYTES = 200 * 1024; // 200 KB (204,800 bytes)
+export const PHOTO_SIZE_ERROR_MESSAGE = 'Photo file size exceeds 200KB limit.';
 export const VALID_PHOTO_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg'];
 
 export const validatePhotoFile = (file) => {
@@ -38,8 +38,81 @@ export const validatePhotoFile = (file) => {
   return null;
 };
 
-export const MAX_RESUME_BYTES = 3.5 * 1024 * 1024; // 3.5 MB (3,670,016 bytes) - safe margin under Vercel Serverless Function 4.5MB request limit
-export const RESUME_SIZE_ERROR_MESSAGE = 'Resume file size exceeds 3.5MB limit.';
+/**
+ * Automatically compresses candidate photograph client-side to ensure it is under targetBytes (200KB)
+ * and resizes large dimensions down to maximum passport size (800x800).
+ */
+export const compressImageFile = (file, maxDimension = 800, targetBytes = 200 * 1024) => {
+  return new Promise((resolve) => {
+    // If not in a browser environment or not an image, resolve directly
+    if (typeof window === 'undefined' || typeof document === 'undefined' || !file || !file.type?.startsWith('image/')) {
+      resolve(file);
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onerror = () => resolve(file);
+    reader.onload = (readerEvent) => {
+      const img = new Image();
+      img.onerror = () => resolve(file);
+      img.onload = () => {
+        let { width, height } = img;
+        if (width > maxDimension || height > maxDimension) {
+          if (width > height) {
+            height = Math.round((height * maxDimension) / width);
+            width = maxDimension;
+          } else {
+            width = Math.round((width * maxDimension) / height);
+            height = maxDimension;
+          }
+        }
+
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+          resolve(file);
+          return;
+        }
+
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillRect(0, 0, width, height);
+        ctx.drawImage(img, 0, 0, width, height);
+
+        const tryQuality = (quality) => {
+          canvas.toBlob(
+            (blob) => {
+              if (!blob) {
+                resolve(file);
+                return;
+              }
+              if (blob.size <= targetBytes || quality <= 0.5) {
+                const newName = file.name.replace(/\.[^.]+$/, '.jpg');
+                const compressedFile = new File([blob], newName, {
+                  type: 'image/jpeg',
+                  lastModified: Date.now(),
+                });
+                resolve(compressedFile);
+              } else {
+                tryQuality(Math.max(0.5, quality - 0.15));
+              }
+            },
+            'image/jpeg',
+            quality
+          );
+        };
+
+        tryQuality(0.85);
+      };
+      img.src = readerEvent.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+};
+
+export const MAX_RESUME_BYTES = 1 * 1024 * 1024; // 1 MB (1,048,576 bytes)
+export const RESUME_SIZE_ERROR_MESSAGE = 'Resume file size exceeds 1MB limit. Please upload a PDF or DOCX file under 1MB.';
 export const VALID_RESUME_TYPES = [
   'application/pdf',
   'application/msword',
@@ -60,8 +133,8 @@ export const validateResumeFile = (file) => {
   return null;
 };
 
-export const MAX_COMBINED_BYTES = 4 * 1024 * 1024; // 4 MB combined ceiling to respect Vercel Serverless Function 4.5MB payload limit
-export const COMBINED_SIZE_ERROR_MESSAGE = 'The combined size of photo and resume exceeds 4MB. Please reduce attachment sizes.';
+export const MAX_COMBINED_BYTES = 1.2 * 1024 * 1024; // 1.2 MB combined ceiling (200KB photo + 1MB resume)
+export const COMBINED_SIZE_ERROR_MESSAGE = 'The combined size of photo and resume exceeds 1.2MB. Please reduce attachment sizes.';
 
 export const SUPPORT_PHONE = '8019792661';
 
@@ -262,7 +335,7 @@ const StudentRegisterPage = () => {
     }
   };
 
-  const handlePhotoChange = (e) => {
+  const handlePhotoChange = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
     setPhotoError('');
@@ -270,29 +343,44 @@ const StudentRegisterPage = () => {
       setErrors((prev) => ({ ...prev, photo: null }));
     }
 
-    const validationError = validatePhotoFile(file);
-    if (validationError) {
-      setPhotoError(validationError);
+    if (!VALID_PHOTO_TYPES.includes(file.type)) {
+      setPhotoError('Please upload a valid image file (JPG, PNG, or WebP).');
       setPhotoFile(null);
       setPhotoPreview(null);
       if (photoInputRef.current) photoInputRef.current.value = '';
       return;
     }
 
-    if (resumeFile && file.size + resumeFile.size > MAX_COMBINED_BYTES) {
-      setPhotoError(COMBINED_SIZE_ERROR_MESSAGE);
-      setPhotoFile(null);
-      setPhotoPreview(null);
-      if (photoInputRef.current) photoInputRef.current.value = '';
-      return;
-    }
+    try {
+      // Automatically compress smartphone / high-res photographs down to < 200 KB
+      const processedFile = await compressImageFile(file, 800, MAX_PHOTO_BYTES);
 
-    setPhotoFile(file);
-    const reader = new FileReader();
-    reader.onload = (uploadEvent) => {
-      setPhotoPreview(uploadEvent.target.result);
-    };
-    reader.readAsDataURL(file);
+      const validationError = validatePhotoFile(processedFile);
+      if (validationError) {
+        setPhotoError(validationError);
+        setPhotoFile(null);
+        setPhotoPreview(null);
+        if (photoInputRef.current) photoInputRef.current.value = '';
+        return;
+      }
+
+      if (resumeFile && processedFile.size + resumeFile.size > MAX_COMBINED_BYTES) {
+        setPhotoError(COMBINED_SIZE_ERROR_MESSAGE);
+        setPhotoFile(null);
+        setPhotoPreview(null);
+        if (photoInputRef.current) photoInputRef.current.value = '';
+        return;
+      }
+
+      setPhotoFile(processedFile);
+      const reader = new FileReader();
+      reader.onload = (uploadEvent) => {
+        setPhotoPreview(uploadEvent.target.result);
+      };
+      reader.readAsDataURL(processedFile);
+    } catch {
+      setPhotoError('Failed to process image. Please choose another photograph.');
+    }
   };
 
   const handleRemovePhoto = () => {
@@ -817,7 +905,7 @@ const StudentRegisterPage = () => {
                 <label className="form-label" style={{ margin: 0 }}>
                   Candidate Photograph *
                 </label>
-                <span style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>JPG, PNG or WebP &lt; 3MB</span>
+                <span style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>JPG, PNG or WebP &lt; 200KB</span>
               </div>
 
               <input
@@ -837,7 +925,7 @@ const StudentRegisterPage = () => {
                       {photoFile?.name}
                     </div>
                     <div style={{ fontSize: '0.78rem', color: 'var(--color-text-muted)', marginTop: '0.2rem' }}>
-                      {formatFileSize(photoFile?.size)} • Ready for upload
+                      {formatFileSize(photoFile?.size)} • Ready for upload (Optimized)
                     </div>
                   </div>
                   <button
@@ -867,7 +955,7 @@ const StudentRegisterPage = () => {
                   </div>
                   <div className="upload-dropzone-title">Upload Passport Size Photograph</div>
                   <div className="upload-dropzone-hint">
-                    Click to browse photograph from device
+                    Click to browse photograph from device (auto-compressed to &lt; 200KB)
                   </div>
                 </div>
               )}
@@ -883,7 +971,7 @@ const StudentRegisterPage = () => {
                 <label className="form-label" style={{ margin: 0 }}>
                   Resume / Curriculum Vitae *
                 </label>
-                <span style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>PDF, DOC or DOCX &lt; 3.5MB (Max 4MB combined)</span>
+                <span style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>PDF, DOC or DOCX &lt; 1MB</span>
               </div>
 
               <input

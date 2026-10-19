@@ -80,32 +80,32 @@ test('Upload Reliability: api.js request interceptor deletes Content-Type for Fo
 const registerPagePath = path.join(__dirname, 'src', 'pages', 'student', 'StudentRegisterPage.jsx');
 const registerSourceCode = fs.readFileSync(registerPagePath, 'utf8');
 
-test('Upload Reliability: StudentRegisterPage enforces 3 MB photo limit and 3.5 MB resume limit', () => {
-  // Photo max: 3 * 1024 * 1024 bytes (3 MB)
+test('Upload Reliability: StudentRegisterPage enforces 200 KB photo limit and 1 MB resume limit', () => {
+  // Photo max: 200 * 1024 bytes (200 KB)
   assert.match(
     registerSourceCode,
-    /MAX_PHOTO_BYTES\s*=\s*3\s*\*\s*1024\s*\*\s*1024/,
-    'MAX_PHOTO_BYTES must be 3 * 1024 * 1024 bytes'
+    /MAX_PHOTO_BYTES\s*=\s*200\s*\*\s*1024/,
+    'MAX_PHOTO_BYTES must be 200 * 1024 bytes'
   );
 
-  // Resume max: 3.5 * 1024 * 1024 bytes (3.5 MB limit)
+  // Resume max: 1 * 1024 * 1024 bytes (1 MB limit)
   assert.match(
     registerSourceCode,
-    /MAX_RESUME_BYTES\s*=\s*3\.5\s*\*\s*1024\s*\*\s*1024/,
-    'Resume validation must enforce 3.5 * 1024 * 1024 bytes (3.5MB limit)'
+    /MAX_RESUME_BYTES\s*=\s*1\s*\*\s*1024\s*\*\s*1024/,
+    'Resume validation must enforce 1 * 1024 * 1024 bytes (1MB limit)'
   );
   assert.match(
     registerSourceCode,
-    /Resume file size exceeds 3\.5MB limit\./,
-    'Resume validation must display 3.5MB limit message'
+    /Resume file size exceeds 1MB limit\./,
+    'Resume validation must display 1MB limit message'
   );
 });
 
-test('Upload Reliability: StudentRegisterPage enforces 4MB combined limit to protect against Vercel payload drops', () => {
+test('Upload Reliability: StudentRegisterPage enforces 1.2MB combined limit to protect against Vercel payload drops', () => {
   assert.match(
     registerSourceCode,
-    /MAX_COMBINED_BYTES\s*=\s*4\s*\*\s*1024\s*\*\s*1024/,
-    'StudentRegisterPage must guard against payloads exceeding 4MB for Vercel serverless safety'
+    /MAX_COMBINED_BYTES\s*=\s*1\.2\s*\*\s*1024\s*\*\s*1024/,
+    'StudentRegisterPage must guard against payloads exceeding 1.2MB for Vercel serverless safety'
   );
 });
 
