@@ -23,6 +23,9 @@ Django and Django REST Framework backend service for TKRCET Job Mela 2026.
 | `POST` | `/api/auth/logout/` | Authenticated | Revoke user session & token |
 | `GET` | `/api/auth/profile/` | Authenticated | Retrieve authenticated user profile |
 | `PUT` | `/api/auth/profile/` | Authenticated | Update user profile information |
+| `POST` | `/api/auth/password-reset/` | Public | Request password reset email link (`{ "email": "..." }`) |
+| `GET` | `/api/auth/password-reset/validate/` | Public | Validate password reset token (`?uid=...&token=...`) |
+| `POST` | `/api/auth/password-reset/confirm/` | Public | Confirm new password (`{ "uid": "...", "token": "...", "new_password": "...", "confirm_password": "..." }`) |
 
 #### Sample Registration Payload:
 ```json

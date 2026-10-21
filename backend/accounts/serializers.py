@@ -284,3 +284,51 @@ class LoginSerializer(serializers.Serializer):
 
         data["user"] = user
         return data
+
+
+class PasswordResetRequestSerializer(serializers.Serializer):
+    email = serializers.EmailField(required=True)
+
+    def validate_email(self, value):
+        return value.lower().strip()
+
+
+class PasswordResetConfirmSerializer(serializers.Serializer):
+    uid = serializers.CharField(required=True)
+    token = serializers.CharField(required=True)
+    new_password = serializers.CharField(
+        write_only=True,
+        required=True,
+        min_length=6,
+        style={"input_type": "password"},
+    )
+    confirm_password = serializers.CharField(
+        write_only=True,
+        required=True,
+        style={"input_type": "password"},
+    )
+
+    def validate(self, data):
+        if data.get("new_password") != data.get("confirm_password"):
+            raise serializers.ValidationError({"confirm_password": "Passwords do not match."})
+
+        uid_b64 = data.get("uid", "").strip()
+        token = data.get("token", "").strip()
+
+        from django.utils.http import urlsafe_base64_decode
+        from django.utils.encoding import force_str
+        from django.contrib.auth.tokens import default_token_generator
+
+        try:
+            user_id = force_str(urlsafe_base64_decode(uid_b64))
+            user = User.objects.filter(pk=user_id, is_active=True).first()
+        except (TypeError, ValueError, OverflowError):
+            user = None
+
+        if not user or not default_token_generator.check_token(user, token):
+            raise serializers.ValidationError(
+                {"token": "This password reset link is invalid or has expired. Please request a new one."}
+            )
+
+        data["user"] = user
+        return data

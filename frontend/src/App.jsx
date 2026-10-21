@@ -15,6 +15,8 @@ import AboutPage from './pages/public/AboutPage';
 import ContactPage from './pages/public/ContactPage';
 import PublicCompaniesPage from './pages/public/PublicCompaniesPage';
 import PostersPage from './pages/public/PostersPage';
+import ForgotPasswordPage from './pages/public/ForgotPasswordPage';
+import ResetPasswordPage from './pages/public/ResetPasswordPage';
 
 // Student Pages
 import StudentRegisterPage from './pages/student/StudentRegisterPage';
@@ -44,6 +46,9 @@ function App() {
             <Route path="/posters" element={<PostersPage />} />
             <Route path="/companies" element={<PublicCompaniesPage />} />
             <Route path="/login" element={<StudentLoginPage />} />
+            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+            <Route path="/reset-password/:uid/:token" element={<ResetPasswordPage />} />
+            <Route path="/reset-password" element={<ResetPasswordPage />} />
             <Route path="/register" element={<StudentRegisterPage />} />
             <Route path="/admin/login" element={<AdminLoginPage />} />
             <Route path="/checkin/:token" element={<StudentCheckInPage />} />

@@ -880,5 +880,110 @@ class VercelAllowedHostsTests(TestCase):
                 self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
 
 
+class PasswordResetTests(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+        self.user = User.objects.create_user(
+            email="resetstudent@tkrcet.ac.in",
+            password="OriginalPassword123!",
+            full_name="Reset Test Student",
+            mobile="9876543210",
+        )
+        self.request_url = "/api/auth/password-reset/"
+        self.validate_url = "/api/auth/password-reset/validate/"
+        self.confirm_url = "/api/auth/password-reset/confirm/"
+
+    def test_password_reset_request_for_existing_user(self):
+        from django.core import mail
+        from django.utils.http import urlsafe_base64_encode
+        from django.utils.encoding import force_bytes
+
+        response = self.client.post(
+            self.request_url,
+            data={"email": "resetstudent@tkrcet.ac.in"},
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn("message", response.data)
+
+        # Check outbox email
+        self.assertEqual(len(mail.outbox), 1)
+        sent_email = mail.outbox[0]
+        self.assertIn("Password Reset Request", sent_email.subject)
+        self.assertEqual(sent_email.to, ["resetstudent@tkrcet.ac.in"])
+
+        expected_uid = urlsafe_base64_encode(force_bytes(self.user.pk))
+        self.assertIn(expected_uid, sent_email.body)
+
+    def test_password_reset_request_anti_enumeration_for_nonexistent_email(self):
+        from django.core import mail
+
+        response = self.client.post(
+            self.request_url,
+            data={"email": "nonexistent@tkrcet.ac.in"},
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn("message", response.data)
+        # No email should be sent for nonexistent account
+        self.assertEqual(len(mail.outbox), 0)
+
+    def test_password_reset_validate_token(self):
+        from django.utils.http import urlsafe_base64_encode
+        from django.utils.encoding import force_bytes
+        from django.contrib.auth.tokens import default_token_generator
+
+        uidb64 = urlsafe_base64_encode(force_bytes(self.user.pk))
+        valid_token = default_token_generator.make_token(self.user)
+
+        # Valid token
+        res_valid = self.client.get(f"{self.validate_url}?uid={uidb64}&token={valid_token}")
+        self.assertEqual(res_valid.status_code, status.HTTP_200_OK)
+        self.assertTrue(res_valid.data.get("valid"))
+
+        # Invalid token
+        res_invalid = self.client.get(f"{self.validate_url}?uid={uidb64}&token=invalid-fake-token")
+        self.assertEqual(res_invalid.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertFalse(res_invalid.data.get("valid"))
+
+    def test_password_reset_confirm_success_and_single_use(self):
+        from django.utils.http import urlsafe_base64_encode
+        from django.utils.encoding import force_bytes
+        from django.contrib.auth.tokens import default_token_generator
+
+        uidb64 = urlsafe_base64_encode(force_bytes(self.user.pk))
+        token = default_token_generator.make_token(self.user)
+
+        # 1. Password mismatch fails
+        mismatch_payload = {
+            "uid": uidb64,
+            "token": token,
+            "new_password": "NewSecretPassword123!",
+            "confirm_password": "DifferentPassword123!",
+        }
+        res_mismatch = self.client.post(self.confirm_url, data=mismatch_payload, format="json")
+        self.assertEqual(res_mismatch.status_code, status.HTTP_400_BAD_REQUEST)
+
+        # 2. Confirm succeeds
+        success_payload = {
+            "uid": uidb64,
+            "token": token,
+            "new_password": "BrandNewPassword123!",
+            "confirm_password": "BrandNewPassword123!",
+        }
+        res_success = self.client.post(self.confirm_url, data=success_payload, format="json")
+        self.assertEqual(res_success.status_code, status.HTTP_200_OK)
+
+        # Verify old password fails and new password works
+        self.user.refresh_from_db()
+        self.assertFalse(self.user.check_password("OriginalPassword123!"))
+        self.assertTrue(self.user.check_password("BrandNewPassword123!"))
+
+        # 3. Re-using the same token fails (single-use guarantee)
+        res_reuse = self.client.post(self.confirm_url, data=success_payload, format="json")
+        self.assertEqual(res_reuse.status_code, status.HTTP_400_BAD_REQUEST)
+
+
+
 
 

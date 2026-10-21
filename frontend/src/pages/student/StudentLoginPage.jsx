@@ -113,9 +113,23 @@ const StudentLoginPage = () => {
 
             {/* Password */}
             <div className="form-group" style={{ marginBottom: '1.75rem' }}>
-              <label className="form-label" htmlFor="password">
-                Password
-              </label>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.35rem' }}>
+                <label className="form-label" htmlFor="password" style={{ marginBottom: 0 }}>
+                  Password
+                </label>
+                <Link
+                  to="/forgot-password"
+                  state={{ email }}
+                  style={{
+                    fontSize: '0.85rem',
+                    color: 'var(--color-brand-600)',
+                    fontWeight: 600,
+                    textDecoration: 'none',
+                  }}
+                >
+                  Forgot Password?
+                </Link>
+              </div>
               <div style={{ position: 'relative' }}>
                 <input
                   id="password"

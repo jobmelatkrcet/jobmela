@@ -141,9 +141,23 @@ const AdminLoginPage = () => {
             </div>
 
             <div className="form-group" style={{ marginBottom: '1.75rem' }}>
-              <label className="form-label" htmlFor="admin-pass" style={{ color: '#f1f5f9' }}>
-                Admin Password
-              </label>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.35rem' }}>
+                <label className="form-label" htmlFor="admin-pass" style={{ color: '#f1f5f9', marginBottom: 0 }}>
+                  Admin Password
+                </label>
+                <Link
+                  to="/forgot-password"
+                  state={{ email }}
+                  style={{
+                    fontSize: '0.84rem',
+                    color: '#f59e0b',
+                    fontWeight: 600,
+                    textDecoration: 'none',
+                  }}
+                >
+                  Forgot Password?
+                </Link>
+              </div>
               <div style={{ position: 'relative' }}>
                 <input
                   id="admin-pass"

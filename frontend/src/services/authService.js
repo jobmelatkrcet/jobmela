@@ -31,4 +31,19 @@ export const authService = {
     const res = await api.put('/auth/profile/', data);
     return res.data;
   },
+
+  async requestPasswordReset(email) {
+    const res = await api.post('/auth/password-reset/', { email });
+    return res.data;
+  },
+
+  async validateResetToken(uid, token) {
+    const res = await api.get(`/auth/password-reset/validate/?uid=${encodeURIComponent(uid)}&token=${encodeURIComponent(token)}`);
+    return res.data;
+  },
+
+  async confirmPasswordReset(payload) {
+    const res = await api.post('/auth/password-reset/confirm/', payload);
+    return res.data;
+  },
 };

@@ -14,13 +14,18 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Load .env file
 load_dotenv(BASE_DIR / ".env")
 
+import sys
+
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.environ.get("SECRET_KEY", "").strip()
 if not SECRET_KEY:
-    raise ImproperlyConfigured(
-        "SECRET_KEY environment variable is required and cannot be empty. "
-        "Please configure a secure cryptographic secret key in your environment."
-    )
+    if "test" in sys.argv or any("test" in a for a in sys.argv):
+        SECRET_KEY = "django-insecure-test-secret-key-tkrcet-jobmela-2026"
+    else:
+        raise ImproperlyConfigured(
+            "SECRET_KEY environment variable is required and cannot be empty. "
+            "Please configure a secure cryptographic secret key in your environment."
+        )
 
 # Production Debug Mode (Default: False for security)
 DEBUG = os.environ.get("DEBUG", "False").strip().lower() in ("true", "1", "yes")
@@ -120,10 +125,13 @@ WSGI_APPLICATION = "config.wsgi.application"
 DATABASE_URL = os.environ.get("DATABASE_URL", "").strip()
 
 if not DATABASE_URL:
-    raise ImproperlyConfigured(
-        "DATABASE_URL environment variable is required and cannot be empty. "
-        "Please configure a valid PostgreSQL connection URL in your environment."
-    )
+    if "test" in sys.argv or any("test" in a for a in sys.argv):
+        DATABASE_URL = "sqlite:///:memory:"
+    else:
+        raise ImproperlyConfigured(
+            "DATABASE_URL environment variable is required and cannot be empty. "
+            "Please configure a valid PostgreSQL connection URL in your environment."
+        )
 
 DATABASES = {
     "default": dj_database_url.config(
@@ -240,3 +248,28 @@ for origin in CORS_ALLOWED_ORIGINS:
         CSRF_TRUSTED_ORIGINS.append(origin)
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# Email Configuration
+EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "").strip()
+EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "").strip()
+EMAIL_HOST = os.environ.get("EMAIL_HOST", "smtp.gmail.com").strip()
+EMAIL_PORT = int(os.environ.get("EMAIL_PORT", "587").strip() or 587)
+EMAIL_USE_TLS = os.environ.get("EMAIL_USE_TLS", "True").strip().lower() in ("true", "1", "yes")
+EMAIL_USE_SSL = os.environ.get("EMAIL_USE_SSL", "False").strip().lower() in ("true", "1", "yes")
+DEFAULT_FROM_EMAIL = os.environ.get(
+    "DEFAULT_FROM_EMAIL",
+    "TKRCET Mega Job Mela 2026 <no-reply@tkrcetjobmela.in>"
+).strip()
+
+default_email_backend = (
+    "django.core.mail.backends.smtp.EmailBackend"
+    if (EMAIL_HOST_USER or not DEBUG)
+    else "django.core.mail.backends.console.EmailBackend"
+)
+EMAIL_BACKEND = os.environ.get("EMAIL_BACKEND", default_email_backend).strip()
+
+# Password reset link validity (1 hour in seconds)
+PASSWORD_RESET_TIMEOUT = int(os.environ.get("PASSWORD_RESET_TIMEOUT", "3600").strip() or 3600)
+
+# Canonical Frontend URL for link generation
+FRONTEND_URL = frontend_url or "https://www.tkrcetjobmela.in"
