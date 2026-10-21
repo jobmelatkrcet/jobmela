@@ -253,9 +253,20 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "").strip()
 EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "").replace(" ", "").strip()
 EMAIL_HOST = os.environ.get("EMAIL_HOST", "smtp.gmail.com").strip()
-EMAIL_PORT = int(os.environ.get("EMAIL_PORT", "587").strip() or 587)
-EMAIL_USE_TLS = os.environ.get("EMAIL_USE_TLS", "True").strip().lower() in ("true", "1", "yes")
-EMAIL_USE_SSL = os.environ.get("EMAIL_USE_SSL", "False").strip().lower() in ("true", "1", "yes")
+raw_port = os.environ.get("EMAIL_PORT", "").strip()
+raw_ssl = os.environ.get("EMAIL_USE_SSL", "").strip().lower()
+raw_tls = os.environ.get("EMAIL_USE_TLS", "").strip().lower()
+
+if raw_ssl in ("true", "1", "yes") or raw_port == "465":
+    EMAIL_USE_SSL = True
+    EMAIL_USE_TLS = False
+    EMAIL_PORT = int(raw_port or 465)
+else:
+    EMAIL_USE_SSL = False
+    EMAIL_USE_TLS = raw_tls in ("true", "1", "yes") if raw_tls else True
+    EMAIL_PORT = int(raw_port or 587)
+
+EMAIL_TIMEOUT = 10
 DEFAULT_FROM_EMAIL = os.environ.get(
     "DEFAULT_FROM_EMAIL",
     "TKRCET Mega Job Mela 2026 <no-reply@tkrcetjobmela.in>"
