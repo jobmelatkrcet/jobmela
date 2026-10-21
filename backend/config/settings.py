@@ -263,8 +263,8 @@ DEFAULT_FROM_EMAIL = os.environ.get(
 
 default_email_backend = (
     "django.core.mail.backends.smtp.EmailBackend"
-    if (EMAIL_HOST_USER or not DEBUG)
-    else "django.core.mail.backends.console.EmailBackend"
+    if EMAIL_HOST_USER
+    else ("django.core.mail.backends.console.EmailBackend" if DEBUG else "django.core.mail.backends.dummy.EmailBackend")
 )
 EMAIL_BACKEND = os.environ.get("EMAIL_BACKEND", default_email_backend).strip()
 
