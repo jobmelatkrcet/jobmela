@@ -28,6 +28,8 @@ import {
   QrCode,
 } from 'lucide-react';
 import StudentQRScannerModal from './StudentQRScannerModal';
+import WhatsAppIcon from './WhatsAppIcon';
+import { WHATSAPP_GROUP_URL } from '../utils/constants';
 
 const Navbar = () => {
   const { user, isAuthenticated, isAdmin, isStudent, logout } = useAuth();
@@ -77,6 +79,18 @@ const Navbar = () => {
             <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
               <Phone size={13} color="#38bdf8" /> Placement Helpline: <a href="tel:9949139414">9949139414</a> / <a href="tel:7075450757">7075450757</a>
             </span>
+            <span className="utility-separator">|</span>
+            <a
+              href={WHATSAPP_GROUP_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="utility-whatsapp-link"
+              id="top-bar-whatsapp-link"
+              title="Join Official TKRCET Job Mela WhatsApp Group"
+            >
+              <WhatsAppIcon size={14} color="#4ade80" />
+              <span>WhatsApp Group</span>
+            </a>
           </div>
         </div>
       </div>

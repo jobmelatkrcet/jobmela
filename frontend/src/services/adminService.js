@@ -108,4 +108,14 @@ export const adminService = {
     link.parentNode.removeChild(link);
     window.URL.revokeObjectURL(url);
   },
+
+  async getBroadcastEmailStats() {
+    const res = await api.get('/admin/broadcast-email/');
+    return res.data;
+  },
+
+  async sendBroadcastEmail(payload) {
+    const res = await api.post('/admin/broadcast-email/', payload);
+    return res.data;
+  },
 };

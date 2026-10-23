@@ -20,10 +20,16 @@ from .views import (
     JobMelaRequirementsPublicListView,
     AdminJobMelaRequirementListCreateView,
     AdminJobMelaRequirementDetailView,
+    AdminBroadcastEmailView,
 )
 
 urlpatterns = [
     path("dashboard/", AdminDashboardView.as_view(), name="admin-dashboard"),
+    path(
+        "broadcast-email/",
+        AdminBroadcastEmailView.as_view(),
+        name="admin-broadcast-email",
+    ),
     path("students/", AdminStudentsListView.as_view(), name="admin-students-list"),
     path(
         "students/<int:pk>/",

@@ -13,15 +13,18 @@ import {
   AlertCircle,
   ClipboardList,
   DoorClosed,
+  Mail,
 } from 'lucide-react';
 import StatsCard from '../../components/StatsCard';
 import Alert from '../../components/Alert';
 import { StatsGridSkeleton, TableSkeleton } from '../../components/Skeleton';
+import AdminBroadcastEmailModal from '../../components/AdminBroadcastEmailModal';
 
 const AdminDashboardPage = ({ onTabChange }) => {
   const [dashboard, setDashboard] = useState(null);
   const [loading, setLoading] = useState(true);
   const [alert, setAlert] = useState(null);
+  const [isBroadcastModalOpen, setIsBroadcastModalOpen] = useState(false);
 
   useEffect(() => {
     fetchDashboard();
@@ -63,6 +66,19 @@ const AdminDashboardPage = ({ onTabChange }) => {
         </div>
 
         <div className="admin-dashboard-quick-actions">
+          <button
+            type="button"
+            onClick={() => setIsBroadcastModalOpen(true)}
+            className="btn btn-primary btn-sm"
+            style={{
+              background: 'linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%)',
+              boxShadow: '0 2px 8px rgba(37, 99, 235, 0.3)',
+            }}
+            id="admin-quick-send-email-btn"
+            title="Send announcement email to all registered candidates in one shot"
+          >
+            <Mail size={15} /> Send Mail to All Students
+          </button>
           {onTabChange ? (
             <>
               <button
@@ -75,7 +91,7 @@ const AdminDashboardPage = ({ onTabChange }) => {
               <button
                 type="button"
                 onClick={() => onTabChange('companies')}
-                className="btn btn-primary btn-sm"
+                className="btn btn-outline btn-sm"
               >
                 <Upload size={15} /> Upload Companies Excel
               </button>
@@ -99,7 +115,7 @@ const AdminDashboardPage = ({ onTabChange }) => {
               <Link to="/admin?tab=requirements" className="btn btn-outline btn-sm">
                 <ClipboardList size={15} /> Candidate Requirements
               </Link>
-              <Link to="/admin?tab=companies" className="btn btn-primary btn-sm">
+              <Link to="/admin?tab=companies" className="btn btn-outline btn-sm">
                 <Upload size={15} /> Upload Companies Excel
               </Link>
               <Link to="/admin?tab=rooms" className="btn btn-outline btn-sm">
@@ -166,6 +182,88 @@ const AdminDashboardPage = ({ onTabChange }) => {
               color="emerald"
               subtitle="Direct student-company submissions"
             />
+          </div>
+
+          {/* One-Shot Mass Email Broadcaster Action Banner */}
+          <div
+            className="card"
+            style={{
+              marginBottom: '2rem',
+              padding: '1.25rem 1.75rem',
+              background: 'linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%)',
+              color: '#ffffff',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              flexWrap: 'wrap',
+              gap: '1.25rem',
+              borderRadius: 'var(--radius-lg)',
+              boxShadow: '0 10px 25px -5px rgba(15, 23, 42, 0.25)',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1.15rem', minWidth: 260 }}>
+              <div
+                style={{
+                  width: 50,
+                  height: 50,
+                  borderRadius: 12,
+                  background: 'rgba(255, 255, 255, 0.14)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0,
+                  border: '1px solid rgba(255, 255, 255, 0.25)',
+                }}
+              >
+                <Mail size={24} color="#38bdf8" />
+              </div>
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.2rem' }}>
+                  <h3 style={{ margin: 0, fontSize: '1.15rem', color: '#ffffff' }}>
+                    Send Email to All Registered Participants
+                  </h3>
+                  <span
+                    style={{
+                      background: '#38bdf8',
+                      color: '#0f172a',
+                      fontSize: '0.68rem',
+                      fontWeight: 800,
+                      padding: '2px 8px',
+                      borderRadius: 9999,
+                      textTransform: 'uppercase',
+                    }}
+                  >
+                    One-Shot Broadcast
+                  </span>
+                </div>
+                <p style={{ margin: 0, color: '#bfdbfe', fontSize: '0.86rem' }}>
+                  Send schedule updates, gate guidelines, and the official WhatsApp group link to all {dashboard?.total_students || 0} registered candidates in one click.
+                </p>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setIsBroadcastModalOpen(true)}
+              className="btn btn-sm"
+              style={{
+                backgroundColor: '#ffffff',
+                color: '#1e3a8a',
+                fontWeight: 700,
+                fontSize: '0.88rem',
+                padding: '0.6rem 1.35rem',
+                borderRadius: 'var(--radius-full)',
+                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.45rem',
+              }}
+              id="admin-dashboard-compose-email-banner-btn"
+            >
+              <Mail size={16} /> Compose Broadcast Email →
+            </button>
           </div>
 
           {/* 2-Column Content Grid */}
@@ -312,6 +410,12 @@ const AdminDashboardPage = ({ onTabChange }) => {
           </div>
         </>
       )}
+
+      {/* Official Mass Broadcast Email Modal */}
+      <AdminBroadcastEmailModal
+        isOpen={isBroadcastModalOpen}
+        onClose={() => setIsBroadcastModalOpen(false)}
+      />
     </div>
   );
 };

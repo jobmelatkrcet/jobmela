@@ -22,6 +22,8 @@ from companies.models import Company, Room, RoomCheckIn
 from applications.models import Application
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from .permissions import IsAdminUserRole
+from django.utils import timezone
+from .email_broadcast import dispatch_broadcast_emails, WHATSAPP_GROUP_LINK
 from .serializers import (
     AdminStudentListSerializer,
     AdminStudentDetailSerializer,
@@ -1925,6 +1927,132 @@ class AdminLiveRoomCheckinsView(APIView):
             "total_rooms": len(results),
             "rooms": results,
         }, status=status.HTTP_200_OK)
+
+
+class AdminBroadcastEmailView(APIView):
+    """
+    Broadcast email endpoint allowing organizers to send announcement emails
+    to all registered participants, students with applications, or test to admin.
+    """
+    permission_classes = [IsAdminUserRole]
+
+    def get(self, request):
+        total_students = User.objects.filter(role="student").count()
+        students_with_email = (
+            User.objects.filter(role="student")
+            .exclude(email__isnull=True)
+            .exclude(email__exact="")
+            .count()
+        )
+        students_with_apps = (
+            User.objects.filter(role="student", applications__isnull=False)
+            .distinct()
+            .count()
+        )
+
+        return Response(
+            {
+                "total_registered_students": total_students,
+                "students_with_email": students_with_email,
+                "students_with_applications": students_with_apps,
+                "admin_email": request.user.email,
+                "whatsapp_group_link": WHATSAPP_GROUP_LINK,
+                "smtp_configured": bool(getattr(settings, "EMAIL_HOST_USER", None)),
+                "default_from_email": getattr(settings, "DEFAULT_FROM_EMAIL", ""),
+            },
+            status=status.HTTP_200_OK,
+        )
+
+    def post(self, request):
+        data = request.data or {}
+        subject = str(data.get("subject", "")).strip()
+        message = str(data.get("message", "")).strip()
+        target = str(data.get("target", "all_students")).strip().lower()
+        include_whatsapp = bool(data.get("include_whatsapp", True))
+
+        if not subject or len(subject) < 3:
+            return Response(
+                {"error": "Email subject is required and must be at least 3 characters."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if not message or len(message) < 5:
+            return Response(
+                {"error": "Email message body is required and must be at least 5 characters."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Resolve recipients based on target group
+        if target == "test_self":
+            admin_email = request.user.email
+            if not admin_email:
+                return Response(
+                    {"error": "Your administrator account has no email address configured."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            recipients = [(admin_email, request.user.full_name or "Administrator")]
+        elif target == "with_applications":
+            qs = (
+                User.objects.filter(role="student", applications__isnull=False)
+                .distinct()
+                .exclude(email__isnull=True)
+                .exclude(email__exact="")
+                .values_list("email", "full_name")
+            )
+            recipients = list(qs)
+        else:  # default "all_students"
+            target = "all_students"
+            qs = (
+                User.objects.filter(role="student")
+                .exclude(email__isnull=True)
+                .exclude(email__exact="")
+                .values_list("email", "full_name")
+            )
+            recipients = list(qs)
+
+        if not recipients:
+            return Response(
+                {
+                    "error": "No registered participants with valid email addresses found for the selected audience."
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Dispatch the emails
+        dispatch_result = dispatch_broadcast_emails(
+            subject=subject,
+            message_text=message,
+            recipients=recipients,
+            include_whatsapp=include_whatsapp,
+        )
+
+        sent_count = dispatch_result.get("sent_count", 0)
+        total_count = dispatch_result.get("total_recipients", len(recipients))
+        failed_count = dispatch_result.get("failed_count", 0)
+        errors = dispatch_result.get("errors", [])
+
+        if target == "test_self":
+            human_msg = f"Test email dispatched successfully to {request.user.email}."
+        else:
+            human_msg = f"Broadcast successfully sent to {sent_count} of {total_count} registered participants."
+
+        response_status = (
+            status.HTTP_200_OK if dispatch_result.get("success") else status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+
+        return Response(
+            {
+                "success": dispatch_result.get("success", False),
+                "target": target,
+                "total_recipients": total_count,
+                "sent_count": sent_count,
+                "failed_count": failed_count,
+                "errors": errors,
+                "message": human_msg,
+                "timestamp": timezone.now().isoformat(),
+            },
+            status=response_status,
+        )
 
 
 

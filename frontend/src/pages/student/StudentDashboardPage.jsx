@@ -27,6 +27,8 @@ import StatsCard from '../../components/StatsCard';
 import Alert from '../../components/Alert';
 import ConfirmModal from '../../components/ConfirmModal';
 import { ApplicationListSkeleton, Skeleton } from '../../components/Skeleton';
+import WhatsAppIcon from '../../components/WhatsAppIcon';
+import { WHATSAPP_GROUP_URL } from '../../utils/constants';
 
 const getMediaUrl = (path) => {
   if (!path) return null;
@@ -125,6 +127,35 @@ const StudentDashboardPage = () => {
           onClose={() => setAlert(null)}
         />
       )}
+
+      {/* Official WhatsApp Group Banner Card for Students */}
+      <div className="dashboard-whatsapp-card">
+        <div className="dashboard-whatsapp-content">
+          <div className="dashboard-whatsapp-icon-box">
+            <WhatsAppIcon size={32} color="#ffffff" />
+          </div>
+          <div>
+            <h3 className="dashboard-whatsapp-title">
+              Official Candidates WhatsApp Community
+              <span className="dashboard-whatsapp-badge">Live Updates</span>
+            </h3>
+            <p className="dashboard-whatsapp-desc">
+              Join the official WhatsApp group for real-time interview call notifications, company spot shortlists, and gate entry updates.
+            </p>
+          </div>
+        </div>
+        <a
+          href={WHATSAPP_GROUP_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="dashboard-whatsapp-btn"
+          id="dashboard-join-whatsapp-btn"
+          title="Join the official Job Mela WhatsApp group"
+        >
+          <WhatsAppIcon size={18} color="#065f46" />
+          <span>Join WhatsApp Group</span>
+        </a>
+      </div>
 
       {/* Official Candidate Accreditation Card with Photograph & Resume status */}
       <div className="candidate-admit-card">

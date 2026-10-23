@@ -17,6 +17,7 @@ import {
 import Pagination from '../../components/Pagination';
 import Alert from '../../components/Alert';
 import { TableSkeleton } from '../../components/Skeleton';
+import AdminBroadcastEmailModal from '../../components/AdminBroadcastEmailModal';
 
 const getMediaUrl = (path) => {
   if (!path) return null;
@@ -39,6 +40,7 @@ const AdminStudentsPage = () => {
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [detailLoading, setDetailLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isBroadcastModalOpen, setIsBroadcastModalOpen] = useState(false);
   const [alert, setAlert] = useState(null);
 
   useEffect(() => {
@@ -104,8 +106,22 @@ const AdminStudentsPage = () => {
           </p>
         </div>
 
-        <div className="badge badge-blue" style={{ padding: '0.45rem 1rem', fontSize: '0.88rem' }}>
-          Total Candidates: {totalStudents}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+          <div className="badge badge-blue" style={{ padding: '0.45rem 1rem', fontSize: '0.88rem' }}>
+            Total Candidates: {totalStudents}
+          </div>
+          <button
+            type="button"
+            onClick={() => setIsBroadcastModalOpen(true)}
+            className="btn btn-primary btn-sm"
+            style={{
+              background: 'linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%)',
+              boxShadow: '0 2px 8px rgba(37, 99, 235, 0.3)',
+            }}
+            id="admin-students-broadcast-email-btn"
+          >
+            <Mail size={15} /> Send Email to All Students
+          </button>
         </div>
       </div>
 
@@ -569,6 +585,12 @@ const AdminStudentsPage = () => {
           </div>
         </div>
       )}
+
+      {/* Official Mass Broadcast Email Modal */}
+      <AdminBroadcastEmailModal
+        isOpen={isBroadcastModalOpen}
+        onClose={() => setIsBroadcastModalOpen(false)}
+      />
     </div>
   );
 };

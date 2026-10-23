@@ -5,6 +5,9 @@ import Footer from '../components/Footer';
 import { ClipboardList } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import RequirementsModal from '../components/RequirementsModal';
+import WhatsAppIcon from '../components/WhatsAppIcon';
+import WhatsAppFloatingButton from '../components/WhatsAppFloatingButton';
+import { WHATSAPP_GROUP_URL } from '../utils/constants';
 
 const StudentLayout = () => {
   const { user } = useAuth();
@@ -25,8 +28,21 @@ const StudentLayout = () => {
               </h1>
             </div>
 
-            {/* Right: Requirements for Job Mela Guidelines Button */}
-            <div className="student-banner-right">
+            {/* Right: WhatsApp Group and Requirements for Job Mela Guidelines */}
+            <div className="student-banner-right" style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', flexWrap: 'wrap' }}>
+              <a
+                href={WHATSAPP_GROUP_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="student-whatsapp-btn"
+                id="student-banner-whatsapp-btn"
+                title="Join the official Job Mela WhatsApp group for live announcements and interview schedules"
+              >
+                <WhatsAppIcon size={17} color="#ffffff" />
+                <span>Join WhatsApp Group</span>
+                <span className="student-whatsapp-tag">Community ↗</span>
+              </a>
+
               <button
                 type="button"
                 onClick={() => setIsRequirementsModalOpen(true)}
@@ -46,6 +62,9 @@ const StudentLayout = () => {
       <main className="main-content" style={{ padding: '2rem 0 4rem' }}>
         <Outlet />
       </main>
+
+      {/* Floating Official WhatsApp Community Action Button for Student Portal */}
+      <WhatsAppFloatingButton />
 
       <Footer />
 

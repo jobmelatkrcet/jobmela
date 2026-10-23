@@ -41,6 +41,9 @@ import { CompanyCardSkeleton } from '../../components/Skeleton';
 // Poster 1 (VIP & Dignitaries) removed per user instruction; Poster 2 (Guidelines & Eligibility) active:
 // import poster1Img from '../../assets/jobmela-poster-1.jpg';
 import poster2Img from '../../assets/jobmela-poster-2.jpg';
+import WhatsAppIcon from '../../components/WhatsAppIcon';
+import WhatsAppFloatingButton from '../../components/WhatsAppFloatingButton';
+import { WHATSAPP_GROUP_URL } from '../../utils/constants';
 
 const CATEGORY_ICONS = {
   all: Building2,
@@ -334,6 +337,26 @@ const HomePage = () => {
                         <ArrowRight size={18} />
                       </Link>
                     )}
+                  </motion.div>
+
+                  {/* 5b. Official WhatsApp Group Community Action Button */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: 0.38 }}
+                    style={{ width: '100%', maxWidth: 460, marginTop: '-0.35rem', marginBottom: '0.85rem' }}
+                  >
+                    <a
+                      href={WHATSAPP_GROUP_URL}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="hero-btn-whatsapp"
+                      id="hero-join-whatsapp-btn"
+                      title="Join Official TKRCET Job Mela WhatsApp Group for live updates"
+                    >
+                      <WhatsAppIcon size={21} color="#ffffff" />
+                      <span>JOIN OFFICIAL WHATSAPP GROUP</span>
+                    </a>
                   </motion.div>
 
                   {/* 6. Venue Card - Mobile Only */}
@@ -1343,6 +1366,9 @@ const HomePage = () => {
           </div>
         </div>
       </section>
+
+      {/* Floating Official WhatsApp Community Action Button */}
+      <WhatsAppFloatingButton />
     </div>
   );
 };
