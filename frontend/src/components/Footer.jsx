@@ -2,8 +2,6 @@ import React from 'react';
 import { Calendar, MapPin, Phone, Award, ShieldCheck } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useRegistrationModal } from '../context/RegistrationModalContext';
-import WhatsAppIcon from './WhatsAppIcon';
-import { WHATSAPP_GROUP_URL } from '../utils/constants';
 
 const Footer = () => {
   const { openRegistrationModal } = useRegistrationModal();
@@ -183,24 +181,6 @@ const Footer = () => {
                 </Link>
               </li>
             </ul>
-
-            {/* Official WhatsApp Group Card in Footer */}
-            <div className="footer-whatsapp-card">
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <WhatsAppIcon size={20} color="#4ade80" />
-                <span style={{ fontSize: '0.82rem', color: '#f1f5f9', fontWeight: 600 }}>WhatsApp Group</span>
-              </div>
-              <a
-                href={WHATSAPP_GROUP_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="footer-whatsapp-btn"
-                id="footer-whatsapp-btn"
-                title="Join official Job Mela WhatsApp group"
-              >
-                Join ↗
-              </a>
-            </div>
           </div>
         </div>
 
