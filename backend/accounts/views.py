@@ -1,3 +1,4 @@
+import logging
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -15,7 +16,9 @@ from .serializers import (
     PasswordResetRequestSerializer,
     PasswordResetConfirmSerializer,
 )
-from .email import send_password_reset_email
+from .email import send_password_reset_email, send_registration_welcome_email
+
+logger = logging.getLogger(__name__)
 
 
 class RegisterView(APIView):
@@ -27,6 +30,17 @@ class RegisterView(APIView):
             user = serializer.save()
             token, _ = Token.objects.get_or_create(user=user)
             user_data = UserSerializer(user).data
+
+            # Immediately dispatch confirmation email with default guidelines & WhatsApp group
+            try:
+                send_registration_welcome_email(user)
+            except Exception as email_err:
+                logger.warning(
+                    "Failed to dispatch welcome email to %s: %s",
+                    user.email,
+                    email_err,
+                )
+
             return Response(
                 {
                     "message": "Registration successful! Welcome to TKRCET Job Mela 2026.",

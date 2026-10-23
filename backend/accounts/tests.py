@@ -1,6 +1,7 @@
 import io
 from unittest.mock import patch, MagicMock
 from django.test import TestCase, override_settings, RequestFactory
+from django.core import mail
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.exceptions import DisallowedHost
 from rest_framework import status
@@ -79,6 +80,23 @@ class StudentRegistrationTests(TestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertIn("token", response.data)
         self.assertTrue(User.objects.filter(email="testcandidate@tkrcet.ac.in").exists())
+
+    def test_registration_dispatches_welcome_email_with_whatsapp_link(self):
+        mail.outbox = []
+        payload = self.valid_payload.copy()
+        payload["email"] = "priyanka.reddy@tkrcet.ac.in"
+        payload["full_name"] = "Priyanka Reddy"
+
+        response = self.client.post(self.register_url, data=payload, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        self.assertEqual(len(mail.outbox), 1)
+        welcome_email = mail.outbox[0]
+        self.assertEqual(welcome_email.to, ["priyanka.reddy@tkrcet.ac.in"])
+        self.assertIn("Registration Confirmed", welcome_email.subject)
+        self.assertIn("Priyanka Reddy", welcome_email.body)
+        self.assertIn("31 October 2026", welcome_email.body)
+        self.assertIn("https://chat.whatsapp.com/GeBF7GJKkIJHdKsW4YZlsj", welcome_email.body)
 
     # 3. Successful photo upload using mocked Supabase Storage
     @override_settings(
@@ -982,6 +1000,60 @@ class PasswordResetTests(TestCase):
         # 3. Re-using the same token fails (single-use guarantee)
         res_reuse = self.client.post(self.confirm_url, data=success_payload, format="json")
         self.assertEqual(res_reuse.status_code, status.HTTP_400_BAD_REQUEST)
+
+
+class RegistrationWelcomeEmailTests(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+        self.register_url = "/api/auth/register/"
+        self.valid_payload = {
+            "full_name": "Srikanth Reddy",
+            "email": "srikanth.reddy@gmail.com",
+            "mobile": "9848012345",
+            "qualification": "B.Tech (CSE)",
+            "college": "TKR College of Engineering and Technology",
+            "password": "StrongPassword123!",
+            "confirm_password": "StrongPassword123!",
+        }
+
+    def test_registration_immediately_dispatches_welcome_email_with_whatsapp_link(self):
+        """Registering a new student dispatches an immediate confirmation email containing the official WhatsApp group link and event details."""
+        mail.outbox = []
+
+        res = self.client.post(self.register_url, data=self.valid_payload, format="multipart")
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(len(mail.outbox), 1)
+
+        sent_email = mail.outbox[0]
+        self.assertEqual(sent_email.to, ["srikanth.reddy@gmail.com"])
+        self.assertIn("Registration Confirmed", sent_email.subject)
+
+        # Check WhatsApp group link in body
+        whatsapp_link = "https://chat.whatsapp.com/GeBF7GJKkIJHdKsW4YZlsj?s=cl&p=a&mlu=4&ilr=4"
+        self.assertIn(whatsapp_link, sent_email.body)
+        self.assertIn("Srikanth Reddy", sent_email.body)
+        self.assertIn("31 October 2026", sent_email.body)
+        self.assertIn("CHECKLIST OF DOCUMENTS TO BRING", sent_email.body)
+
+        # Check alternative HTML content has the WhatsApp link and student portal
+        self.assertTrue(len(sent_email.alternatives) > 0)
+        html_body, mime = sent_email.alternatives[0]
+        self.assertEqual(mime, "text/html")
+        self.assertIn(whatsapp_link, html_body)
+        self.assertIn("Join the Official WhatsApp Group", html_body)
+
+    @patch("accounts.views.send_registration_welcome_email")
+    def test_registration_succeeds_even_if_email_fails(self, mock_send_email):
+        """Registration is resilient: if email service encounters an error, user account is still created and 201 response returned."""
+        mock_send_email.side_effect = Exception("SMTP connection timed out")
+
+        payload = self.valid_payload.copy()
+        payload["email"] = "resilient.candidate@gmail.com"
+
+        res = self.client.post(self.register_url, data=payload, format="multipart")
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+        self.assertTrue(User.objects.filter(email="resilient.candidate@gmail.com").exists())
+
 
 
 
