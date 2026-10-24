@@ -1937,31 +1937,47 @@ class AdminBroadcastEmailView(APIView):
     permission_classes = [IsAdminUserRole]
 
     def get(self, request):
-        total_students = User.objects.filter(role="student").count()
-        students_with_email = (
-            User.objects.filter(role="student")
-            .exclude(email__isnull=True)
-            .exclude(email__exact="")
-            .count()
-        )
-        students_with_apps = (
-            User.objects.filter(role="student", applications__isnull=False)
-            .distinct()
-            .count()
-        )
+        try:
+            total_students = User.objects.filter(role="student").count()
+            students_with_email = (
+                User.objects.filter(role="student")
+                .exclude(email__isnull=True)
+                .exclude(email__exact="")
+                .count()
+            )
+            students_with_apps = (
+                User.objects.filter(role="student", applications__isnull=False)
+                .distinct()
+                .count()
+            )
 
-        return Response(
-            {
-                "total_registered_students": total_students,
-                "students_with_email": students_with_email,
-                "students_with_applications": students_with_apps,
-                "admin_email": request.user.email,
-                "whatsapp_group_link": WHATSAPP_GROUP_LINK,
-                "smtp_configured": bool(getattr(settings, "EMAIL_HOST_USER", None)),
-                "default_from_email": getattr(settings, "DEFAULT_FROM_EMAIL", ""),
-            },
-            status=status.HTTP_200_OK,
-        )
+            admin_email = getattr(request.user, "email", "") or ""
+
+            return Response(
+                {
+                    "total_registered_students": total_students,
+                    "students_with_email": students_with_email,
+                    "students_with_applications": students_with_apps,
+                    "admin_email": admin_email,
+                    "whatsapp_group_link": WHATSAPP_GROUP_LINK,
+                    "smtp_configured": bool(getattr(settings, "EMAIL_HOST_USER", None)),
+                    "default_from_email": getattr(settings, "DEFAULT_FROM_EMAIL", ""),
+                },
+                status=status.HTTP_200_OK,
+            )
+        except Exception as exc:
+            return Response(
+                {
+                    "error": f"Failed to retrieve broadcast statistics: {str(exc)}",
+                    "total_registered_students": 0,
+                    "students_with_email": 0,
+                    "students_with_applications": 0,
+                    "admin_email": getattr(request.user, "email", "") or "",
+                    "whatsapp_group_link": WHATSAPP_GROUP_LINK,
+                    "smtp_configured": False,
+                },
+                status=status.HTTP_200_OK,
+            )
 
     def post(self, request):
         data = request.data or {}
@@ -2030,25 +2046,31 @@ class AdminBroadcastEmailView(APIView):
         total_count = dispatch_result.get("total_recipients", len(recipients))
         failed_count = dispatch_result.get("failed_count", 0)
         errors = dispatch_result.get("errors", [])
+        is_success = dispatch_result.get("success", False)
 
         if target == "test_self":
             human_msg = f"Test email dispatched successfully to {request.user.email}."
-        else:
+        elif sent_count > 0:
             human_msg = f"Broadcast successfully sent to {sent_count} of {total_count} registered participants."
+        else:
+            human_msg = f"Failed to deliver broadcast emails to {total_count} participants."
+
+        primary_error = errors[0] if (errors and not is_success) else (errors[0] if errors else None)
 
         response_status = (
-            status.HTTP_200_OK if dispatch_result.get("success") else status.HTTP_500_INTERNAL_SERVER_ERROR
+            status.HTTP_200_OK if is_success else status.HTTP_500_INTERNAL_SERVER_ERROR
         )
 
         return Response(
             {
-                "success": dispatch_result.get("success", False),
+                "success": is_success,
                 "target": target,
                 "total_recipients": total_count,
                 "sent_count": sent_count,
                 "failed_count": failed_count,
                 "errors": errors,
-                "message": human_msg,
+                "error": primary_error if not is_success else None,
+                "message": human_msg if is_success else (primary_error or human_msg),
                 "timestamp": timezone.now().isoformat(),
             },
             status=response_status,

@@ -89,6 +89,20 @@ const AdminBroadcastEmailModal = ({ isOpen, onClose }) => {
     }
   }, [isOpen]);
 
+  const extractErrorMessage = (err, defaultFallback) => {
+    if (!err) return defaultFallback;
+    if (err.response?.data) {
+      const d = err.response.data;
+      if (typeof d === 'string') return d;
+      if (d.error) return d.error;
+      if (d.detail) return d.detail;
+      if (Array.isArray(d.errors) && d.errors.length > 0) return d.errors.join('; ');
+      if (d.message) return d.message;
+    }
+    if (err.message) return err.message;
+    return defaultFallback;
+  };
+
   const fetchStats = async () => {
     setLoadingStats(true);
     try {
@@ -96,6 +110,15 @@ const AdminBroadcastEmailModal = ({ isOpen, onClose }) => {
       setStats(data);
     } catch (err) {
       console.error('Failed to load broadcast email statistics:', err);
+      const errMsg = extractErrorMessage(
+        err,
+        'Unable to load candidate statistics from backend'
+      );
+      setStatusResult({
+        type: 'error',
+        title: 'Audience Statistics Unavailable',
+        message: `${errMsg}. Please ensure your administrator session is active.`,
+      });
     } finally {
       setLoadingStats(false);
     }
@@ -104,6 +127,7 @@ const AdminBroadcastEmailModal = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
 
   const getRecipientCount = () => {
+    if (loadingStats) return '...';
     if (!stats) return '...';
     if (target === 'test_self') return 1;
     if (target === 'with_applications') return stats.students_with_applications || 0;
@@ -134,10 +158,10 @@ const AdminBroadcastEmailModal = ({ isOpen, onClose }) => {
           `Sample preview email sent to your administrator address (${stats?.admin_email || 'admin'}). Check your inbox!`,
       });
     } catch (err) {
-      const errorMsg =
-        err.response?.data?.error ||
-        err.response?.data?.errors?.[0] ||
-        'Failed to dispatch test email. Please check SMTP configuration.';
+      const errorMsg = extractErrorMessage(
+        err,
+        'Failed to dispatch test email. Please check your SMTP configuration.'
+      );
       setStatusResult({
         type: 'error',
         title: 'Test Delivery Failed',
@@ -167,10 +191,10 @@ const AdminBroadcastEmailModal = ({ isOpen, onClose }) => {
           `Successfully delivered email to ${res.sent_count} registered participants.`,
       });
     } catch (err) {
-      const errorMsg =
-        err.response?.data?.error ||
-        err.response?.data?.errors?.[0] ||
-        'Failed to dispatch broadcast emails. Please review your email settings.';
+      const errorMsg = extractErrorMessage(
+        err,
+        'Failed to dispatch broadcast emails. Please review your email settings.'
+      );
       setStatusResult({
         type: 'error',
         title: 'Broadcast Dispatch Error',
@@ -261,6 +285,34 @@ const AdminBroadcastEmailModal = ({ isOpen, onClose }) => {
                   {statusResult.title}
                 </strong>
                 <span>{statusResult.message}</span>
+              </div>
+            </div>
+          )}
+
+          {/* SMTP Not Configured Warning */}
+          {stats && stats.smtp_configured === false && (
+            <div
+              style={{
+                padding: '0.85rem 1.15rem',
+                borderRadius: 'var(--radius-md)',
+                backgroundColor: '#fffbeb',
+                border: '1.5px solid #fde68a',
+                color: '#92400e',
+                display: 'flex',
+                alignItems: 'flex-start',
+                gap: '0.65rem',
+                fontSize: '0.85rem',
+                lineHeight: 1.5,
+              }}
+            >
+              <ShieldAlert size={20} style={{ flexShrink: 0, marginTop: 1, color: '#d97706' }} />
+              <div>
+                <strong style={{ display: 'block', marginBottom: '0.15rem' }}>
+                  SMTP Credentials Not Configured on Server
+                </strong>
+                <span>
+                  The backend server has no active <code>EMAIL_HOST_USER</code> or <code>EMAIL_HOST_PASSWORD</code> environment variables set. Please configure your Hostinger/SMTP environment variables in your server/Vercel dashboard.
+                </span>
               </div>
             </div>
           )}

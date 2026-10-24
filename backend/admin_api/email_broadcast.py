@@ -290,8 +290,25 @@ def dispatch_broadcast_emails(
             msg.attach_alternative(html_body, "text/html")
             messages.append(msg)
 
-        # Send in batches to optimize memory and connection health
+        # Send in batches with serverless execution timeout guard (e.g. Vercel 10s-15s limit)
+        import time
+        start_time = time.time()
+        max_duration_seconds = 8.5
+
         for i in range(0, len(messages), batch_size):
+            if time.time() - start_time > max_duration_seconds:
+                remaining = len(messages) - sent_count
+                logger.warning(
+                    "Approaching serverless timeout after %d sent. Halting batch loop (%d remaining).",
+                    sent_count,
+                    remaining,
+                )
+                if remaining > 0 and len(errors) < 5:
+                    errors.append(
+                        f"Serverless execution limit reached after sending {sent_count} emails. Please dispatch remaining {remaining} in subsequent batches."
+                    )
+                break
+
             chunk = messages[i : i + batch_size]
             try:
                 num_sent = connection.send_messages(chunk)
