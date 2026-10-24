@@ -138,6 +138,27 @@ const AdminBroadcastEmailModal = ({ isOpen, onClose }) => {
     return stats.students_with_email || stats.total_registered_students || 0;
   };
 
+  const activeCampaign =
+    stats?.active_campaign ||
+    (batchProgress?.campaignId
+      ? {
+          id: batchProgress.campaignId,
+          sent_count: batchProgress.sent,
+          total_recipients: batchProgress.total,
+          remaining_count: batchProgress.remaining,
+          subject,
+        }
+      : null) ||
+    (statusResult?.campaignId
+      ? {
+          id: statusResult.campaignId,
+          sent_count: statusResult.sentCount,
+          total_recipients: statusResult.totalRecipients,
+          remaining_count: statusResult.remainingCount,
+          subject,
+        }
+      : null);
+
   const handleApplyPreset = (preset) => {
     setSubject(preset.subject);
     setMessage(preset.message);
@@ -177,25 +198,45 @@ const AdminBroadcastEmailModal = ({ isOpen, onClose }) => {
   };
 
   const handleResumeCampaign = async (campaignId) => {
+    const targetCampaignId = campaignId || activeCampaign?.id;
+    if (!targetCampaignId) return;
+
     setSending(true);
     setStatusResult(null);
     stopRequestedRef.current = false;
 
     try {
-      let res = { campaign_id: campaignId, is_completed: false };
+      let res = { campaign_id: targetCampaignId, is_completed: false };
       while (res && !res.is_completed && !stopRequestedRef.current) {
-        res = await adminService.sendBroadcastEmail({
-          action: 'resume',
-          campaign_id: campaignId,
-          batch_size: 50,
-        });
+        try {
+          res = await adminService.sendBroadcastEmail({
+            action: 'resume',
+            campaign_id: targetCampaignId,
+            batch_size: 25,
+          });
 
-        setBatchProgress({
-          campaignId: res.campaign_id,
-          sent: res.sent_count,
-          total: res.total_recipients,
-          remaining: res.remaining_count,
-        });
+          setBatchProgress({
+            campaignId: res.campaign_id,
+            sent: res.sent_count,
+            total: res.total_recipients,
+            remaining: res.remaining_count,
+          });
+        } catch (batchErr) {
+          console.error('Batch delivery error:', batchErr);
+          const errMsg = extractErrorMessage(batchErr, 'Batch delivery interrupted.');
+          setStatusResult({
+            type: 'error',
+            title: 'Broadcast Paused',
+            message: `${errMsg} Progress saved: ${res?.sent_count || 'several'} emails sent. You can resume at any time.`,
+            campaignId: targetCampaignId,
+            sentCount: res?.sent_count,
+            totalRecipients: res?.total_recipients,
+            remainingCount: res?.remaining_count,
+            canResume: true,
+          });
+          fetchStats();
+          break;
+        }
       }
 
       if (res && res.is_completed) {
@@ -211,6 +252,11 @@ const AdminBroadcastEmailModal = ({ isOpen, onClose }) => {
           type: 'info',
           title: 'Broadcast Paused by Administrator',
           message: `Broadcasting paused. Progress saved: ${res?.sent_count || 0} of ${res?.total_recipients || 0} sent. You can resume anytime.`,
+          campaignId: targetCampaignId,
+          sentCount: res?.sent_count,
+          totalRecipients: res?.total_recipients,
+          remainingCount: res?.remaining_count,
+          canResume: true,
         });
         fetchStats();
       }
@@ -220,6 +266,8 @@ const AdminBroadcastEmailModal = ({ isOpen, onClose }) => {
         type: 'error',
         title: 'Resume Interrupted',
         message: errorMsg,
+        campaignId: targetCampaignId,
+        canResume: true,
       });
       fetchStats();
     } finally {
@@ -247,13 +295,13 @@ const AdminBroadcastEmailModal = ({ isOpen, onClose }) => {
     stopRequestedRef.current = false;
 
     try {
-      // Step 1: Initial dispatch / create campaign
+      // Step 1: Initial dispatch / create campaign with batch_size: 25
       let res = await adminService.sendBroadcastEmail({
         subject,
         message,
         target,
         include_whatsapp: includeWhatsapp,
-        batch_size: 50,
+        batch_size: 25,
       });
 
       setBatchProgress({
@@ -269,7 +317,7 @@ const AdminBroadcastEmailModal = ({ isOpen, onClose }) => {
           res = await adminService.sendBroadcastEmail({
             action: 'resume',
             campaign_id: res.campaign_id,
-            batch_size: 50,
+            batch_size: 25,
           });
 
           setBatchProgress({
@@ -284,8 +332,14 @@ const AdminBroadcastEmailModal = ({ isOpen, onClose }) => {
           setStatusResult({
             type: 'error',
             title: 'Broadcast Paused',
-            message: `${errMsg} Progress saved: ${res.sent_count} of ${res.total_recipients} sent. You can resume at any time.`,
+            message: `${errMsg} Progress saved: ${res.sent_count} of ${res.total_recipients} sent. Click the button below to resume.`,
+            campaignId: res.campaign_id,
+            sentCount: res.sent_count,
+            totalRecipients: res.total_recipients,
+            remainingCount: res.remaining_count,
+            canResume: true,
           });
+          fetchStats();
           break;
         }
       }
@@ -305,6 +359,11 @@ const AdminBroadcastEmailModal = ({ isOpen, onClose }) => {
           type: 'info',
           title: 'Broadcast Paused by Administrator',
           message: `Broadcasting paused. Progress saved: ${res?.sent_count || 0} of ${res?.total_recipients || 0} sent. You can resume anytime.`,
+          campaignId: res?.campaign_id,
+          sentCount: res?.sent_count,
+          totalRecipients: res?.total_recipients,
+          remainingCount: res?.remaining_count,
+          canResume: true,
         });
         fetchStats();
       }
@@ -313,11 +372,18 @@ const AdminBroadcastEmailModal = ({ isOpen, onClose }) => {
         err,
         'Failed to dispatch broadcast emails. Please review your email settings.'
       );
+      const activeId = batchProgress?.campaignId || stats?.active_campaign?.id;
       setStatusResult({
         type: 'error',
         title: 'Broadcast Dispatch Error',
         message: errorMsg,
+        campaignId: activeId,
+        sentCount: batchProgress?.sent,
+        totalRecipients: batchProgress?.total,
+        remainingCount: batchProgress?.remaining,
+        canResume: Boolean(activeId),
       });
+      fetchStats();
     } finally {
       setSending(false);
     }
@@ -403,6 +469,29 @@ const AdminBroadcastEmailModal = ({ isOpen, onClose }) => {
                   {statusResult.title}
                 </strong>
                 <span>{statusResult.message}</span>
+                {statusResult.canResume && activeCampaign && !sending && (
+                  <div style={{ marginTop: '0.75rem' }}>
+                    <button
+                      type="button"
+                      className="btn btn-primary btn-sm"
+                      style={{
+                        backgroundColor: '#16a34a',
+                        borderColor: '#16a34a',
+                        color: '#ffffff',
+                        fontWeight: 700,
+                        padding: '0.45rem 1rem',
+                        fontSize: '0.88rem',
+                        boxShadow: '0 2px 8px rgba(22, 163, 74, 0.4)',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '0.45rem',
+                      }}
+                      onClick={() => handleResumeCampaign(statusResult.campaignId || activeCampaign?.id)}
+                    >
+                      ▶ Resume Broadcasting Now ({activeCampaign.remaining_count || 'Remaining'} Left)
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           )}
@@ -436,7 +525,7 @@ const AdminBroadcastEmailModal = ({ isOpen, onClose }) => {
           )}
 
           {/* Active In-Progress Campaign Banner */}
-          {stats?.active_campaign && !sending && !batchProgress && (
+          {activeCampaign && !sending && (
             <div
               style={{
                 padding: '0.9rem 1.15rem',
@@ -453,29 +542,29 @@ const AdminBroadcastEmailModal = ({ isOpen, onClose }) => {
               }}
             >
               <div>
-                <strong>Active Campaign in Progress:</strong> &ldquo;{stats.active_campaign.subject}&rdquo;
+                <strong>Active Campaign in Progress:</strong> &ldquo;{activeCampaign.subject || subject}&rdquo;
                 <div style={{ color: '#2563eb', fontSize: '0.8rem', marginTop: '0.2rem' }}>
-                  Progress: <strong>{stats.active_campaign.sent_count}</strong> of {stats.active_campaign.total_recipients} sent ({stats.active_campaign.remaining_count} remaining)
+                  Progress: <strong>{activeCampaign.sent_count}</strong> of {activeCampaign.total_recipients || getRecipientCount()} sent ({activeCampaign.remaining_count} remaining)
                 </div>
               </div>
               <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
                 <button
                   type="button"
                   className="btn btn-sm btn-primary"
-                  onClick={() => handleResumeCampaign(stats.active_campaign.id)}
+                  onClick={() => handleResumeCampaign(activeCampaign.id)}
                   style={{
-                    backgroundColor: '#2563eb',
-                    borderColor: '#2563eb',
+                    backgroundColor: '#16a34a',
+                    borderColor: '#16a34a',
                     color: '#ffffff',
-                    fontWeight: 600,
+                    fontWeight: 700,
                   }}
                 >
-                  Resume Broadcast ({stats.active_campaign.remaining_count} remaining)
+                  ▶ Resume Broadcast ({activeCampaign.remaining_count} remaining)
                 </button>
                 <button
                   type="button"
                   className="btn btn-sm btn-outline"
-                  onClick={() => handleCancelCampaign(stats.active_campaign.id)}
+                  onClick={() => handleCancelCampaign(activeCampaign.id)}
                   style={{ fontSize: '0.8rem' }}
                 >
                   Discard
@@ -947,6 +1036,23 @@ const AdminBroadcastEmailModal = ({ isOpen, onClose }) => {
             >
               <Mail size={15} /> Send Test to Myself
             </button>
+
+            {activeCampaign && !sending && (
+              <button
+                type="button"
+                onClick={() => handleResumeCampaign(activeCampaign.id)}
+                className="btn btn-primary btn-sm"
+                style={{
+                  backgroundColor: '#16a34a',
+                  borderColor: '#16a34a',
+                  color: '#ffffff',
+                  fontWeight: 700,
+                  boxShadow: '0 2px 6px rgba(22, 163, 74, 0.35)',
+                }}
+              >
+                ▶ Resume Broadcast ({activeCampaign.remaining_count} left)
+              </button>
+            )}
 
             {target === 'test_self' ? (
               <button

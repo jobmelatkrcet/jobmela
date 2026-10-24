@@ -23,8 +23,8 @@ test('Admin Broadcast: Supports resumable batch execution loop and progress trac
   );
   assert.match(
     modalSource,
-    /batch_size:\s*50/i,
-    'Modal must dispatch in safe batches of 50 to prevent serverless timeouts'
+    /batch_size:\s*(?:25|50)/i,
+    'Modal must dispatch in safe batches of 25-50 to prevent serverless timeouts'
   );
 });
 

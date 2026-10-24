@@ -115,7 +115,9 @@ export const adminService = {
   },
 
   async sendBroadcastEmail(payload) {
-    const res = await api.post('/admin/broadcast-email/', payload);
+    const res = await api.post('/admin/broadcast-email/', payload, {
+      timeout: 120000, // 2-minute client timeout per batch to prevent premature aborts on SMTP bursts
+    });
     return res.data;
   },
 };
