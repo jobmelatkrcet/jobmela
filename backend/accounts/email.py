@@ -15,7 +15,7 @@ def send_password_reset_email(user, reset_url):
     from_email = getattr(
         settings,
         "DEFAULT_FROM_EMAIL",
-        "TKRCET Mega Job Mela 2026 <no-reply@tkrcetjobmela.in>",
+        "TKRCET Mega Job Mela 2026 <jobmela@tkrcetjobmela.in>",
     )
     to_email = user.email
 
@@ -227,7 +227,7 @@ def send_registration_welcome_email(user):
     from_email = getattr(
         settings,
         "DEFAULT_FROM_EMAIL",
-        "TKRCET Mega Job Mela 2026 <no-reply@tkrcetjobmela.in>",
+        "TKRCET Mega Job Mela 2026 <jobmela@tkrcetjobmela.in>",
     )
     to_email = user.email
 

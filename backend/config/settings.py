@@ -249,15 +249,22 @@ for origin in CORS_ALLOWED_ORIGINS:
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-# Email Configuration
+# Email Configuration (Hostinger SMTP default: smtp.hostinger.com:465 SSL)
 EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "").strip()
 EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "").replace(" ", "").strip()
-EMAIL_HOST = os.environ.get("EMAIL_HOST", "smtp.gmail.com").strip()
+EMAIL_HOST = os.environ.get("EMAIL_HOST", "smtp.hostinger.com").strip()
 raw_port = os.environ.get("EMAIL_PORT", "").strip()
 raw_ssl = os.environ.get("EMAIL_USE_SSL", "").strip().lower()
 raw_tls = os.environ.get("EMAIL_USE_TLS", "").strip().lower()
 
-if raw_ssl in ("true", "1", "yes") or raw_port == "465":
+# Hostinger requires port 465 with SSL for reliable delivery
+is_hostinger = "hostinger" in EMAIL_HOST.lower() or EMAIL_HOST_USER.endswith("tkrcetjobmela.in")
+
+if (
+    raw_ssl in ("true", "1", "yes")
+    or raw_port == "465"
+    or (is_hostinger and raw_ssl not in ("false", "0", "no") and raw_tls not in ("true", "1", "yes"))
+):
     EMAIL_USE_SSL = True
     EMAIL_USE_TLS = False
     EMAIL_PORT = int(raw_port or 465)
@@ -266,10 +273,13 @@ else:
     EMAIL_USE_TLS = raw_tls in ("true", "1", "yes") if raw_tls else True
     EMAIL_PORT = int(raw_port or 587)
 
-EMAIL_TIMEOUT = 10
+EMAIL_TIMEOUT = 12
+
+# Derive sender email matching authenticated user to prevent Hostinger 553 anti-spoofing rejection
+default_sender_addr = EMAIL_HOST_USER if EMAIL_HOST_USER else "jobmela@tkrcetjobmela.in"
 DEFAULT_FROM_EMAIL = os.environ.get(
     "DEFAULT_FROM_EMAIL",
-    "TKRCET Mega Job Mela 2026 <no-reply@tkrcetjobmela.in>"
+    f"TKRCET Mega Job Mela 2026 <{default_sender_addr}>",
 ).strip()
 
 default_email_backend = (

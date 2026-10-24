@@ -237,7 +237,7 @@ def dispatch_broadcast_emails(
     default_from = getattr(
         settings,
         "DEFAULT_FROM_EMAIL",
-        "TKRCET Mega Job Mela 2026 <no-reply@tkrcetjobmela.in>",
+        "TKRCET Mega Job Mela 2026 <jobmela@tkrcetjobmela.in>",
     )
     sender = from_email or default_from
 
