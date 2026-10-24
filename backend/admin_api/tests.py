@@ -144,3 +144,87 @@ class AdminBroadcastEmailTests(TestCase):
         self.assertEqual(data["sent_count"], 1)
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].to, ["student1@gmail.com"])
+
+    def test_admin_broadcast_resumable_batches_and_no_duplicates(self):
+        """
+        Verify that broadcast emails can be safely dispatched in resumable batches
+        with duplicate-send protection (already-sent recipients are never re-sent).
+        """
+        # Add 2 more students so total is 4
+        User.objects.create_user(
+            email="student3@gmail.com",
+            password="pass",
+            full_name="Third Student",
+            role="student",
+        )
+        User.objects.create_user(
+            email="student4@gmail.com",
+            password="pass",
+            full_name="Fourth Student",
+            role="student",
+        )
+
+        mail.outbox = []
+        self.client.force_authenticate(user=self.admin)
+
+        # Dispatch Batch 1 of 2
+        payload = {
+            "subject": "Resumable Batch Test",
+            "message": "Testing chunked delivery with duplicate protection.",
+            "target": "all_students",
+            "batch_size": 2,
+        }
+        res = self.client.post("/api/admin/broadcast-email/", payload, format="json")
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        data = res.json()
+        self.assertFalse(data["is_completed"])
+        self.assertEqual(data["sent_count"], 2)
+        self.assertEqual(data["remaining_count"], 2)
+        self.assertEqual(data["total_recipients"], 4)
+        self.assertEqual(len(mail.outbox), 2)
+
+        campaign_id = data["campaign_id"]
+        first_batch_recipients = [m.to[0] for m in mail.outbox]
+
+        # Reset outbox to inspect the second batch
+        mail.outbox = []
+
+        # Resume Campaign to send remaining batch
+        resume_payload = {
+            "action": "resume",
+            "campaign_id": campaign_id,
+            "batch_size": 2,
+        }
+        res2 = self.client.post("/api/admin/broadcast-email/", resume_payload, format="json")
+        self.assertEqual(res2.status_code, status.HTTP_200_OK)
+        data2 = res2.json()
+        self.assertTrue(data2["is_completed"])
+        self.assertEqual(data2["sent_count"], 4)
+        self.assertEqual(data2["remaining_count"], 0)
+        self.assertEqual(len(mail.outbox), 2)
+
+        second_batch_recipients = [m.to[0] for m in mail.outbox]
+
+        # Verify NO duplicate recipients across batches
+        for recipient in second_batch_recipients:
+            self.assertNotIn(recipient, first_batch_recipients)
+
+    def test_admin_broadcast_cancel_campaign(self):
+        self.client.force_authenticate(user=self.admin)
+        from admin_api.models import BroadcastCampaign
+
+        campaign = BroadcastCampaign.objects.create(
+            subject="Campaign to Cancel",
+            message="Will be cancelled.",
+            target="all_students",
+            status="in_progress",
+        )
+        res = self.client.post(
+            "/api/admin/broadcast-email/",
+            {"action": "cancel", "campaign_id": campaign.id},
+            format="json",
+        )
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        campaign.refresh_from_db()
+        self.assertEqual(campaign.status, "cancelled")
+

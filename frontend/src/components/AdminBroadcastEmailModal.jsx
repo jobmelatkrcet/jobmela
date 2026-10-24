@@ -79,12 +79,16 @@ const AdminBroadcastEmailModal = ({ isOpen, onClose }) => {
   const [sending, setSending] = useState(false);
   const [confirmSendOpen, setConfirmSendOpen] = useState(false);
   const [statusResult, setStatusResult] = useState(null);
+  const [batchProgress, setBatchProgress] = useState(null);
+  const stopRequestedRef = React.useRef(false);
 
   // Fetch real-time candidate statistics when opened
   useEffect(() => {
     if (isOpen) {
       setStatusResult(null);
       setConfirmSendOpen(false);
+      setBatchProgress(null);
+      stopRequestedRef.current = false;
       fetchStats();
     }
   }, [isOpen]);
@@ -172,24 +176,138 @@ const AdminBroadcastEmailModal = ({ isOpen, onClose }) => {
     }
   };
 
+  const handleResumeCampaign = async (campaignId) => {
+    setSending(true);
+    setStatusResult(null);
+    stopRequestedRef.current = false;
+
+    try {
+      let res = { campaign_id: campaignId, is_completed: false };
+      while (res && !res.is_completed && !stopRequestedRef.current) {
+        res = await adminService.sendBroadcastEmail({
+          action: 'resume',
+          campaign_id: campaignId,
+          batch_size: 50,
+        });
+
+        setBatchProgress({
+          campaignId: res.campaign_id,
+          sent: res.sent_count,
+          total: res.total_recipients,
+          remaining: res.remaining_count,
+        });
+      }
+
+      if (res && res.is_completed) {
+        setStatusResult({
+          type: 'success',
+          title: 'Broadcast Completed Successfully!',
+          message: `All ${res.sent_count} of ${res.total_recipients} emails were successfully delivered without duplicates.`,
+        });
+        setBatchProgress(null);
+        fetchStats();
+      } else if (stopRequestedRef.current) {
+        setStatusResult({
+          type: 'info',
+          title: 'Broadcast Paused by Administrator',
+          message: `Broadcasting paused. Progress saved: ${res?.sent_count || 0} of ${res?.total_recipients || 0} sent. You can resume anytime.`,
+        });
+        fetchStats();
+      }
+    } catch (err) {
+      const errorMsg = extractErrorMessage(err, 'Failed to resume broadcast campaign.');
+      setStatusResult({
+        type: 'error',
+        title: 'Resume Interrupted',
+        message: errorMsg,
+      });
+      fetchStats();
+    } finally {
+      setSending(false);
+    }
+  };
+
+  const handleCancelCampaign = async (campaignId) => {
+    try {
+      await adminService.sendBroadcastEmail({
+        action: 'cancel',
+        campaign_id: campaignId,
+      });
+      setBatchProgress(null);
+      fetchStats();
+    } catch (err) {
+      console.error('Failed to cancel campaign:', err);
+    }
+  };
+
   const handleExecuteBroadcast = async () => {
     setConfirmSendOpen(false);
     setSending(true);
     setStatusResult(null);
+    stopRequestedRef.current = false;
+
     try {
-      const res = await adminService.sendBroadcastEmail({
+      // Step 1: Initial dispatch / create campaign
+      let res = await adminService.sendBroadcastEmail({
         subject,
         message,
         target,
         include_whatsapp: includeWhatsapp,
+        batch_size: 50,
       });
-      setStatusResult({
-        type: 'success',
-        title: 'Broadcast Dispatched Successfully!',
-        message:
-          res.message ||
-          `Successfully delivered email to ${res.sent_count} registered participants.`,
+
+      setBatchProgress({
+        campaignId: res.campaign_id,
+        sent: res.sent_count,
+        total: res.total_recipients,
+        remaining: res.remaining_count,
       });
+
+      // Step 2: Loop remaining batches if needed
+      while (res && !res.is_completed && !stopRequestedRef.current) {
+        try {
+          res = await adminService.sendBroadcastEmail({
+            action: 'resume',
+            campaign_id: res.campaign_id,
+            batch_size: 50,
+          });
+
+          setBatchProgress({
+            campaignId: res.campaign_id,
+            sent: res.sent_count,
+            total: res.total_recipients,
+            remaining: res.remaining_count,
+          });
+        } catch (batchErr) {
+          console.error('Batch delivery error:', batchErr);
+          const errMsg = extractErrorMessage(batchErr, 'Batch delivery interrupted.');
+          setStatusResult({
+            type: 'error',
+            title: 'Broadcast Paused',
+            message: `${errMsg} Progress saved: ${res.sent_count} of ${res.total_recipients} sent. You can resume at any time.`,
+          });
+          break;
+        }
+      }
+
+      if (res && res.is_completed) {
+        setStatusResult({
+          type: 'success',
+          title: 'Broadcast Dispatched Successfully!',
+          message:
+            res.message ||
+            `Successfully delivered email to all ${res.sent_count} registered participants.`,
+        });
+        setBatchProgress(null);
+        fetchStats();
+      } else if (stopRequestedRef.current) {
+        setStatusResult({
+          type: 'info',
+          title: 'Broadcast Paused by Administrator',
+          message: `Broadcasting paused. Progress saved: ${res?.sent_count || 0} of ${res?.total_recipients || 0} sent. You can resume anytime.`,
+        });
+        fetchStats();
+      }
     } catch (err) {
       const errorMsg = extractErrorMessage(
         err,
@@ -313,6 +431,102 @@ const AdminBroadcastEmailModal = ({ isOpen, onClose }) => {
                 <span>
                   The backend server has no active <code>EMAIL_HOST_USER</code> or <code>EMAIL_HOST_PASSWORD</code> environment variables set. Please configure your Hostinger/SMTP environment variables in your server/Vercel dashboard.
                 </span>
+              </div>
+            </div>
+          )}
+
+          {/* Active In-Progress Campaign Banner */}
+          {stats?.active_campaign && !sending && !batchProgress && (
+            <div
+              style={{
+                padding: '0.9rem 1.15rem',
+                borderRadius: 'var(--radius-md)',
+                backgroundColor: '#eff6ff',
+                border: '1.5px solid #93c5fd',
+                color: '#1e3a8a',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: '0.75rem',
+                fontSize: '0.86rem',
+                flexWrap: 'wrap',
+              }}
+            >
+              <div>
+                <strong>Active Campaign in Progress:</strong> &ldquo;{stats.active_campaign.subject}&rdquo;
+                <div style={{ color: '#2563eb', fontSize: '0.8rem', marginTop: '0.2rem' }}>
+                  Progress: <strong>{stats.active_campaign.sent_count}</strong> of {stats.active_campaign.total_recipients} sent ({stats.active_campaign.remaining_count} remaining)
+                </div>
+              </div>
+              <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                <button
+                  type="button"
+                  className="btn btn-sm btn-primary"
+                  onClick={() => handleResumeCampaign(stats.active_campaign.id)}
+                  style={{
+                    backgroundColor: '#2563eb',
+                    borderColor: '#2563eb',
+                    color: '#ffffff',
+                    fontWeight: 600,
+                  }}
+                >
+                  Resume Broadcast ({stats.active_campaign.remaining_count} remaining)
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-sm btn-outline"
+                  onClick={() => handleCancelCampaign(stats.active_campaign.id)}
+                  style={{ fontSize: '0.8rem' }}
+                >
+                  Discard
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Live Batch Progress Bar */}
+          {sending && batchProgress && (
+            <div
+              style={{
+                padding: '1rem 1.25rem',
+                borderRadius: 'var(--radius-md)',
+                backgroundColor: '#f8fafc',
+                border: '1.5px solid #cbd5e1',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '0.65rem',
+              }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ fontSize: '0.88rem', fontWeight: 700, color: '#1e293b' }}>
+                  Sending Broadcast in Batches (Vercel Timeout Safe)...
+                </span>
+                <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#2563eb' }}>
+                  {Math.min(100, Math.round(((batchProgress.sent || 0) / (batchProgress.total || 1)) * 100))}%
+                </span>
+              </div>
+              <div style={{ width: '100%', height: 8, backgroundColor: '#e2e8f0', borderRadius: 999, overflow: 'hidden' }}>
+                <div
+                  style={{
+                    width: `${Math.min(100, Math.round(((batchProgress.sent || 0) / (batchProgress.total || 1)) * 100))}%`,
+                    height: '100%',
+                    background: 'linear-gradient(90deg, #3b82f6 0%, #10b981 100%)',
+                    transition: 'width 0.3s ease',
+                  }}
+                />
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.8rem', color: '#64748b' }}>
+                <span>
+                  Delivered: <strong>{batchProgress.sent}</strong> / {batchProgress.total} ({batchProgress.remaining} remaining)
+                </span>
+                <button
+                  type="button"
+                  className="btn btn-sm btn-outline"
+                  style={{ padding: '0.2rem 0.65rem', fontSize: '0.78rem' }}
+                  onClick={() => { stopRequestedRef.current = true; }}
+                >
+                  Pause After Batch
+                </button>
               </div>
             </div>
           )}

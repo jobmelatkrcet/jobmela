@@ -23,7 +23,12 @@ from applications.models import Application
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from .permissions import IsAdminUserRole
 from django.utils import timezone
-from .email_broadcast import dispatch_broadcast_emails, WHATSAPP_GROUP_LINK
+from .models import BroadcastCampaign, BroadcastRecipient
+from .email_broadcast import (
+    dispatch_broadcast_emails,
+    dispatch_campaign_batch,
+    WHATSAPP_GROUP_LINK,
+)
 from .serializers import (
     AdminStudentListSerializer,
     AdminStudentDetailSerializer,
@@ -1933,6 +1938,7 @@ class AdminBroadcastEmailView(APIView):
     """
     Broadcast email endpoint allowing organizers to send announcement emails
     to all registered participants, students with applications, or test to admin.
+    Supports safe, resumable batches with per-recipient status tracking and duplicate protection.
     """
     permission_classes = [IsAdminUserRole]
 
@@ -1953,6 +1959,31 @@ class AdminBroadcastEmailView(APIView):
 
             admin_email = getattr(request.user, "email", "") or ""
 
+            # Check if there is an active in-progress/pending campaign
+            active_campaign = (
+                BroadcastCampaign.objects.filter(
+                    status__in=["pending", "in_progress", "paused"]
+                )
+                .order_by("-created_at")
+                .first()
+            )
+            active_campaign_data = None
+            if active_campaign:
+                remaining_count = active_campaign.recipients.filter(status="pending").count()
+                active_campaign_data = {
+                    "id": active_campaign.id,
+                    "subject": active_campaign.subject,
+                    "message": active_campaign.message,
+                    "target": active_campaign.target,
+                    "include_whatsapp": active_campaign.include_whatsapp,
+                    "status": active_campaign.status,
+                    "total_recipients": active_campaign.total_recipients,
+                    "sent_count": active_campaign.sent_count,
+                    "failed_count": active_campaign.failed_count,
+                    "remaining_count": remaining_count,
+                    "created_at": active_campaign.created_at.isoformat(),
+                }
+
             return Response(
                 {
                     "total_registered_students": total_students,
@@ -1962,6 +1993,7 @@ class AdminBroadcastEmailView(APIView):
                     "whatsapp_group_link": WHATSAPP_GROUP_LINK,
                     "smtp_configured": bool(getattr(settings, "EMAIL_HOST_USER", None)),
                     "default_from_email": getattr(settings, "DEFAULT_FROM_EMAIL", ""),
+                    "active_campaign": active_campaign_data,
                 },
                 status=status.HTTP_200_OK,
             )
@@ -1975,12 +2007,78 @@ class AdminBroadcastEmailView(APIView):
                     "admin_email": getattr(request.user, "email", "") or "",
                     "whatsapp_group_link": WHATSAPP_GROUP_LINK,
                     "smtp_configured": False,
+                    "active_campaign": None,
                 },
                 status=status.HTTP_200_OK,
             )
 
     def post(self, request):
         data = request.data or {}
+        action = str(data.get("action", "")).strip().lower()
+        campaign_id = data.get("campaign_id")
+        batch_size = int(data.get("batch_size") or 50)
+
+        # 1. Action: Cancel/discard an active campaign
+        if action in ("cancel", "discard"):
+            if not campaign_id:
+                return Response(
+                    {"error": "campaign_id is required to cancel a campaign."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            BroadcastCampaign.objects.filter(id=campaign_id).update(
+                status="cancelled", updated_at=timezone.now()
+            )
+            return Response(
+                {"success": True, "message": "Broadcast campaign cancelled successfully."},
+                status=status.HTTP_200_OK,
+            )
+
+        # 2. Action: Resume or continue next batch of an existing campaign
+        if action == "resume" or (campaign_id and action != "new"):
+            try:
+                campaign = BroadcastCampaign.objects.get(id=campaign_id)
+            except BroadcastCampaign.DoesNotExist:
+                return Response(
+                    {"error": f"Campaign with ID {campaign_id} not found."},
+                    status=status.HTTP_404_NOT_FOUND,
+                )
+
+            dispatch_result = dispatch_campaign_batch(campaign, batch_size=batch_size)
+            is_success = dispatch_result.get("success", False)
+            sent_count = dispatch_result.get("sent_count", 0)
+            total_count = dispatch_result.get("total_recipients", 0)
+            remaining_count = dispatch_result.get("remaining_count", 0)
+            is_completed = dispatch_result.get("is_completed", False)
+            errors = dispatch_result.get("errors", [])
+            primary_error = errors[0] if (errors and not is_success) else None
+
+            if is_completed:
+                human_msg = f"Broadcast successfully completed! Sent to {sent_count} of {total_count} registered participants."
+            else:
+                human_msg = f"Progress saved: {sent_count} of {total_count} emails sent ({remaining_count} remaining)."
+
+            return Response(
+                {
+                    "success": is_success,
+                    "target": campaign.target,
+                    "campaign_id": campaign.id,
+                    "is_completed": is_completed,
+                    "total_recipients": total_count,
+                    "sent_count": sent_count,
+                    "failed_count": dispatch_result.get("failed_count", 0),
+                    "remaining_count": remaining_count,
+                    "batch_sent": dispatch_result.get("batch_sent", 0),
+                    "batch_failed": dispatch_result.get("batch_failed", 0),
+                    "status": campaign.status,
+                    "errors": errors,
+                    "error": primary_error,
+                    "message": human_msg if is_success else (primary_error or human_msg),
+                    "timestamp": timezone.now().isoformat(),
+                },
+                status=status.HTTP_200_OK if is_success else status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+        # 3. New Broadcast or Test to Self
         subject = str(data.get("subject", "")).strip()
         message = str(data.get("message", "")).strip()
         target = str(data.get("target", "all_students")).strip().lower()
@@ -1998,7 +2096,7 @@ class AdminBroadcastEmailView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        # Resolve recipients based on target group
+        # Target: test_self (Fast single-shot test to administrator's inbox)
         if target == "test_self":
             admin_email = request.user.email
             if not admin_email:
@@ -2007,26 +2105,51 @@ class AdminBroadcastEmailView(APIView):
                     status=status.HTTP_400_BAD_REQUEST,
                 )
             recipients = [(admin_email, request.user.full_name or "Administrator")]
-        elif target == "with_applications":
-            qs = (
+            dispatch_result = dispatch_broadcast_emails(
+                subject=subject,
+                message_text=message,
+                recipients=recipients,
+                include_whatsapp=include_whatsapp,
+            )
+            is_success = dispatch_result.get("success", False)
+            errors = dispatch_result.get("errors", [])
+            primary_error = errors[0] if (errors and not is_success) else None
+
+            return Response(
+                {
+                    "success": is_success,
+                    "target": "test_self",
+                    "total_recipients": 1,
+                    "sent_count": dispatch_result.get("sent_count", 0),
+                    "failed_count": dispatch_result.get("failed_count", 0),
+                    "errors": errors,
+                    "error": primary_error,
+                    "message": f"Test email dispatched successfully to {admin_email}."
+                    if is_success
+                    else (primary_error or "Failed to deliver test email."),
+                    "timestamp": timezone.now().isoformat(),
+                },
+                status=status.HTTP_200_OK if is_success else status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+        # Target: with_applications or all_students
+        if target == "with_applications":
+            students_qs = (
                 User.objects.filter(role="student", applications__isnull=False)
                 .distinct()
                 .exclude(email__isnull=True)
                 .exclude(email__exact="")
-                .values_list("email", "full_name")
             )
-            recipients = list(qs)
-        else:  # default "all_students"
+        else:
             target = "all_students"
-            qs = (
+            students_qs = (
                 User.objects.filter(role="student")
                 .exclude(email__isnull=True)
                 .exclude(email__exact="")
-                .values_list("email", "full_name")
             )
-            recipients = list(qs)
 
-        if not recipients:
+        student_list = list(students_qs.only("id", "email", "full_name"))
+        if not student_list:
             return Response(
                 {
                     "error": "No registered participants with valid email addresses found for the selected audience."
@@ -2034,46 +2157,70 @@ class AdminBroadcastEmailView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        # Dispatch the emails
-        dispatch_result = dispatch_broadcast_emails(
+        # Create BroadcastCampaign record
+        campaign = BroadcastCampaign.objects.create(
             subject=subject,
-            message_text=message,
-            recipients=recipients,
+            message=message,
+            target=target,
             include_whatsapp=include_whatsapp,
+            created_by=request.user,
+            status="in_progress",
+            total_recipients=len(student_list),
         )
 
-        sent_count = dispatch_result.get("sent_count", 0)
-        total_count = dispatch_result.get("total_recipients", len(recipients))
-        failed_count = dispatch_result.get("failed_count", 0)
-        errors = dispatch_result.get("errors", [])
-        is_success = dispatch_result.get("success", False)
+        # Seed recipients with unique constraint protection
+        recipients_to_create = [
+            BroadcastRecipient(
+                campaign=campaign,
+                student=st,
+                email=st.email.strip(),
+                full_name=st.full_name or "Candidate",
+                status="pending",
+            )
+            for st in student_list
+        ]
+        BroadcastRecipient.objects.bulk_create(recipients_to_create, ignore_conflicts=True)
 
-        if target == "test_self":
-            human_msg = f"Test email dispatched successfully to {request.user.email}."
-        elif sent_count > 0:
+        actual_total = campaign.recipients.count()
+        if actual_total != campaign.total_recipients:
+            campaign.total_recipients = actual_total
+            campaign.save(update_fields=["total_recipients"])
+
+        # Immediately dispatch the first batch
+        dispatch_result = dispatch_campaign_batch(campaign, batch_size=batch_size)
+        is_success = dispatch_result.get("success", False)
+        sent_count = dispatch_result.get("sent_count", 0)
+        total_count = dispatch_result.get("total_recipients", actual_total)
+        failed_count = dispatch_result.get("failed_count", 0)
+        remaining_count = dispatch_result.get("remaining_count", 0)
+        is_completed = dispatch_result.get("is_completed", False)
+        errors = dispatch_result.get("errors", [])
+        primary_error = errors[0] if (errors and not is_success) else None
+
+        if is_completed:
             human_msg = f"Broadcast successfully sent to {sent_count} of {total_count} registered participants."
         else:
-            human_msg = f"Failed to deliver broadcast emails to {total_count} participants."
-
-        primary_error = errors[0] if (errors and not is_success) else (errors[0] if errors else None)
-
-        response_status = (
-            status.HTTP_200_OK if is_success else status.HTTP_500_INTERNAL_SERVER_ERROR
-        )
+            human_msg = f"Batch 1 dispatched: {sent_count} of {total_count} emails delivered ({remaining_count} remaining)."
 
         return Response(
             {
                 "success": is_success,
                 "target": target,
+                "campaign_id": campaign.id,
+                "is_completed": is_completed,
                 "total_recipients": total_count,
                 "sent_count": sent_count,
                 "failed_count": failed_count,
+                "remaining_count": remaining_count,
+                "batch_sent": dispatch_result.get("batch_sent", 0),
+                "batch_failed": dispatch_result.get("batch_failed", 0),
+                "status": campaign.status,
                 "errors": errors,
-                "error": primary_error if not is_success else None,
+                "error": primary_error,
                 "message": human_msg if is_success else (primary_error or human_msg),
                 "timestamp": timezone.now().isoformat(),
             },
-            status=response_status,
+            status=status.HTTP_200_OK if is_success else status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
 
 

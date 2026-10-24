@@ -31,12 +31,13 @@ class RegisterView(APIView):
             token, _ = Token.objects.get_or_create(user=user)
             user_data = UserSerializer(user).data
 
-            # Immediately dispatch confirmation email with default guidelines & WhatsApp group
+            # Resilient email dispatch: Student registration must NEVER be rolled back
+            # or failed due to SMTP delays, timeouts, or network failures.
             try:
                 send_registration_welcome_email(user)
             except Exception as email_err:
                 logger.warning(
-                    "Failed to dispatch welcome email to %s: %s",
+                    "Non-fatal error: Failed to dispatch welcome email to %s: %s",
                     user.email,
                     email_err,
                 )

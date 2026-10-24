@@ -1,6 +1,6 @@
 import logging
 from django.conf import settings
-from django.core.mail import EmailMultiAlternatives
+from django.core.mail import EmailMultiAlternatives, get_connection
 from django.utils.html import escape
 
 logger = logging.getLogger(__name__)
@@ -191,11 +191,14 @@ Website: https://www.tkrcetjobmela.in
 """
 
     try:
+        timeout = getattr(settings, "EMAIL_TIMEOUT", 5)
+        connection = get_connection(timeout=timeout)
         msg = EmailMultiAlternatives(
             subject=subject,
             body=text_content,
             from_email=from_email,
             to=[to_email],
+            connection=connection,
         )
         msg.attach_alternative(html_content, "text/html")
         msg.send(fail_silently=False)
@@ -519,11 +522,14 @@ Medbowli, Meerpet, Hyderabad
 """
 
     try:
+        timeout = getattr(settings, "EMAIL_TIMEOUT", 5)
+        connection = get_connection(timeout=timeout)
         msg = EmailMultiAlternatives(
             subject=subject,
             body=text_content,
             from_email=from_email,
             to=[to_email],
+            connection=connection,
         )
         msg.attach_alternative(html_content, "text/html")
         msg.send(fail_silently=False)

@@ -341,3 +341,198 @@ def dispatch_broadcast_emails(
         "failed_count": failed_count,
         "errors": errors,
     }
+
+
+def dispatch_campaign_batch(
+    campaign,
+    batch_size=50,
+    from_email=None,
+    whatsapp_url=WHATSAPP_GROUP_LINK,
+    max_duration_seconds=22.0,
+):
+    """
+    Safely dispatches the next batch of pending recipients for a BroadcastCampaign.
+    Tracks each recipient's status ('sent' or 'failed') individually with timestamps and error details.
+    Guarantees duplicate-send protection via DB status checking and unique constraints.
+    Returns a dict with execution progress and remaining recipient count.
+    """
+    import time
+
+    pending_recipients_qs = campaign.recipients.filter(status="pending").order_by("id")
+    pending_count_total = pending_recipients_qs.count()
+
+    if pending_count_total == 0:
+        campaign.status = "completed"
+        campaign.save(update_fields=["status", "updated_at"])
+        return {
+            "success": True,
+            "campaign_id": campaign.id,
+            "is_completed": True,
+            "total_recipients": campaign.total_recipients,
+            "sent_count": campaign.sent_count,
+            "failed_count": campaign.failed_count,
+            "batch_sent": 0,
+            "batch_failed": 0,
+            "remaining_count": 0,
+            "status": "completed",
+            "errors": [],
+        }
+
+    # Fetch this batch
+    batch_recipients = list(pending_recipients_qs[:batch_size])
+    if not batch_recipients:
+        campaign.status = "completed"
+        campaign.save(update_fields=["status", "updated_at"])
+        return {
+            "success": True,
+            "campaign_id": campaign.id,
+            "is_completed": True,
+            "total_recipients": campaign.total_recipients,
+            "sent_count": campaign.sent_count,
+            "failed_count": campaign.failed_count,
+            "batch_sent": 0,
+            "batch_failed": 0,
+            "remaining_count": 0,
+            "status": "completed",
+            "errors": [],
+        }
+
+    campaign.status = "in_progress"
+    campaign.save(update_fields=["status", "updated_at"])
+
+    default_from = getattr(
+        settings,
+        "DEFAULT_FROM_EMAIL",
+        "TKRCET Mega Job Mela 2026 <jobmela@tkrcetjobmela.in>",
+    )
+    sender = from_email or default_from
+    errors = []
+    batch_sent = 0
+    batch_failed = 0
+
+    try:
+        connection = get_connection(timeout=getattr(settings, "EMAIL_TIMEOUT", 10))
+        connection.open()
+    except Exception as exc:
+        logger.error(
+            "Failed to establish SMTP email connection for campaign %s: %s",
+            campaign.id,
+            exc,
+            exc_info=True,
+        )
+        return {
+            "success": False,
+            "campaign_id": campaign.id,
+            "is_completed": False,
+            "total_recipients": campaign.total_recipients,
+            "sent_count": campaign.sent_count,
+            "failed_count": campaign.failed_count,
+            "batch_sent": 0,
+            "batch_failed": 0,
+            "remaining_count": pending_count_total,
+            "status": campaign.status,
+            "errors": [f"SMTP Connection Error: {str(exc)}"],
+        }
+
+    start_time = time.time()
+    try:
+        for recipient in batch_recipients:
+            # Serverless execution limit guard
+            if time.time() - start_time > max_duration_seconds:
+                logger.warning(
+                    "Campaign %s reached max duration limit (%ss). Halting current batch.",
+                    campaign.id,
+                    max_duration_seconds,
+                )
+                break
+
+            to_email = recipient.email.strip() if recipient.email else ""
+            if not to_email:
+                recipient.status = "failed"
+                recipient.error_message = "Missing recipient email address."
+                recipient.save(update_fields=["status", "error_message"])
+                batch_failed += 1
+                continue
+
+            html_body = build_broadcast_html(
+                student_name=recipient.full_name or "Candidate",
+                subject=campaign.subject,
+                message_text=campaign.message,
+                include_whatsapp=campaign.include_whatsapp,
+                whatsapp_url=whatsapp_url,
+            )
+            plain_body = build_broadcast_plain(
+                student_name=recipient.full_name or "Candidate",
+                subject=campaign.subject,
+                message_text=campaign.message,
+                include_whatsapp=campaign.include_whatsapp,
+                whatsapp_url=whatsapp_url,
+            )
+
+            msg = EmailMultiAlternatives(
+                subject=campaign.subject,
+                body=plain_body,
+                from_email=sender,
+                to=[to_email],
+                connection=connection,
+            )
+            msg.attach_alternative(html_body, "text/html")
+
+            try:
+                sent = connection.send_messages([msg])
+                if sent > 0:
+                    recipient.status = "sent"
+                    recipient.sent_at = timezone.now()
+                    recipient.error_message = ""
+                    recipient.save(update_fields=["status", "sent_at", "error_message"])
+                    batch_sent += 1
+                else:
+                    recipient.status = "failed"
+                    recipient.error_message = "SMTP returned 0 sent messages."
+                    recipient.save(update_fields=["status", "error_message"])
+                    batch_failed += 1
+            except Exception as send_err:
+                logger.warning(
+                    "Failed to deliver campaign email to %s: %s",
+                    to_email,
+                    send_err,
+                )
+                recipient.status = "failed"
+                recipient.error_message = str(send_err)[:500]
+                recipient.save(update_fields=["status", "error_message"])
+                batch_failed += 1
+                if len(errors) < 5:
+                    errors.append(f"{to_email}: {str(send_err)}")
+    finally:
+        try:
+            connection.close()
+        except Exception:
+            pass
+
+    # Update aggregate totals on campaign
+    total_sent = campaign.recipients.filter(status="sent").count()
+    total_failed = campaign.recipients.filter(status="failed").count()
+    remaining = campaign.recipients.filter(status="pending").count()
+
+    campaign.sent_count = total_sent
+    campaign.failed_count = total_failed
+    if remaining == 0:
+        campaign.status = "completed"
+    else:
+        campaign.status = "in_progress"
+    campaign.save(update_fields=["sent_count", "failed_count", "status", "updated_at"])
+
+    return {
+        "success": batch_sent > 0 or (batch_failed == 0 and total_sent > 0),
+        "campaign_id": campaign.id,
+        "is_completed": (remaining == 0),
+        "total_recipients": campaign.total_recipients,
+        "sent_count": total_sent,
+        "failed_count": total_failed,
+        "batch_sent": batch_sent,
+        "batch_failed": batch_failed,
+        "remaining_count": remaining,
+        "status": campaign.status,
+        "errors": errors,
+    }
+
