@@ -555,8 +555,17 @@ const StudentRegisterPage = () => {
       const response = await authService.register(payload);
       // Auto-login upon successful registration
       login(response.token, response.user);
+      try {
+        sessionStorage.setItem('jobmela_just_logged_in', 'true');
+        sessionStorage.removeItem('jobmela_wa_session_dismissed');
+      } catch (e) {
+        // ignore storage error
+      }
       navigate('/dashboard', {
-        state: { message: 'Registration successful! Welcome to TKRCET Job Mela 2026.' },
+        state: {
+          message: 'Registration successful! Welcome to TKRCET Job Mela 2026.',
+          justLoggedIn: true,
+        },
       });
     } catch (err) {
       console.error('Registration error:', err);

@@ -36,7 +36,13 @@ const StudentLoginPage = () => {
       if (response.user.role === 'admin' || response.user.is_staff) {
         navigate('/admin');
       } else {
-        navigate('/dashboard');
+        try {
+          sessionStorage.setItem('jobmela_just_logged_in', 'true');
+          sessionStorage.removeItem('jobmela_wa_session_dismissed');
+        } catch (e) {
+          // ignore storage error
+        }
+        navigate('/dashboard', { state: { justLoggedIn: true } });
       }
     } catch (err) {
       console.error('Login error:', err);
