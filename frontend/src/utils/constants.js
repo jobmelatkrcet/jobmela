@@ -4,7 +4,7 @@
 
 // Official WhatsApp Group for Registered Candidates & Participants
 export const WHATSAPP_GROUP_URL =
-  'https://chat.whatsapp.com/GeBF7GJKkIJHdKsW4YZlsj?s=cl&p=a&mlu=4&ilr=4';
+  'https://chat.whatsapp.com/HOcAQglcNgRBL5qGJesM3L?s=sh&p=a&mlu=4&ilr=4';
 
 // Event Metadata
 export const EVENT_DETAILS = {
