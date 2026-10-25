@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { applicationService } from '../../services/applicationService';
@@ -20,9 +20,14 @@ import {
   QrCode,
   Camera,
   DoorClosed,
+  BookOpen,
+  FileUp,
+  Sparkles,
+  AlertCircle,
 } from 'lucide-react';
 import roomService from '../../services/roomService';
 import StudentQRScannerModal from '../../components/StudentQRScannerModal';
+import CompanyApplicationGuideModal from '../../components/CompanyApplicationGuideModal';
 import StatsCard from '../../components/StatsCard';
 import Alert from '../../components/Alert';
 import ConfirmModal from '../../components/ConfirmModal';
@@ -36,8 +41,13 @@ const getMediaUrl = (path) => {
   return `${origin}${path.startsWith('/') ? '' : '/'}${path}`;
 };
 
+const PHOTO_MAX_BYTES = 3 * 1024 * 1024; // 3MB
+const PHOTO_ALLOWED_EXT = ['.jpg', '.jpeg', '.png', '.webp'];
+const RESUME_MAX_BYTES = 5 * 1024 * 1024; // 5MB
+const RESUME_ALLOWED_EXT = ['.pdf', '.doc', '.docx'];
+
 const StudentDashboardPage = () => {
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
   const location = useLocation();
 
   const [profile, setProfile] = useState(user || null);
@@ -56,6 +66,20 @@ const StudentDashboardPage = () => {
   const [alert, setAlert] = useState(
     location.state?.message ? { type: 'success', message: location.state.message } : null
   );
+
+  // Guide modal state
+  const [isGuideModalOpen, setIsGuideModalOpen] = useState(false);
+
+  // Profile documents upload state
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [uploadingResume, setUploadingResume] = useState(false);
+  const [photoUploadError, setPhotoUploadError] = useState(null);
+  const [resumeUploadError, setResumeUploadError] = useState(null);
+  const [profileActionMessage, setProfileActionMessage] = useState(null);
+  const [photoPreviewUrl, setPhotoPreviewUrl] = useState(null);
+
+  const photoInputRef = useRef(null);
+  const resumeInputRef = useRef(null);
 
   // Apply modal state
   const [selectedCompany, setSelectedCompany] = useState(null);
@@ -114,6 +138,114 @@ const StudentDashboardPage = () => {
       setApplying(false);
     }
   };
+
+  const handlePhotoSelect = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Reset input so re-uploading the same file triggers change
+    e.target.value = '';
+    setPhotoUploadError(null);
+    setProfileActionMessage(null);
+
+    const ext = '.' + file.name.split('.').pop().toLowerCase();
+    if (!PHOTO_ALLOWED_EXT.includes(ext)) {
+      setPhotoUploadError('Please select a valid image file (JPG, PNG, or WebP).');
+      return;
+    }
+
+    if (file.size > PHOTO_MAX_BYTES) {
+      setPhotoUploadError('Photograph file size exceeds 3MB limit. Please choose a smaller image.');
+      return;
+    }
+
+    const preview = URL.createObjectURL(file);
+    setPhotoPreviewUrl(preview);
+    setUploadingPhoto(true);
+
+    try {
+      const formData = new FormData();
+      formData.append('photo', file);
+      const res = await authService.updateProfile(formData);
+      const updatedUser = res.user || res;
+      setProfile(updatedUser);
+      if (typeof refreshUser === 'function') {
+        await refreshUser();
+      }
+      setProfileActionMessage({
+        type: 'success',
+        text: 'Passport photograph updated successfully! Your candidate admit card is updated.',
+      });
+    } catch (err) {
+      console.error('Photo upload failed:', err);
+      const errDetail =
+        err.response?.data?.photo ||
+        err.response?.data?.error ||
+        err.response?.data?.detail ||
+        'Failed to upload photograph. Please check file format and try again.';
+      setPhotoUploadError(typeof errDetail === 'string' ? errDetail : JSON.stringify(errDetail));
+      setPhotoPreviewUrl(null);
+    } finally {
+      setUploadingPhoto(false);
+    }
+  };
+
+  const handleResumeSelect = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Reset input so re-uploading triggers change
+    e.target.value = '';
+    setResumeUploadError(null);
+    setProfileActionMessage(null);
+
+    const ext = '.' + file.name.split('.').pop().toLowerCase();
+    if (!RESUME_ALLOWED_EXT.includes(ext)) {
+      setResumeUploadError('Please select a PDF, DOC, or DOCX document.');
+      return;
+    }
+
+    if (file.size > RESUME_MAX_BYTES) {
+      setResumeUploadError('Resume file size exceeds 5MB limit. Please choose a smaller document.');
+      return;
+    }
+
+    setUploadingResume(true);
+
+    try {
+      const formData = new FormData();
+      formData.append('resume', file);
+      const res = await authService.updateProfile(formData);
+      const updatedUser = res.user || res;
+      setProfile(updatedUser);
+      if (typeof refreshUser === 'function') {
+        await refreshUser();
+      }
+      setProfileActionMessage({
+        type: 'success',
+        text: 'Resume document uploaded successfully! Recruiters will now be able to view it.',
+      });
+    } catch (err) {
+      console.error('Resume upload failed:', err);
+      const errDetail =
+        err.response?.data?.resume ||
+        err.response?.data?.error ||
+        err.response?.data?.detail ||
+        'Failed to upload resume. Please check file format and try again.';
+      setResumeUploadError(typeof errDetail === 'string' ? errDetail : JSON.stringify(errDetail));
+    } finally {
+      setUploadingResume(false);
+    }
+  };
+
+  const hasPhoto = Boolean(profile?.photo);
+  const hasResume = Boolean(profile?.resume);
+  const photoFilename =
+    profile?.photo_name ||
+    (profile?.photo ? profile.photo.split('/').pop().split('?')[0] : null);
+  const resumeFilename =
+    profile?.resume_name ||
+    (profile?.resume ? profile.resume.split('/').pop().split('?')[0] : null);
 
   return (
     <div className="app-container">
@@ -221,8 +353,31 @@ const StudentDashboardPage = () => {
             </div>
           </div>
 
-          {/* Right Action: Resume Download & Accreditation */}
+          {/* Right Action: Resume Download & Accreditation & Guide */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+            <button
+              type="button"
+              onClick={() => setIsGuideModalOpen(true)}
+              className="btn"
+              id="student-dashboard-top-guide-btn"
+              title="View step-by-step company application walkthrough"
+              style={{
+                backgroundColor: 'rgba(56, 189, 248, 0.15)',
+                color: '#38bdf8',
+                border: '1px solid rgba(56, 189, 248, 0.4)',
+                fontWeight: 700,
+                fontSize: '0.88rem',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                padding: '0.6rem 1.15rem',
+                borderRadius: 'var(--radius-md)',
+                cursor: 'pointer',
+              }}
+            >
+              <BookOpen size={17} /> How to Apply Guide
+            </button>
+
             {profile?.resume ? (
               <a
                 href={getMediaUrl(profile.resume)}
@@ -258,6 +413,433 @@ const StudentDashboardPage = () => {
                 No Resume Attached
               </span>
             )}
+          </div>
+        </div>
+      </div>
+
+      {/* Compact "Complete Your Profile" Card */}
+      <div
+        className="card"
+        style={{
+          marginBottom: '2rem',
+          padding: '1.4rem 1.6rem',
+          backgroundColor: '#ffffff',
+          borderRadius: 'var(--radius-lg)',
+          border: '1.5px solid #e2e8f0',
+          boxShadow: '0 4px 16px -2px rgba(0, 0, 0, 0.05)',
+        }}
+      >
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            gap: '1rem',
+            marginBottom: '1.25rem',
+            paddingBottom: '0.9rem',
+            borderBottom: '1px solid #f1f5f9',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <div
+              style={{
+                width: 38,
+                height: 38,
+                borderRadius: '10px',
+                backgroundColor: '#eff6ff',
+                color: '#0284c7',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <Sparkles size={20} />
+            </div>
+            <div>
+              <h2 style={{ fontSize: '1.2rem', fontWeight: 800, margin: 0, color: 'var(--color-primary-900)' }}>
+                Complete Your Profile
+              </h2>
+              <p style={{ fontSize: '0.82rem', color: 'var(--color-text-muted)', margin: '0.15rem 0 0' }}>
+                Upload or update your passport photograph and resume for verified recruiter matching
+              </p>
+            </div>
+          </div>
+
+          <div>
+            {hasPhoto && hasResume ? (
+              <span
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.4rem',
+                  padding: '0.35rem 0.85rem',
+                  backgroundColor: '#ecfdf5',
+                  color: '#059669',
+                  border: '1px solid #a7f3d0',
+                  borderRadius: '9999px',
+                  fontSize: '0.82rem',
+                  fontWeight: 700,
+                }}
+              >
+                <CheckCircle2 size={14} /> Profile 100% Complete ✓
+              </span>
+            ) : hasPhoto || hasResume ? (
+              <span
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.4rem',
+                  padding: '0.35rem 0.85rem',
+                  backgroundColor: '#fffbeb',
+                  color: '#b45309',
+                  border: '1px solid #fde68a',
+                  borderRadius: '9999px',
+                  fontSize: '0.82rem',
+                  fontWeight: 700,
+                }}
+              >
+                <AlertCircle size={14} /> 50% Complete (1 of 2 Attached)
+              </span>
+            ) : (
+              <span
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.4rem',
+                  padding: '0.35rem 0.85rem',
+                  backgroundColor: '#fef2f2',
+                  color: '#dc2626',
+                  border: '1px solid #fecaca',
+                  borderRadius: '9999px',
+                  fontSize: '0.82rem',
+                  fontWeight: 700,
+                }}
+              >
+                <AlertCircle size={14} /> 0% Complete (Upload Documents)
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* Action feedback message */}
+        {profileActionMessage && (
+          <div
+            style={{
+              padding: '0.75rem 1rem',
+              borderRadius: '8px',
+              marginBottom: '1.25rem',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              backgroundColor: profileActionMessage.type === 'success' ? '#ecfdf5' : '#fef2f2',
+              color: profileActionMessage.type === 'success' ? '#065f46' : '#991b1b',
+              border: `1px solid ${profileActionMessage.type === 'success' ? '#a7f3d0' : '#fecaca'}`,
+              fontSize: '0.88rem',
+              fontWeight: 600,
+            }}
+          >
+            <span>{profileActionMessage.text}</span>
+            <button
+              type="button"
+              onClick={() => setProfileActionMessage(null)}
+              style={{
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                fontSize: '1.1rem',
+                fontWeight: 700,
+                color: 'inherit',
+                padding: '0 0.35rem',
+              }}
+            >
+              ×
+            </button>
+          </div>
+        )}
+
+        {/* Two-Column Upload Grid */}
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 320px), 1fr))',
+            gap: '1.25rem',
+          }}
+        >
+          {/* Photograph Upload Card */}
+          <div
+            style={{
+              padding: '1.15rem',
+              borderRadius: 'var(--radius-md)',
+              border: hasPhoto ? '1px solid #bbf7d0' : '1px dashed #cbd5e1',
+              backgroundColor: hasPhoto ? '#f0fdf4' : '#f8fafc',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'space-between',
+              gap: '1rem',
+            }}
+          >
+            <input
+              type="file"
+              ref={photoInputRef}
+              onChange={handlePhotoSelect}
+              accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp"
+              style={{ display: 'none' }}
+              id="student-photo-file-input"
+            />
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+              {/* Photo Preview Thumbnail */}
+              <div
+                style={{
+                  width: 58,
+                  height: 58,
+                  borderRadius: '50%',
+                  overflow: 'hidden',
+                  flexShrink: 0,
+                  backgroundColor: '#e2e8f0',
+                  border: '2px solid #ffffff',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                {photoPreviewUrl || profile?.photo ? (
+                  <img
+                    src={photoPreviewUrl || getMediaUrl(profile.photo)}
+                    alt="Preview"
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                  />
+                ) : (
+                  <Camera size={24} color="#94a3b8" />
+                )}
+              </div>
+
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                  <strong style={{ fontSize: '0.95rem', color: 'var(--color-primary-900)' }}>
+                    Passport Photograph
+                  </strong>
+                  {hasPhoto ? (
+                    <span
+                      style={{
+                        fontSize: '0.72rem',
+                        fontWeight: 700,
+                        color: '#15803d',
+                        backgroundColor: '#dcfce7',
+                        padding: '0.15rem 0.5rem',
+                        borderRadius: '4px',
+                      }}
+                    >
+                      Uploaded ✓
+                    </span>
+                  ) : (
+                    <span
+                      style={{
+                        fontSize: '0.72rem',
+                        fontWeight: 600,
+                        color: '#64748b',
+                        backgroundColor: '#e2e8f0',
+                        padding: '0.15rem 0.5rem',
+                        borderRadius: '4px',
+                      }}
+                    >
+                      Skipped / Not Uploaded
+                    </span>
+                  )}
+                </div>
+
+                <div
+                  style={{
+                    fontSize: '0.78rem',
+                    color: 'var(--color-text-muted)',
+                    marginTop: '0.25rem',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                  }}
+                  title={photoFilename || 'JPG, PNG, WebP • Max 3MB'}
+                >
+                  {hasPhoto ? (
+                    <span>
+                      File: <strong>{photoFilename || 'candidate_photo'}</strong>
+                    </span>
+                  ) : (
+                    <span>JPG, PNG, WebP • Max 3MB</span>
+                  )}
+                </div>
+
+                {photoUploadError && (
+                  <div style={{ fontSize: '0.75rem', color: '#dc2626', marginTop: '0.35rem', fontWeight: 600 }}>
+                    {photoUploadError}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '0.5rem' }}>
+              <button
+                type="button"
+                onClick={() => photoInputRef.current?.click()}
+                disabled={uploadingPhoto}
+                className={`btn btn-sm ${hasPhoto ? 'btn-outline' : 'btn-primary'}`}
+                id="student-dashboard-photo-upload-btn"
+                style={{ padding: '0.45rem 0.95rem', fontSize: '0.82rem', gap: '0.4rem' }}
+              >
+                {uploadingPhoto ? (
+                  <>
+                    <span className="spinner" style={{ width: 14, height: 14, borderWidth: 2 }} />
+                    <span>Uploading Photo...</span>
+                  </>
+                ) : (
+                  <>
+                    <FileUp size={14} />
+                    <span>{hasPhoto ? 'Update Photo' : 'Upload Photo'}</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+
+          {/* Resume Upload Card */}
+          <div
+            style={{
+              padding: '1.15rem',
+              borderRadius: 'var(--radius-md)',
+              border: hasResume ? '1px solid #bbf7d0' : '1px dashed #cbd5e1',
+              backgroundColor: hasResume ? '#f0fdf4' : '#f8fafc',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'space-between',
+              gap: '1rem',
+            }}
+          >
+            <input
+              type="file"
+              ref={resumeInputRef}
+              onChange={handleResumeSelect}
+              accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+              style={{ display: 'none' }}
+              id="student-resume-file-input"
+            />
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+              {/* Resume Document Icon Box */}
+              <div
+                style={{
+                  width: 58,
+                  height: 58,
+                  borderRadius: '12px',
+                  backgroundColor: hasResume ? '#ecfdf5' : '#e2e8f0',
+                  color: hasResume ? '#059669' : '#94a3b8',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0,
+                  border: `1.5px solid ${hasResume ? '#a7f3d0' : '#cbd5e1'}`,
+                }}
+              >
+                <FileText size={26} />
+              </div>
+
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                  <strong style={{ fontSize: '0.95rem', color: 'var(--color-primary-900)' }}>
+                    Candidate Resume (CV)
+                  </strong>
+                  {hasResume ? (
+                    <span
+                      style={{
+                        fontSize: '0.72rem',
+                        fontWeight: 700,
+                        color: '#15803d',
+                        backgroundColor: '#dcfce7',
+                        padding: '0.15rem 0.5rem',
+                        borderRadius: '4px',
+                      }}
+                    >
+                      Uploaded ✓
+                    </span>
+                  ) : (
+                    <span
+                      style={{
+                        fontSize: '0.72rem',
+                        fontWeight: 600,
+                        color: '#64748b',
+                        backgroundColor: '#e2e8f0',
+                        padding: '0.15rem 0.5rem',
+                        borderRadius: '4px',
+                      }}
+                    >
+                      Skipped / Not Uploaded
+                    </span>
+                  )}
+                </div>
+
+                <div
+                  style={{
+                    fontSize: '0.78rem',
+                    color: 'var(--color-text-muted)',
+                    marginTop: '0.25rem',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                  }}
+                  title={resumeFilename || 'PDF, DOC, DOCX • Max 5MB'}
+                >
+                  {hasResume ? (
+                    <span>
+                      File: <strong>{resumeFilename || 'candidate_resume.pdf'}</strong>
+                    </span>
+                  ) : (
+                    <span>PDF, DOC, DOCX • Max 5MB</span>
+                  )}
+                </div>
+
+                {resumeUploadError && (
+                  <div style={{ fontSize: '0.75rem', color: '#dc2626', marginTop: '0.35rem', fontWeight: 600 }}>
+                    {resumeUploadError}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '0.5rem', flexWrap: 'wrap' }}>
+              {hasResume && profile?.resume && (
+                <a
+                  href={getMediaUrl(profile.resume)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn btn-outline btn-sm"
+                  style={{ padding: '0.45rem 0.85rem', fontSize: '0.82rem', gap: '0.35rem' }}
+                  title="View / Download current uploaded resume"
+                >
+                  <Download size={14} /> View
+                </a>
+              )}
+
+              <button
+                type="button"
+                onClick={() => resumeInputRef.current?.click()}
+                disabled={uploadingResume}
+                className={`btn btn-sm ${hasResume ? 'btn-outline' : 'btn-primary'}`}
+                id="student-dashboard-resume-upload-btn"
+                style={{ padding: '0.45rem 0.95rem', fontSize: '0.82rem', gap: '0.4rem' }}
+              >
+                {uploadingResume ? (
+                  <>
+                    <span className="spinner" style={{ width: 14, height: 14, borderWidth: 2 }} />
+                    <span>Uploading Resume...</span>
+                  </>
+                ) : (
+                  <>
+                    <FileUp size={14} />
+                    <span>{hasResume ? 'Update Resume' : 'Upload Resume'}</span>
+                  </>
+                )}
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -615,9 +1197,30 @@ const StudentDashboardPage = () => {
               </p>
             </div>
 
-            <Link to="/companies" className="btn btn-outline btn-sm">
-              View All ({stats.total_companies}) →
-            </Link>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', flexWrap: 'wrap' }}>
+              <button
+                type="button"
+                onClick={() => setIsGuideModalOpen(true)}
+                className="btn btn-outline btn-sm"
+                id="dashboard-companies-guide-btn"
+                title="View step-by-step company application walkthrough"
+                style={{
+                  borderColor: '#38bdf8',
+                  color: '#0284c7',
+                  backgroundColor: '#f0f9ff',
+                  fontWeight: 700,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.4rem',
+                }}
+              >
+                <BookOpen size={14} /> How to Apply Guide
+              </button>
+
+              <Link to="/companies" className="btn btn-outline btn-sm">
+                View All ({stats.total_companies}) →
+              </Link>
+            </div>
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
@@ -735,6 +1338,12 @@ const StudentDashboardPage = () => {
           setIsScannerOpen(false);
           fetchDashboardData();
         }}
+      />
+
+      {/* Official Company Application Guide Modal */}
+      <CompanyApplicationGuideModal
+        isOpen={isGuideModalOpen}
+        onClose={() => setIsGuideModalOpen(false)}
       />
     </div>
   );

@@ -1055,6 +1055,129 @@ class RegistrationWelcomeEmailTests(TestCase):
         self.assertTrue(User.objects.filter(email="resilient.candidate@gmail.com").exists())
 
 
+class StudentProfileUploadTests(TestCase):
+    """Automated tests for uploading and updating student profile photos and resumes via PUT/PATCH."""
+
+    def setUp(self):
+        self.client = APIClient()
+        self.profile_url = "/api/auth/profile/"
+        self.student = User.objects.create_user(
+            email="student.profile@tkrcet.ac.in",
+            password="SecurePassword123!",
+            full_name="Profile Test Student",
+            mobile="9876543210",
+            qualification="B.Tech (CSE)",
+            college="TKRCET",
+            role="student",
+        )
+        self.valid_photo_bytes = b"\xff\xd8\xff\xe0\x00\x10JFIF" + b"\x00" * 100
+        self.valid_resume_bytes = b"%PDF-1.4\n%testpdf\n" + b"\x00" * 100
+
+    def get_valid_photo(self, name="avatar.jpg"):
+        return SimpleUploadedFile(name, self.valid_photo_bytes, content_type="image/jpeg")
+
+    def get_valid_resume(self, name="my_resume.pdf"):
+        return SimpleUploadedFile(name, self.valid_resume_bytes, content_type="application/pdf")
+
+    def test_unauthenticated_profile_update_rejected(self):
+        """Unauthenticated profile update request must be rejected with 401."""
+        res = self.client.put(self.profile_url, data={"full_name": "Hacker"}, format="json")
+        self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    @override_settings(
+        SUPABASE_URL="https://test-project.supabase.co",
+        SUPABASE_SERVICE_ROLE_KEY="test-service-role-key",
+        SUPABASE_STORAGE_BUCKET="student-documents",
+    )
+    @patch("accounts.serializers.upload_file_to_supabase")
+    @patch("accounts.serializers.get_signed_file_url")
+    def test_authenticated_student_can_upload_photo(self, mock_signed_url, mock_upload):
+        """Student can upload photo through PUT /api/auth/profile/."""
+        mock_upload.return_value = "photos/user_123/avatar.jpg"
+        mock_signed_url.return_value = "https://signed.url/photos/avatar.jpg"
+
+        self.client.force_authenticate(user=self.student)
+        photo_file = self.get_valid_photo("my_photo.jpg")
+
+        res = self.client.put(
+            self.profile_url,
+            data={"photo": photo_file},
+            format="multipart",
+        )
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.student.refresh_from_db()
+        self.assertEqual(self.student.photo.name, "photos/user_123/avatar.jpg")
+        self.assertEqual(res.data["photo_name"], "avatar.jpg")
+        self.assertEqual(mock_upload.call_count, 1)
+
+    @override_settings(
+        SUPABASE_URL="https://test-project.supabase.co",
+        SUPABASE_SERVICE_ROLE_KEY="test-service-role-key",
+        SUPABASE_STORAGE_BUCKET="student-documents",
+    )
+    @patch("accounts.serializers.upload_file_to_supabase")
+    @patch("accounts.serializers.get_signed_file_url")
+    def test_authenticated_student_can_upload_resume(self, mock_signed_url, mock_upload):
+        """Student can upload resume through PATCH /api/auth/profile/."""
+        mock_upload.return_value = "resumes/user_123/my_resume.pdf"
+        mock_signed_url.return_value = "https://signed.url/resumes/my_resume.pdf"
+
+        self.client.force_authenticate(user=self.student)
+        resume_file = self.get_valid_resume("updated_resume.pdf")
+
+        res = self.client.patch(
+            self.profile_url,
+            data={"resume": resume_file},
+            format="multipart",
+        )
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.student.refresh_from_db()
+        self.assertEqual(self.student.resume.name, "resumes/user_123/my_resume.pdf")
+        self.assertEqual(res.data["resume_name"], "my_resume.pdf")
+        self.assertEqual(mock_upload.call_count, 1)
+
+    @override_settings(
+        SUPABASE_URL="https://test-project.supabase.co",
+        SUPABASE_SERVICE_ROLE_KEY="test-service-role-key",
+        SUPABASE_STORAGE_BUCKET="student-documents",
+    )
+    @patch("accounts.serializers.delete_file_from_supabase")
+    @patch("accounts.serializers.upload_file_to_supabase")
+    @patch("accounts.serializers.get_signed_file_url")
+    def test_updating_photo_cleans_up_old_storage_file(self, mock_signed_url, mock_upload, mock_delete):
+        """When updating an existing photo, the old Supabase file is cleaned up."""
+        self.student.photo.name = "photos/user_123/old_photo.jpg"
+        self.student.save()
+
+        mock_upload.return_value = "photos/user_123/new_photo.jpg"
+        mock_signed_url.return_value = "https://signed.url/photos/new_photo.jpg"
+
+        self.client.force_authenticate(user=self.student)
+        photo_file = self.get_valid_photo("new_photo.jpg")
+
+        res = self.client.put(
+            self.profile_url,
+            data={"photo": photo_file},
+            format="multipart",
+        )
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        mock_delete.assert_called_once_with("photos/user_123/old_photo.jpg")
+
+    def test_invalid_photo_file_rejected(self):
+        """Invalid photo file content is rejected with 400 Bad Request."""
+        self.client.force_authenticate(user=self.student)
+        fake_photo = SimpleUploadedFile("test.jpg", b"fake binary content", content_type="image/jpeg")
+
+        res = self.client.put(
+            self.profile_url,
+            data={"photo": fake_photo},
+            format="multipart",
+        )
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("photo", res.data)
+
+
+
 
 
 

@@ -1,18 +1,19 @@
 import React, { useEffect, useState } from 'react';
-import { X, ExternalLink, CheckCircle2, BellRing, Sparkles, ShieldCheck } from 'lucide-react';
+import { X, ExternalLink, CheckCircle2, BellRing, Sparkles, BookOpen } from 'lucide-react';
 import WhatsAppIcon from './WhatsAppIcon';
 import { WHATSAPP_GROUP_URL } from '../utils/constants';
 
 /**
  * StudentWhatsAppModal
  * 
- * Pops up quickly when students log in or access the Student Portal.
- * Reminds candidates to join the official Job Mela WhatsApp group if not joined,
- * and allows them to easily ignore or dismiss if already joined.
+ * Compact official notification modal prompting students to join the official
+ * WhatsApp group if not joined, dismiss if already joined, and easily view
+ * the "How to Apply for Companies" guide.
  */
 const StudentWhatsAppModal = ({
   isOpen,
   onClose,
+  onOpenGuide,
   user = null,
   whatsappUrl = WHATSAPP_GROUP_URL,
 }) => {
@@ -92,15 +93,15 @@ const StudentWhatsAppModal = ({
       role="presentation"
     >
       <div
-        className="student-wa-modal-card"
+        className="student-wa-modal-card compact-wa-modal"
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
         aria-labelledby="student-wa-modal-title"
         id="student-whatsapp-announcement-modal"
       >
-        {/* Header with Dark Premium Green / Slate Gradient */}
-        <div className="student-wa-modal-header">
+        {/* Compact Header */}
+        <div className="student-wa-modal-header compact-wa-header">
           {/* Close button */}
           <button
             type="button"
@@ -110,35 +111,35 @@ const StudentWhatsAppModal = ({
             id="close-whatsapp-modal-btn"
             title="Close modal"
           >
-            <X size={18} />
+            <X size={16} />
           </button>
 
           {/* Glowing Animated WhatsApp Badge */}
-          <div className="student-wa-avatar-wrap">
+          <div className="student-wa-avatar-wrap compact-wa-avatar">
             <span className="whatsapp-pulse-ring" aria-hidden="true" />
             <div className="student-wa-avatar-icon">
-              <WhatsAppIcon size={36} color="#ffffff" />
+              <WhatsAppIcon size={26} color="#ffffff" />
             </div>
           </div>
 
           <div className="student-wa-badge">
-            <Sparkles size={13} /> Official Student Community
+            <Sparkles size={11} /> Official Community
           </div>
 
           <h2 id="student-wa-modal-title" className="student-wa-modal-title">
             Join Official WhatsApp Group
           </h2>
           <p className="student-wa-modal-subtitle">
-            TKRCET Mega Job Mela 2026 • Real-Time Candidate Alerts
+            TKRCET Mega Job Mela 2026 • Real-Time Alerts
           </p>
         </div>
 
         {/* Modal Body */}
-        <div className="student-wa-modal-body">
+        <div className="student-wa-modal-body compact-wa-body">
           {/* Main Notice Callout */}
-          <div className="student-wa-callout">
+          <div className="student-wa-callout compact-wa-callout">
             <div className="student-wa-callout-header">
-              <BellRing size={16} /> Important Notice for Candidates
+              <BellRing size={14} /> Notice for Candidates
             </div>
             <div className="student-wa-callout-main">
               Join WhatsApp group if not joined.
@@ -146,22 +147,6 @@ const StudentWhatsAppModal = ({
             <p className="student-wa-callout-note">
               👉 If you have <strong>already joined</strong>, please ignore this message.
             </p>
-          </div>
-
-          {/* Context & Value Points */}
-          <div className="student-wa-highlights">
-            <div className="student-wa-highlight-item">
-              <span className="student-wa-highlight-dot">✓</span>
-              <span><strong>Instant interview calls</strong> &amp; room allocation announcements</span>
-            </div>
-            <div className="student-wa-highlight-item">
-              <span className="student-wa-highlight-dot">✓</span>
-              <span><strong>Company shortlist alerts</strong> &amp; on-spot offer updates</span>
-            </div>
-            <div className="student-wa-highlight-item">
-              <span className="student-wa-highlight-dot">✓</span>
-              <span><strong>Document verification</strong> &amp; coordinator schedule guidance</span>
-            </div>
           </div>
 
           {/* Action Options */}
@@ -174,14 +159,31 @@ const StudentWhatsAppModal = ({
               id="join-whatsapp-group-btn"
               title="Click to open official WhatsApp group"
             >
-              <WhatsAppIcon size={22} color="#ffffff" />
+              <WhatsAppIcon size={19} color="#ffffff" />
               <span>
-                {hasClickedJoin ? 'Opening WhatsApp Group...' : 'Join WhatsApp Group'}
+                {hasClickedJoin ? 'Opening WhatsApp...' : 'Join WhatsApp Group'}
               </span>
-              <ExternalLink size={17} />
+              <ExternalLink size={15} />
             </button>
 
-            {/* 2. Already Joined / Ignore Option */}
+            {/* 2. How to Apply for Companies Guide Button */}
+            {onOpenGuide && (
+              <button
+                type="button"
+                className="student-wa-btn-guide"
+                onClick={() => {
+                  onClose?.();
+                  onOpenGuide();
+                }}
+                id="wa-modal-how-to-apply-btn"
+                title="View step-by-step company application walkthrough"
+              >
+                <BookOpen size={16} color="#0284c7" />
+                <span>How to Apply for Companies</span>
+              </button>
+            )}
+
+            {/* 3. Already Joined / Ignore Option */}
             <button
               type="button"
               className="student-wa-btn-ignore"
@@ -189,13 +191,13 @@ const StudentWhatsAppModal = ({
               id="already-joined-whatsapp-btn"
               title="Click if you have already joined the WhatsApp group"
             >
-              <CheckCircle2 size={17} color="#16a34a" />
+              <CheckCircle2 size={15} color="#16a34a" />
               <span>Already Joined • Ignore This Message</span>
             </button>
           </div>
 
           <p className="student-wa-footer-text">
-            Official group strictly for registered Job Mela participants. You can also re-open or access this link anytime from the green WhatsApp button on your screen.
+            Official alerts strictly for Job Mela participants.
           </p>
         </div>
       </div>

@@ -13,6 +13,7 @@ import {
   Users,
   ShieldCheck,
   Gift,
+  BookOpen,
 } from 'lucide-react';
 import { companyService } from '../../services/companyService';
 import { applicationService } from '../../services/applicationService';
@@ -22,6 +23,7 @@ import Pagination from '../../components/Pagination';
 import Alert from '../../components/Alert';
 import { getCompanyCategory } from '../../utils/companyCategories';
 import { CompanyCardSkeleton } from '../../components/Skeleton';
+import CompanyApplicationGuideModal from '../../components/CompanyApplicationGuideModal';
 
 const hasValue = (val) => {
   if (!val) return false;
@@ -45,6 +47,7 @@ const PublicCompaniesPage = () => {
   // Apply modal
   const [selectedCompany, setSelectedCompany] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isGuideModalOpen, setIsGuideModalOpen] = useState(false);
   const [applying, setApplying] = useState(false);
   const [alert, setAlert] = useState(null);
 
@@ -125,20 +128,54 @@ const PublicCompaniesPage = () => {
     <div style={{ padding: '3rem 0 5rem' }}>
       <div className="app-container">
         {/* Page Header */}
-        <div style={{ maxWidth: 760, marginBottom: '2.5rem' }}>
-          <div
-            className="badge badge-blue"
-            style={{ marginBottom: '0.75rem', padding: '0.35rem 0.85rem' }}
-          >
-            Participating Organizations
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'flex-start',
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            gap: '1.25rem',
+            marginBottom: '2.5rem',
+          }}
+        >
+          <div style={{ maxWidth: 760 }}>
+            <div
+              className="badge badge-blue"
+              style={{ marginBottom: '0.75rem', padding: '0.35rem 0.85rem' }}
+            >
+              Participating Organizations
+            </div>
+            <h1 style={{ fontSize: 'clamp(2rem, 3.5vw, 2.5rem)', marginBottom: '0.75rem' }}>
+              Participating Companies
+            </h1>
+            <p style={{ color: 'var(--color-text-muted)', fontSize: '1rem', lineHeight: '1.6' }}>
+              Browse verified companies participating in TKRCET Job Mela 2026. Registered students
+              can apply to multiple companies across different sectors.
+            </p>
           </div>
-          <h1 style={{ fontSize: 'clamp(2rem, 3.5vw, 2.5rem)', marginBottom: '0.75rem' }}>
-            Participating Companies
-          </h1>
-          <p style={{ color: 'var(--color-text-muted)', fontSize: '1rem', lineHeight: '1.6' }}>
-            Browse verified companies participating in TKRCET Job Mela 2026. Registered students
-            can apply to multiple companies across different sectors.
-          </p>
+
+          <button
+            type="button"
+            onClick={() => setIsGuideModalOpen(true)}
+            className="btn btn-outline"
+            id="public-companies-guide-btn"
+            title="View step-by-step company application walkthrough"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              fontWeight: 700,
+              padding: '0.65rem 1.25rem',
+              borderRadius: 'var(--radius-md)',
+              borderColor: '#38bdf8',
+              color: '#0284c7',
+              backgroundColor: '#f0f9ff',
+              cursor: 'pointer',
+            }}
+          >
+            <BookOpen size={18} />
+            <span>How to Apply for Companies</span>
+          </button>
         </div>
 
         {alert && (
@@ -606,6 +643,12 @@ const PublicCompaniesPage = () => {
             setIsModalOpen(false);
             setSelectedCompany(null);
           }}
+        />
+
+        {/* Official Company Application Guide Modal */}
+        <CompanyApplicationGuideModal
+          isOpen={isGuideModalOpen}
+          onClose={() => setIsGuideModalOpen(false)}
         />
       </div>
     </div>

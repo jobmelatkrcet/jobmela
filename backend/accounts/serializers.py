@@ -1,3 +1,4 @@
+import os
 import logging
 from rest_framework import serializers
 from concurrent.futures import ThreadPoolExecutor
@@ -233,6 +234,20 @@ class UserSerializer(serializers.ModelSerializer):
             "created_at",
         ]
         read_only_fields = ["id", "role", "is_staff", "created_at"]
+        extra_kwargs = {
+            "photo": {"required": False, "allow_null": True},
+            "resume": {"required": False, "allow_null": True},
+        }
+
+    def to_internal_value(self, data):
+        mutable_data = data.copy() if hasattr(data, "copy") else dict(data)
+        # If photo or resume are passed as strings (e.g. existing URLs or paths from profile refresh),
+        # strip them so FileField does not fail type validation.
+        if "photo" in mutable_data and isinstance(mutable_data["photo"], str):
+            mutable_data.pop("photo")
+        if "resume" in mutable_data and isinstance(mutable_data["resume"], str):
+            mutable_data.pop("resume")
+        return super().to_internal_value(mutable_data)
 
     def validate_photo(self, value):
         if value:
@@ -252,14 +267,64 @@ class UserSerializer(serializers.ModelSerializer):
                 )
         return value
 
+    def update(self, instance, validated_data):
+        photo_file = validated_data.pop("photo", None)
+        resume_file = validated_data.pop("resume", None)
+
+        if photo_file:
+            try:
+                old_photo = instance.photo.name if instance.photo else None
+                new_path = upload_file_to_supabase(photo_file, folder_prefix="photos")
+                instance.photo = new_path
+                if old_photo:
+                    try:
+                        delete_file_from_supabase(old_photo)
+                    except Exception as clean_err:
+                        logger.warning("Failed to delete replaced photo %s: %s", old_photo, clean_err)
+            except SupabaseStorageError as sse:
+                raise serializers.ValidationError({"photo": sse.user_message})
+            except Exception as exc:
+                logger.exception("Error uploading candidate photo: %s", exc)
+                raise serializers.ValidationError({"photo": "Failed to upload photo to storage. Please try again."})
+
+        if resume_file:
+            try:
+                old_resume = instance.resume.name if instance.resume else None
+                new_path = upload_file_to_supabase(resume_file, folder_prefix="resumes")
+                instance.resume = new_path
+                if old_resume:
+                    try:
+                        delete_file_from_supabase(old_resume)
+                    except Exception as clean_err:
+                        logger.warning("Failed to delete replaced resume %s: %s", old_resume, clean_err)
+            except SupabaseStorageError as sse:
+                raise serializers.ValidationError({"resume": sse.user_message})
+            except Exception as exc:
+                logger.exception("Error uploading candidate resume: %s", exc)
+                raise serializers.ValidationError({"resume": "Failed to upload resume to storage. Please try again."})
+
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+
+        instance.save()
+        return instance
+
     def to_representation(self, instance):
         data = super().to_representation(instance)
         if instance.photo:
             signed = get_signed_file_url(instance.photo.name)
             data["photo"] = signed or instance.photo.name
+            data["photo_name"] = os.path.basename(instance.photo.name)
+        else:
+            data["photo_name"] = None
+
         if instance.resume:
             signed = get_signed_file_url(instance.resume.name)
             data["resume"] = signed or instance.resume.name
+            data["resume_name"] = os.path.basename(instance.resume.name)
+        else:
+            data["resume_name"] = None
+
         return data
 
 

@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Search, Building2, CheckCircle2, AlertCircle, ArrowRight, GraduationCap } from 'lucide-react';
+import { Search, Building2, CheckCircle2, AlertCircle, ArrowRight, GraduationCap, BookOpen } from 'lucide-react';
 import { companyService } from '../../services/companyService';
 import { applicationService } from '../../services/applicationService';
 import ConfirmModal from '../../components/ConfirmModal';
 import Pagination from '../../components/Pagination';
 import Alert from '../../components/Alert';
 import { CompanyCardSkeleton } from '../../components/Skeleton';
+import CompanyApplicationGuideModal from '../../components/CompanyApplicationGuideModal';
 
 const StudentCompaniesPage = () => {
   const [companies, setCompanies] = useState([]);
@@ -17,6 +18,9 @@ const StudentCompaniesPage = () => {
   const [search, setSearch] = useState('');
   const [qualification, setQualification] = useState('all');
   const [loading, setLoading] = useState(true);
+
+  // Guide modal state
+  const [isGuideModalOpen, setIsGuideModalOpen] = useState(false);
 
   // Application Modal state
   const [selectedCompany, setSelectedCompany] = useState(null);
@@ -120,9 +124,30 @@ const StudentCompaniesPage = () => {
           </p>
         </div>
 
-        <Link to="/my-applications" className="btn btn-outline btn-sm">
-          View My Applications ({companies.filter((c) => c.has_applied).length} on this page) →
-        </Link>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', flexWrap: 'wrap' }}>
+          <button
+            type="button"
+            onClick={() => setIsGuideModalOpen(true)}
+            className="btn btn-outline btn-sm"
+            id="student-companies-guide-btn"
+            title="View step-by-step company application walkthrough"
+            style={{
+              borderColor: '#38bdf8',
+              color: '#0284c7',
+              backgroundColor: '#f0f9ff',
+              fontWeight: 700,
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.4rem',
+            }}
+          >
+            <BookOpen size={15} /> How to Apply Guide
+          </button>
+
+          <Link to="/my-applications" className="btn btn-outline btn-sm">
+            View My Applications ({companies.filter((c) => c.has_applied).length} on this page) →
+          </Link>
+        </div>
       </div>
 
       {alert && (
@@ -442,6 +467,12 @@ const StudentCompaniesPage = () => {
           setIsModalOpen(false);
           setSelectedCompany(null);
         }}
+      />
+
+      {/* Official Company Application Guide Modal */}
+      <CompanyApplicationGuideModal
+        isOpen={isGuideModalOpen}
+        onClose={() => setIsGuideModalOpen(false)}
       />
     </div>
   );

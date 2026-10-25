@@ -2,18 +2,20 @@ import React, { useState, useEffect } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
-import { ClipboardList } from 'lucide-react';
+import { ClipboardList, BookOpen } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import RequirementsModal from '../components/RequirementsModal';
 import WhatsAppFloatingButton from '../components/WhatsAppFloatingButton';
 import WhatsAppIcon from '../components/WhatsAppIcon';
 import StudentWhatsAppModal from '../components/StudentWhatsAppModal';
+import CompanyApplicationGuideModal from '../components/CompanyApplicationGuideModal';
 
 const StudentLayout = () => {
   const { user } = useAuth();
   const location = useLocation();
   const [isRequirementsModalOpen, setIsRequirementsModalOpen] = useState(false);
   const [isWhatsAppModalOpen, setIsWhatsAppModalOpen] = useState(false);
+  const [isGuideModalOpen, setIsGuideModalOpen] = useState(false);
 
   // Automatically and quickly pop up WhatsApp invitation for students who haven't joined yet
   useEffect(() => {
@@ -77,11 +79,23 @@ const StudentLayout = () => {
               </h1>
             </div>
 
-            {/* Right: Requirements & WhatsApp Quick Action Buttons */}
+            {/* Right: Requirements, How to Apply & WhatsApp Quick Action Buttons */}
             <div
               className="student-banner-right"
               style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', flexWrap: 'wrap' }}
             >
+              <button
+                type="button"
+                onClick={() => setIsGuideModalOpen(true)}
+                className="student-guide-banner-btn"
+                id="student-banner-guide-btn"
+                title="Click to view How to Apply for Companies step-by-step guide"
+              >
+                <BookOpen size={16} color="#38bdf8" />
+                <span>How to Apply for Companies</span>
+                <span className="student-guide-tag">Guide ↗</span>
+              </button>
+
               <button
                 type="button"
                 onClick={() => setIsWhatsAppModalOpen(true)}
@@ -129,7 +143,14 @@ const StudentLayout = () => {
       <StudentWhatsAppModal
         isOpen={isWhatsAppModalOpen}
         onClose={() => setIsWhatsAppModalOpen(false)}
+        onOpenGuide={() => setIsGuideModalOpen(true)}
         user={user}
+      />
+
+      {/* Official Company Application Guide Modal */}
+      <CompanyApplicationGuideModal
+        isOpen={isGuideModalOpen}
+        onClose={() => setIsGuideModalOpen(false)}
       />
     </div>
   );

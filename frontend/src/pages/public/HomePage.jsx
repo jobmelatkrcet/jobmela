@@ -32,12 +32,14 @@ import {
   Download,
   Sparkles,
   X,
+  BookOpen,
 } from 'lucide-react';
 import { companyService } from '../../services/companyService';
 import { useAuth } from '../../context/AuthContext';
 import { useRegistrationModal } from '../../context/RegistrationModalContext';
 import { CATEGORIES, getCompanyCategory } from '../../utils/companyCategories';
 import { CompanyCardSkeleton } from '../../components/Skeleton';
+import CompanyApplicationGuideModal from '../../components/CompanyApplicationGuideModal';
 // Poster 1 (VIP & Dignitaries) removed per user instruction; Poster 2 (Guidelines & Eligibility) active:
 // import poster1Img from '../../assets/jobmela-poster-1.jpg';
 import poster2Img from '../../assets/jobmela-poster-2.jpg';
@@ -63,6 +65,7 @@ const HomePage = () => {
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [viewMode, setViewMode] = useState('grid'); // Default to 'grid' for clean 10-company spotlight
+  const [isGuideModalOpen, setIsGuideModalOpen] = useState(false);
 
   // Front Page Hero Slideshow State:
   // Slide 0: Custom Designed Hero Text
@@ -617,6 +620,42 @@ const HomePage = () => {
           </div>
         </div>
       </section>
+
+      {/* Highlighted How to Apply for Companies Guide Banner immediately above Companies Section */}
+      <div className="home-guide-strip-container">
+        <div className="app-container">
+          <motion.div
+            initial={{ opacity: 0, y: 14 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="home-guide-callout-card"
+          >
+            <div className="home-guide-callout-left">
+              <div className="home-guide-pill-badge">
+                <Sparkles size={13} /> Step-by-Step Walkthrough
+              </div>
+              <h3 className="home-guide-heading">
+                How to Apply for Participating Companies
+              </h3>
+              <p className="home-guide-subtext">
+                <strong>Important:</strong> Registration alone does not mean you have applied to companies. Complete your company applications as soon as possible.
+              </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setIsGuideModalOpen(true)}
+              className="home-guide-action-btn"
+              id="homepage-how-to-apply-btn"
+              title="Open step-by-step company application walkthrough"
+            >
+              <BookOpen size={18} />
+              <span>How to Apply for Companies</span>
+              <ArrowRight size={16} />
+            </button>
+          </motion.div>
+        </div>
+      </div>
 
       {/* Participating Companies Section (Category Segregated & Spotlight of 10) */}
       <section id="companies-section" className="home-section-slate">
@@ -1343,6 +1382,13 @@ const HomePage = () => {
           </div>
         </div>
       </section>
+
+      {/* Company Application Guide Modal */}
+      <CompanyApplicationGuideModal
+        isOpen={isGuideModalOpen}
+        onClose={() => setIsGuideModalOpen(false)}
+        targetCompaniesUrl="#companies-section"
+      />
     </div>
   );
 };
