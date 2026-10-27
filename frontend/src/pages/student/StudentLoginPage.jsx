@@ -86,7 +86,7 @@ const StudentLoginPage = () => {
           <Alert type="danger" message={error} onClose={() => setError('')} />
         )}
 
-        <div className="card">
+        <div className="card auth-card">
           <form onSubmit={handleSubmit}>
             {/* Email */}
             <div className="form-group">
@@ -119,7 +119,7 @@ const StudentLoginPage = () => {
 
             {/* Password */}
             <div className="form-group" style={{ marginBottom: '1.75rem' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.35rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.35rem', marginBottom: '0.35rem' }}>
                 <label className="form-label" htmlFor="password" style={{ marginBottom: 0 }}>
                   Password
                 </label>
@@ -163,7 +163,7 @@ const StudentLoginPage = () => {
             <button
               type="submit"
               className="btn btn-primary btn-lg"
-              style={{ width: '100%' }}
+              style={{ width: '100%', whiteSpace: 'normal', boxSizing: 'border-box' }}
               disabled={loading}
             >
               {loading ? (

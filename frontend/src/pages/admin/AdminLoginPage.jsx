@@ -98,11 +98,10 @@ const AdminLoginPage = () => {
         )}
 
         <div
-          className="card"
+          className="card admin-login-card"
           style={{
             backgroundColor: '#1e293b',
             borderColor: '#334155',
-            padding: '2.5rem',
             boxShadow: 'var(--shadow-xl)',
           }}
         >
@@ -141,7 +140,7 @@ const AdminLoginPage = () => {
             </div>
 
             <div className="form-group" style={{ marginBottom: '1.75rem' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.35rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.35rem', marginBottom: '0.35rem' }}>
                 <label className="form-label" htmlFor="admin-pass" style={{ color: '#f1f5f9', marginBottom: 0 }}>
                   Admin Password
                 </label>
@@ -195,6 +194,8 @@ const AdminLoginPage = () => {
                 backgroundColor: '#f59e0b',
                 color: '#0f172a',
                 fontWeight: 700,
+                whiteSpace: 'normal',
+                boxSizing: 'border-box',
               }}
               disabled={loading}
             >

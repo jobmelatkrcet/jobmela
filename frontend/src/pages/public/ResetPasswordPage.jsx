@@ -174,7 +174,7 @@ const ResetPasswordPage = () => {
           <Alert type="danger" message={error} onClose={() => setError('')} />
         )}
 
-        <div className="card" style={{ padding: '2.25rem 2rem' }}>
+        <div className="card auth-card">
           {validating ? (
             <div style={{ textAlign: 'center', padding: '2rem 1rem' }}>
               <span className="spinner" style={{ width: 28, height: 28, margin: '0 auto 1rem' }} />
@@ -370,7 +370,7 @@ const ResetPasswordPage = () => {
               <button
                 type="submit"
                 className="btn btn-primary btn-lg"
-                style={{ width: '100%' }}
+                style={{ width: '100%', whiteSpace: 'normal', boxSizing: 'border-box' }}
                 disabled={submitting || (confirmPassword && newPassword !== confirmPassword)}
               >
                 {submitting ? (

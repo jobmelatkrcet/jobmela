@@ -296,27 +296,35 @@ Medbowli, Meerpet, Hyderabad
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Registration Confirmed - TKRCET Job Mela 2026</title>
   <style>
+    * {{
+      box-sizing: border-box;
+    }}
     body {{
       margin: 0;
       padding: 0;
       background-color: #f1f5f9;
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
       color: #334155;
+      -webkit-text-size-adjust: 100%;
+      -ms-text-size-adjust: 100%;
     }}
     .email-container {{
       max-width: 600px;
+      width: 100%;
       margin: 24px auto;
       background: #ffffff;
       border-radius: 14px;
       overflow: hidden;
       box-shadow: 0 4px 18px rgba(15, 23, 42, 0.08);
       border: 1px solid #e2e8f0;
+      box-sizing: border-box;
     }}
     .header {{
       background: linear-gradient(135deg, #091e42 0%, #1e3a8a 100%);
-      padding: 32px 24px;
+      padding: 30px 24px;
       text-align: center;
       color: #ffffff;
+      box-sizing: border-box;
     }}
     .badge {{
       display: inline-block;
@@ -332,32 +340,43 @@ Medbowli, Meerpet, Hyderabad
     }}
     .header h1 {{
       margin: 0 0 6px 0;
-      font-size: 23px;
+      font-size: 22px;
       font-weight: 800;
       letter-spacing: -0.4px;
     }}
     .content {{
-      padding: 32px 28px;
+      padding: 28px 24px;
       font-size: 15px;
       line-height: 1.6;
       color: #334155;
+      box-sizing: border-box;
+      word-break: break-word;
+      overflow-wrap: break-word;
     }}
     .card-box {{
       background: #f8fafc;
       border: 1px solid #e2e8f0;
       border-radius: 10px;
-      padding: 16px 20px;
+      padding: 16px 18px;
       margin: 20px 0;
       font-size: 14px;
+      box-sizing: border-box;
+      max-width: 100%;
+      overflow: hidden;
+      word-break: break-word;
     }}
     .whatsapp-card {{
       background: linear-gradient(135deg, #ecfdf5 0%, #f0fdf4 100%);
       border: 1.5px solid #86efac;
       border-radius: 12px;
-      padding: 22px 20px;
+      padding: 22px 18px;
       text-align: center;
-      margin: 26px 0;
+      margin: 24px 0;
       box-shadow: 0 4px 14px rgba(34, 197, 94, 0.1);
+      box-sizing: border-box;
+      max-width: 100%;
+      overflow: hidden;
+      word-break: break-word;
     }}
     .whatsapp-btn {{
       display: inline-block;
@@ -365,11 +384,14 @@ Medbowli, Meerpet, Hyderabad
       color: #ffffff !important;
       text-decoration: none;
       font-weight: 800;
-      font-size: 15px;
-      padding: 12px 28px;
+      font-size: 14.5px;
+      padding: 12px 24px;
       border-radius: 8px;
       box-shadow: 0 4px 10px rgba(37, 211, 102, 0.35);
       margin-top: 12px;
+      box-sizing: border-box;
+      max-width: 100%;
+      word-break: break-word;
     }}
     .login-btn {{
       display: inline-block;
@@ -381,6 +403,9 @@ Medbowli, Meerpet, Hyderabad
       padding: 11px 24px;
       border-radius: 8px;
       box-shadow: 0 4px 8px rgba(37, 99, 235, 0.25);
+      box-sizing: border-box;
+      max-width: 100%;
+      word-break: break-word;
     }}
     .footer {{
       background-color: #f8fafc;
@@ -390,6 +415,45 @@ Medbowli, Meerpet, Hyderabad
       font-size: 12px;
       color: #94a3b8;
       line-height: 1.5;
+      box-sizing: border-box;
+    }}
+    @media only screen and (max-width: 520px) {{
+      .email-container {{
+        margin: 0 !important;
+        border-radius: 0 !important;
+        border-left: none !important;
+        border-right: none !important;
+        width: 100% !important;
+      }}
+      .header {{
+        padding: 22px 14px !important;
+      }}
+      .header h1 {{
+        font-size: 19px !important;
+      }}
+      .content {{
+        padding: 18px 12px !important;
+      }}
+      .card-box {{
+        padding: 12px 10px !important;
+        margin: 14px 0 !important;
+      }}
+      .whatsapp-card {{
+        padding: 16px 12px !important;
+      }}
+      .whatsapp-btn, .login-btn {{
+        display: block !important;
+        width: 100% !important;
+        padding: 11px 12px !important;
+        text-align: center !important;
+      }}
+      .details-label-col {{
+        width: 32% !important;
+        font-size: 12px !important;
+      }}
+      .details-val-col {{
+        font-size: 12.5px !important;
+      }}
     }}
   </style>
 </head>
@@ -413,30 +477,30 @@ Medbowli, Meerpet, Hyderabad
       </p>
 
       <!-- Candidate Registration Summary -->
-      <div class="card-box">
+      <div class="card-box" style="box-sizing: border-box; max-width: 100%; overflow: hidden;">
         <div style="font-weight: 700; color: #0f172a; margin-bottom: 8px; font-size: 14px; border-bottom: 1px solid #e2e8f0; padding-bottom: 6px;">
           &#128100; Your Candidate Registration Details
         </div>
-        <table style="width: 100%; border-collapse: collapse; font-size: 13.5px; line-height: 1.6;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 13.5px; line-height: 1.6; table-layout: fixed;">
           <tr>
-            <td style="color: #64748b; width: 38%; padding: 3px 0;"><strong>Full Name:</strong></td>
-            <td style="color: #0f172a; font-weight: 600; padding: 3px 0;">{safe_name}</td>
+            <td class="details-label-col" style="color: #64748b; width: 34%; padding: 4px 6px 4px 0; vertical-align: top;"><strong>Full Name:</strong></td>
+            <td class="details-val-col" style="color: #0f172a; font-weight: 600; padding: 4px 0; vertical-align: top; word-break: break-word; overflow-wrap: anywhere;">{safe_name}</td>
           </tr>
           <tr>
-            <td style="color: #64748b; padding: 3px 0;"><strong>Registered Email:</strong></td>
-            <td style="color: #0f172a; font-weight: 600; padding: 3px 0;">{safe_email}</td>
+            <td class="details-label-col" style="color: #64748b; width: 34%; padding: 4px 6px 4px 0; vertical-align: top;"><strong>Registered Email:</strong></td>
+            <td class="details-val-col" style="color: #0f172a; font-weight: 600; padding: 4px 0; vertical-align: top; word-break: break-all; overflow-wrap: anywhere;">{safe_email}</td>
           </tr>
           <tr>
-            <td style="color: #64748b; padding: 3px 0;"><strong>Mobile:</strong></td>
-            <td style="color: #0f172a; font-weight: 600; padding: 3px 0;">{safe_mobile}</td>
+            <td class="details-label-col" style="color: #64748b; width: 34%; padding: 4px 6px 4px 0; vertical-align: top;"><strong>Mobile:</strong></td>
+            <td class="details-val-col" style="color: #0f172a; font-weight: 600; padding: 4px 0; vertical-align: top; word-break: break-word; overflow-wrap: anywhere;">{safe_mobile}</td>
           </tr>
           <tr>
-            <td style="color: #64748b; padding: 3px 0;"><strong>Qualification:</strong></td>
-            <td style="color: #0f172a; font-weight: 600; padding: 3px 0;">{safe_qual}</td>
+            <td class="details-label-col" style="color: #64748b; width: 34%; padding: 4px 6px 4px 0; vertical-align: top;"><strong>Qualification:</strong></td>
+            <td class="details-val-col" style="color: #0f172a; font-weight: 600; padding: 4px 0; vertical-align: top; word-break: break-word; overflow-wrap: anywhere;">{safe_qual}</td>
           </tr>
           <tr>
-            <td style="color: #64748b; padding: 3px 0;"><strong>College:</strong></td>
-            <td style="color: #0f172a; font-weight: 600; padding: 3px 0;">{safe_college}</td>
+            <td class="details-label-col" style="color: #64748b; width: 34%; padding: 4px 6px 4px 0; vertical-align: top;"><strong>College:</strong></td>
+            <td class="details-val-col" style="color: #0f172a; font-weight: 600; padding: 4px 0; vertical-align: top; word-break: break-word; overflow-wrap: anywhere;">{safe_college}</td>
           </tr>
         </table>
       </div>

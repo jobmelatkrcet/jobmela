@@ -64,27 +64,35 @@ def build_broadcast_html(
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{safe_subject}</title>
   <style>
+    * {{
+      box-sizing: border-box;
+    }}
     body {{
       margin: 0;
       padding: 0;
       background-color: #f1f5f9;
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
       color: #334155;
+      -webkit-text-size-adjust: 100%;
+      -ms-text-size-adjust: 100%;
     }}
     .email-container {{
       max-width: 600px;
+      width: 100%;
       margin: 24px auto;
       background: #ffffff;
       border-radius: 12px;
       overflow: hidden;
       box-shadow: 0 4px 16px rgba(15, 23, 42, 0.08);
       border: 1px solid #e2e8f0;
+      box-sizing: border-box;
     }}
     .header {{
       background: linear-gradient(135deg, #091e42 0%, #1e3a8a 100%);
       padding: 30px 24px;
       text-align: center;
       color: #ffffff;
+      box-sizing: border-box;
     }}
     .badge {{
       display: inline-block;
@@ -105,7 +113,10 @@ def build_broadcast_html(
       letter-spacing: -0.3px;
     }}
     .content {{
-      padding: 30px 26px;
+      padding: 28px 24px;
+      box-sizing: border-box;
+      word-break: break-word;
+      overflow-wrap: break-word;
     }}
     .event-card {{
       background: #f8fafc;
@@ -116,6 +127,10 @@ def build_broadcast_html(
       font-size: 13.5px;
       line-height: 1.6;
       color: #475569;
+      box-sizing: border-box;
+      max-width: 100%;
+      overflow: hidden;
+      word-break: break-word;
     }}
     .footer {{
       background-color: #f8fafc;
@@ -125,6 +140,29 @@ def build_broadcast_html(
       font-size: 12px;
       color: #94a3b8;
       line-height: 1.5;
+      box-sizing: border-box;
+    }}
+    @media only screen and (max-width: 520px) {{
+      .email-container {{
+        margin: 0 !important;
+        border-radius: 0 !important;
+        border-left: none !important;
+        border-right: none !important;
+        width: 100% !important;
+      }}
+      .header {{
+        padding: 22px 14px !important;
+      }}
+      .header h1 {{
+        font-size: 19px !important;
+      }}
+      .content {{
+        padding: 18px 12px !important;
+      }}
+      .event-card {{
+        padding: 14px 12px !important;
+        margin: 18px 0 14px 0 !important;
+      }}
     }}
   </style>
 </head>

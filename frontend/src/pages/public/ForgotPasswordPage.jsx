@@ -111,7 +111,7 @@ const ForgotPasswordPage = () => {
           <Alert type="danger" message={error} onClose={() => setError('')} />
         )}
 
-        <div className="card" style={{ padding: '2.25rem 2rem' }}>
+        <div className="card auth-card">
           {!submitted ? (
             <form onSubmit={handleSubmit}>
               <div className="form-group" style={{ marginBottom: '1.75rem' }}>
@@ -149,7 +149,7 @@ const ForgotPasswordPage = () => {
               <button
                 type="submit"
                 className="btn btn-primary btn-lg"
-                style={{ width: '100%' }}
+                style={{ width: '100%', whiteSpace: 'normal', boxSizing: 'border-box' }}
                 disabled={loading}
               >
                 {loading ? (
@@ -175,9 +175,11 @@ const ForgotPasswordPage = () => {
                   fontSize: '0.92rem',
                   color: 'var(--color-text-main)',
                   lineHeight: 1.6,
+                  wordBreak: 'break-word',
+                  overflowWrap: 'anywhere',
                 }}
               >
-                If an account exists for <strong style={{ color: '#0f172a' }}>{submittedEmail}</strong>, you will receive an email shortly containing a link to choose a new password.
+                If an account exists for <strong style={{ color: '#0f172a', wordBreak: 'break-all' }}>{submittedEmail}</strong>, you will receive an email shortly containing a link to choose a new password.
               </div>
 
               {devResetUrl && (

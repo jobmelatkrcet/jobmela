@@ -1069,6 +1069,9 @@ button, input, select, textarea {
   padding: 1.5rem;
   box-shadow: var(--shadow-sm);
   transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+  box-sizing: border-box;
+  max-width: 100%;
+  word-break: break-word;
 }
 
 .card-hover:hover {
@@ -1225,6 +1228,10 @@ button, input, select, textarea {
   align-items: flex-start;
   gap: 0.75rem;
   font-size: 0.9rem;
+  box-sizing: border-box;
+  max-width: 100%;
+  word-break: break-word;
+  overflow-wrap: anywhere;
 }
 
 .alert-success {
@@ -6062,6 +6069,8 @@ button, input, select, textarea {
    ========================================================================== */
 .home-guide-strip-container {
   padding: 1.25rem 0 0.5rem;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .home-guide-callout-card {
@@ -6075,10 +6084,16 @@ button, input, select, textarea {
   flex-wrap: wrap;
   gap: 1.25rem;
   box-shadow: 0 12px 30px -8px rgba(15, 23, 42, 0.4), 0 0 25px rgba(56, 189, 248, 0.12);
+  width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 
 .home-guide-callout-left {
   flex: 1 1 340px;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .home-guide-pill-badge {
@@ -6103,6 +6118,7 @@ button, input, select, textarea {
   color: #f8fafc;
   margin: 0 0 0.35rem;
   letter-spacing: -0.01em;
+  word-break: break-word;
 }
 
 .home-guide-subtext {
@@ -6110,6 +6126,7 @@ button, input, select, textarea {
   color: #cbd5e1;
   margin: 0;
   line-height: 1.5;
+  word-break: break-word;
 }
 
 .home-guide-subtext strong {
@@ -6119,6 +6136,7 @@ button, input, select, textarea {
 .home-guide-action-btn {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 0.65rem;
   padding: 0.8rem 1.5rem;
   background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
@@ -6131,6 +6149,8 @@ button, input, select, textarea {
   box-shadow: 0 4px 16px rgba(2, 132, 199, 0.4);
   transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   white-space: nowrap;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .home-guide-action-btn:hover {
@@ -6138,6 +6158,24 @@ button, input, select, textarea {
   transform: translateY(-2px);
   box-shadow: 0 8px 24px rgba(2, 132, 199, 0.55);
   color: #ffffff;
+}
+
+@media (max-width: 768px) {
+  .home-guide-callout-card {
+    padding: 1.15rem 1rem;
+    gap: 1rem;
+  }
+  .home-guide-callout-left {
+    flex: 1 1 100%;
+    width: 100%;
+  }
+  .home-guide-action-btn {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    font-size: 0.9rem;
+    white-space: normal;
+    text-align: center;
+  }
 }
 
 /* ==========================================================================
@@ -6426,4 +6464,82 @@ button, input, select, textarea {
   box-shadow: 0 6px 18px rgba(2, 132, 199, 0.5);
   color: #ffffff;
 }
+
+/* ==========================================================================
+   MOBILE OVERFLOW & RESPONSIVE COMPONENT ADJUSTMENTS
+   ========================================================================== */
+.admin-login-card {
+  padding: 2.5rem;
+  box-sizing: border-box;
+  overflow: hidden;
+  max-width: 100%;
+}
+
+.auth-card {
+  box-sizing: border-box;
+  overflow: hidden;
+  max-width: 100%;
+}
+
+@media (max-width: 640px) {
+  .admin-login-card {
+    padding: 1.35rem 1rem !important;
+  }
+
+  .card {
+    padding: 1.15rem 1rem;
+  }
+
+  .guide-modal-footer {
+    flex-direction: column-reverse;
+    gap: 0.65rem;
+    padding: 1rem 1.15rem;
+  }
+
+  .guide-modal-action-btn,
+  .guide-modal-dismiss-btn {
+    width: 100%;
+    justify-content: center;
+    box-sizing: border-box;
+    text-align: center;
+  }
+
+  .student-banner-right {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch !important;
+    gap: 0.5rem !important;
+  }
+
+  .student-guide-banner-btn,
+  .student-whatsapp-btn,
+  .requirements-trigger-btn {
+    width: 100%;
+    justify-content: center;
+    box-sizing: border-box;
+    white-space: normal;
+    text-align: center;
+  }
+
+  .dashboard-whatsapp-card {
+    padding: 1.15rem 1rem;
+    gap: 1rem;
+  }
+
+  .dashboard-whatsapp-content {
+    min-width: 0;
+    width: 100%;
+    flex: 1 1 100%;
+  }
+
+  .dashboard-whatsapp-btn {
+    width: 100%;
+    justify-content: center;
+    box-sizing: border-box;
+    white-space: normal;
+    text-align: center;
+  }
+}
+
 
