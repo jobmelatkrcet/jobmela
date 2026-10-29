@@ -96,7 +96,7 @@ class StudentRegistrationTests(TestCase):
         self.assertIn("Registration Confirmed", welcome_email.subject)
         self.assertIn("Priyanka Reddy", welcome_email.body)
         self.assertIn("31 October 2026", welcome_email.body)
-        self.assertIn("https://chat.whatsapp.com/FPlYlj8NqzSLDcZzS44Oi0", welcome_email.body)
+        self.assertIn("https://chat.whatsapp.com/Fq0JocusAOL1PyMi0oZtks", welcome_email.body)
 
     # 3. Successful photo upload using mocked Supabase Storage
     @override_settings(
@@ -1029,7 +1029,7 @@ class RegistrationWelcomeEmailTests(TestCase):
         self.assertIn("Registration Confirmed", sent_email.subject)
 
         # Check WhatsApp group link in body
-        whatsapp_link = "https://chat.whatsapp.com/FPlYlj8NqzSLDcZzS44Oi0?s=cl&p=a&mlu=4&ilr=4&iam=2"
+        whatsapp_link = "https://chat.whatsapp.com/Fq0JocusAOL1PyMi0oZtks?s=cl&p=a&mlu=4&ilr=4&iam=2"
         self.assertIn(whatsapp_link, sent_email.body)
         self.assertIn("Srikanth Reddy", sent_email.body)
         self.assertIn("31 October 2026", sent_email.body)

@@ -215,7 +215,7 @@ Website: https://www.tkrcetjobmela.in
 
 
 WHATSAPP_GROUP_LINK = (
-    "https://chat.whatsapp.com/FPlYlj8NqzSLDcZzS44Oi0?s=cl&p=a&mlu=4&ilr=4&iam=2"
+    "https://chat.whatsapp.com/Fq0JocusAOL1PyMi0oZtks?s=cl&p=a&mlu=4&ilr=4&iam=2"
 )
 
 
