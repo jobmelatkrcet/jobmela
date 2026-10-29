@@ -49,6 +49,8 @@ class BroadcastCampaign(models.Model):
     message = models.TextField()
     target = models.CharField(max_length=50, choices=TARGET_CHOICES, default="all_students")
     include_whatsapp = models.BooleanField(default=True)
+    include_whatsapp_group = models.BooleanField(default=True)
+    include_whatsapp_channel = models.BooleanField(default=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
     total_recipients = models.PositiveIntegerField(default=0)
     sent_count = models.PositiveIntegerField(default=0)

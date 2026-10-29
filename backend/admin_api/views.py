@@ -1989,6 +1989,8 @@ class AdminBroadcastEmailView(APIView):
                     "message": active_campaign.message,
                     "target": active_campaign.target,
                     "include_whatsapp": active_campaign.include_whatsapp,
+                    "include_whatsapp_group": getattr(active_campaign, "include_whatsapp_group", active_campaign.include_whatsapp),
+                    "include_whatsapp_channel": getattr(active_campaign, "include_whatsapp_channel", active_campaign.include_whatsapp),
                     "status": active_campaign.status,
                     "total_recipients": active_campaign.total_recipients,
                     "sent_count": active_campaign.sent_count,
@@ -2084,7 +2086,27 @@ class AdminBroadcastEmailView(APIView):
         subject = str(data.get("subject", "")).strip()
         message = str(data.get("message", "")).strip()
         target = str(data.get("target", "all_students")).strip().lower()
-        include_whatsapp = bool(data.get("include_whatsapp", True))
+
+        # Parse WhatsApp group & channel inclusion toggles
+        include_group_raw = data.get("include_whatsapp_group")
+        include_channel_raw = data.get("include_whatsapp_channel")
+        legacy_whatsapp = data.get("include_whatsapp")
+
+        if include_group_raw is not None:
+            include_whatsapp_group = bool(include_group_raw)
+        elif legacy_whatsapp is not None:
+            include_whatsapp_group = bool(legacy_whatsapp)
+        else:
+            include_whatsapp_group = True
+
+        if include_channel_raw is not None:
+            include_whatsapp_channel = bool(include_channel_raw)
+        elif legacy_whatsapp is not None:
+            include_whatsapp_channel = bool(legacy_whatsapp)
+        else:
+            include_whatsapp_channel = True
+
+        include_whatsapp = include_whatsapp_group or include_whatsapp_channel
 
         if not subject or len(subject) < 3:
             return Response(
@@ -2113,6 +2135,8 @@ class AdminBroadcastEmailView(APIView):
                 message_text=message,
                 recipients=recipients,
                 include_whatsapp=include_whatsapp,
+                include_whatsapp_group=include_whatsapp_group,
+                include_whatsapp_channel=include_whatsapp_channel,
             )
             is_success = dispatch_result.get("success", False)
             errors = dispatch_result.get("errors", [])
@@ -2233,15 +2257,28 @@ class AdminBroadcastEmailView(APIView):
 
         # Try creating BroadcastCampaign record and batch dispatch
         try:
-            campaign = BroadcastCampaign.objects.create(
-                subject=subject,
-                message=message,
-                target=target,
-                include_whatsapp=include_whatsapp,
-                created_by=request.user,
-                status="in_progress",
-                total_recipients=len(student_list),
-            )
+            try:
+                campaign = BroadcastCampaign.objects.create(
+                    subject=subject,
+                    message=message,
+                    target=target,
+                    include_whatsapp=include_whatsapp,
+                    include_whatsapp_group=include_whatsapp_group,
+                    include_whatsapp_channel=include_whatsapp_channel,
+                    created_by=request.user,
+                    status="in_progress",
+                    total_recipients=len(student_list),
+                )
+            except Exception:
+                campaign = BroadcastCampaign.objects.create(
+                    subject=subject,
+                    message=message,
+                    target=target,
+                    include_whatsapp=include_whatsapp,
+                    created_by=request.user,
+                    status="in_progress",
+                    total_recipients=len(student_list),
+                )
 
             # Seed recipients with unique constraint protection
             recipients_to_create = [

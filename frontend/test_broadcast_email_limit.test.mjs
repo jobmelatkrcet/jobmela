@@ -93,3 +93,27 @@ test('AdminBroadcastEmailModal: Supports vinaybyagari07@gmail.com default testin
   );
 });
 
+test('AdminBroadcastEmailModal: Has independent checkboxes for WhatsApp Group and WhatsApp Channel', () => {
+  assert.ok(
+    modalSource.includes('include-whatsapp-group-checkbox'),
+    'Modal must have include-whatsapp-group-checkbox'
+  );
+  assert.ok(
+    modalSource.includes('include-whatsapp-channel-checkbox'),
+    'Modal must have include-whatsapp-channel-checkbox'
+  );
+  assert.ok(
+    modalSource.includes('include_whatsapp_group: includeWhatsappGroup'),
+    'Modal must forward include_whatsapp_group in payload'
+  );
+  assert.ok(
+    modalSource.includes('include_whatsapp_channel: includeWhatsappChannel'),
+    'Modal must forward include_whatsapp_channel in payload'
+  );
+  assert.ok(
+    modalSource.includes('Check Both') && modalSource.includes('Uncheck Both'),
+    'Modal should provide quick helper buttons for checking/unchecking both'
+  );
+});
+
+

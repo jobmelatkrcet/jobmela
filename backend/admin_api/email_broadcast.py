@@ -21,9 +21,12 @@ def build_broadcast_html(
     include_whatsapp=True,
     whatsapp_url=WHATSAPP_GROUP_LINK,
     whatsapp_channel_url=WHATSAPP_CHANNEL_LINK,
+    include_whatsapp_group=None,
+    include_whatsapp_channel=None,
 ):
     """
     Renders an official responsive HTML email template for TKRCET Job Mela 2026 announcements.
+    Supports optional inclusion of WhatsApp Group link and/or WhatsApp Channel link.
     """
     safe_name = escape(student_name or "Candidate")
     safe_subject = escape(subject)
@@ -41,32 +44,69 @@ def build_broadcast_html(
         ]
     formatted_body = "".join(paragraphs)
 
+    # Fall back to include_whatsapp if specific toggles not provided
+    if include_whatsapp_group is None:
+        include_whatsapp_group = bool(include_whatsapp)
+    if include_whatsapp_channel is None:
+        include_whatsapp_channel = bool(include_whatsapp)
+
     whatsapp_section = ""
-    if include_whatsapp:
+    if include_whatsapp_group or include_whatsapp_channel:
         safe_wa_url = escape(whatsapp_url or WHATSAPP_GROUP_LINK)
         safe_channel_url = escape(whatsapp_channel_url or WHATSAPP_CHANNEL_LINK)
+
+        buttons_html = []
+        links_html = []
+
+        if include_whatsapp_group and include_whatsapp_channel:
+            card_title = "Join TKRCET Job Mela WhatsApp Group &amp; Channel"
+            card_desc = "Get real-time announcements on company arrivals, interview call schedules, and spot shortlists directly on your phone."
+        elif include_whatsapp_group:
+            card_title = "Join TKRCET Job Mela WhatsApp Group"
+            card_desc = "Connect with fellow candidates and receive live interview call updates and announcements on your phone."
+        else:
+            card_title = "Follow TKRCET Job Mela WhatsApp Channel"
+            card_desc = "Stay tuned for official broadcast alerts, schedules, and recruitment shortlists directly on WhatsApp."
+
+        if include_whatsapp_group:
+            buttons_html.append(
+                f'<a href="{safe_wa_url}" target="_blank" style="display: inline-block; background: linear-gradient(135deg, #25D366 0%, #16a34a 100%); color: #ffffff !important; text-decoration: none; font-weight: 700; font-size: 14px; padding: 10px 20px; border-radius: 8px; margin: 4px; box-shadow: 0 4px 10px rgba(37, 211, 102, 0.35);">'
+                '👉 Join WhatsApp Group'
+                '</a>'
+            )
+            links_html.append(
+                f'<div><strong>WhatsApp Group:</strong> <a href="{safe_wa_url}" style="color: #047857; word-break: break-all;">{safe_wa_url}</a></div>'
+            )
+
+        if include_whatsapp_channel:
+            buttons_html.append(
+                f'<a href="{safe_channel_url}" target="_blank" style="display: inline-block; background: linear-gradient(135deg, #075e54 0%, #064e3b 100%); color: #ffffff !important; text-decoration: none; font-weight: 700; font-size: 14px; padding: 10px 20px; border-radius: 8px; margin: 4px; box-shadow: 0 4px 10px rgba(7, 94, 84, 0.35);">'
+                '📢 Follow WhatsApp Channel'
+                '</a>'
+            )
+            links_html.append(
+                f'<div><strong>WhatsApp Channel:</strong> <a href="{safe_channel_url}" style="color: #047857; word-break: break-all;">{safe_channel_url}</a></div>'
+            )
+
+        rendered_buttons = "\n".join(buttons_html)
+        rendered_links = "\n".join(links_html)
+
         whatsapp_section = f"""
         <div style="margin: 28px 0; background: linear-gradient(135deg, #ecfdf5 0%, #f0fdf4 100%); border: 1.5px solid #86efac; border-radius: 12px; padding: 20px 22px; text-align: center; box-shadow: 0 4px 12px rgba(34, 197, 94, 0.08);">
           <div style="display: inline-block; background-color: #22c55e; color: #ffffff; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px; padding: 3px 10px; border-radius: 9999px; margin-bottom: 10px;">
             Official Candidates Community
           </div>
           <h3 style="margin: 0 0 8px 0; color: #065f46; font-size: 18px; font-weight: 700;">
-            Join TKRCET Job Mela WhatsApp Group &amp; Channel
+            {card_title}
           </h3>
           <p style="margin: 0 0 16px 0; font-size: 13.5px; line-height: 1.5; color: #047857;">
-            Get real-time announcements on company arrivals, interview call schedules, and spot shortlists directly on your phone.
+            {card_desc}
           </p>
           <div style="text-align: center; margin-bottom: 12px;">
-            <a href="{safe_wa_url}" target="_blank" style="display: inline-block; background: linear-gradient(135deg, #25D366 0%, #16a34a 100%); color: #ffffff !important; text-decoration: none; font-weight: 700; font-size: 14px; padding: 10px 20px; border-radius: 8px; margin: 4px; box-shadow: 0 4px 10px rgba(37, 211, 102, 0.35);">
-              👉 Join WhatsApp Group
-            </a>
-            <a href="{safe_channel_url}" target="_blank" style="display: inline-block; background: linear-gradient(135deg, #075e54 0%, #064e3b 100%); color: #ffffff !important; text-decoration: none; font-weight: 700; font-size: 14px; padding: 10px 20px; border-radius: 8px; margin: 4px; box-shadow: 0 4px 10px rgba(7, 94, 84, 0.35);">
-              📢 Follow WhatsApp Channel
-            </a>
+            {rendered_buttons}
           </div>
           <div style="font-size: 12px; color: #059669; margin-top: 10px; line-height: 1.6;">
-            <div><strong>WhatsApp Group:</strong> <a href="{safe_wa_url}" style="color: #047857; word-break: break-all;">{safe_wa_url}</a></div>
-            <div><strong>WhatsApp Channel:</strong> <a href="{safe_channel_url}" style="color: #047857; word-break: break-all;">{safe_channel_url}</a></div>
+            {rendered_links}
           </div>
         </div>
         """
@@ -238,22 +278,39 @@ def build_broadcast_plain(
     include_whatsapp=True,
     whatsapp_url=WHATSAPP_GROUP_LINK,
     whatsapp_channel_url=WHATSAPP_CHANNEL_LINK,
+    include_whatsapp_group=None,
+    include_whatsapp_channel=None,
 ):
     """
     Renders plain text fallback for email clients without HTML support.
     """
+    if include_whatsapp_group is None:
+        include_whatsapp_group = bool(include_whatsapp)
+    if include_whatsapp_channel is None:
+        include_whatsapp_channel = bool(include_whatsapp)
+
     wa_text = ""
-    if include_whatsapp:
-        wa_text = f"""
---------------------------------------------------
-OFFICIAL CANDIDATES WHATSAPP COMMUNITY & CHANNELS:
-Join our WhatsApp group and follow our official channel for live company calls and interview updates:
-• WhatsApp Group:
-  {whatsapp_url or WHATSAPP_GROUP_LINK}
-• WhatsApp Channel:
-  {whatsapp_channel_url or WHATSAPP_CHANNEL_LINK}
---------------------------------------------------
-"""
+    if include_whatsapp_group or include_whatsapp_channel:
+        wa_lines = [
+            "--------------------------------------------------",
+            "OFFICIAL CANDIDATES WHATSAPP COMMUNITY & CHANNELS:",
+        ]
+        if include_whatsapp_group and include_whatsapp_channel:
+            wa_lines.append("Join our WhatsApp group and follow our official channel for live company calls and interview updates:")
+        elif include_whatsapp_group:
+            wa_lines.append("Join our WhatsApp group for live company calls and interview updates:")
+        else:
+            wa_lines.append("Follow our official WhatsApp channel for live company calls and interview updates:")
+
+        if include_whatsapp_group:
+            wa_lines.append("• WhatsApp Group:")
+            wa_lines.append(f"  {whatsapp_url or WHATSAPP_GROUP_LINK}")
+        if include_whatsapp_channel:
+            wa_lines.append("• WhatsApp Channel:")
+            wa_lines.append(f"  {whatsapp_channel_url or WHATSAPP_CHANNEL_LINK}")
+
+        wa_lines.append("--------------------------------------------------\n")
+        wa_text = "\n".join(wa_lines)
 
     return f"""Hello {student_name or 'Candidate'},
 
@@ -280,6 +337,8 @@ def dispatch_broadcast_emails(
     recipients,
     from_email=None,
     include_whatsapp=True,
+    include_whatsapp_group=None,
+    include_whatsapp_channel=None,
     whatsapp_url=WHATSAPP_GROUP_LINK,
     whatsapp_channel_url=WHATSAPP_CHANNEL_LINK,
     batch_size=50,
@@ -333,6 +392,8 @@ def dispatch_broadcast_emails(
                 subject=subject,
                 message_text=message_text,
                 include_whatsapp=include_whatsapp,
+                include_whatsapp_group=include_whatsapp_group,
+                include_whatsapp_channel=include_whatsapp_channel,
                 whatsapp_url=whatsapp_url,
                 whatsapp_channel_url=whatsapp_channel_url,
             )
@@ -341,6 +402,8 @@ def dispatch_broadcast_emails(
                 subject=subject,
                 message_text=message_text,
                 include_whatsapp=include_whatsapp,
+                include_whatsapp_group=include_whatsapp_group,
+                include_whatsapp_channel=include_whatsapp_channel,
                 whatsapp_url=whatsapp_url,
                 whatsapp_channel_url=whatsapp_channel_url,
             )
@@ -520,11 +583,16 @@ def dispatch_campaign_batch(
                 batch_failed += 1
                 continue
 
+            camp_inc_group = getattr(campaign, "include_whatsapp_group", getattr(campaign, "include_whatsapp", True))
+            camp_inc_channel = getattr(campaign, "include_whatsapp_channel", getattr(campaign, "include_whatsapp", True))
+
             html_body = build_broadcast_html(
                 student_name=recipient.full_name or "Candidate",
                 subject=campaign.subject,
                 message_text=campaign.message,
                 include_whatsapp=campaign.include_whatsapp,
+                include_whatsapp_group=camp_inc_group,
+                include_whatsapp_channel=camp_inc_channel,
                 whatsapp_url=whatsapp_url,
                 whatsapp_channel_url=whatsapp_channel_url,
             )
@@ -533,6 +601,8 @@ def dispatch_campaign_batch(
                 subject=campaign.subject,
                 message_text=campaign.message,
                 include_whatsapp=campaign.include_whatsapp,
+                include_whatsapp_group=camp_inc_group,
+                include_whatsapp_channel=camp_inc_channel,
                 whatsapp_url=whatsapp_url,
                 whatsapp_channel_url=whatsapp_channel_url,
             )

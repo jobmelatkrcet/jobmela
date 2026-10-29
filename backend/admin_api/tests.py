@@ -360,3 +360,61 @@ class AdminBroadcastEmailTests(TestCase):
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].to, ["vinaybyagari07@gmail.com"])
 
+    def test_admin_broadcast_whatsapp_group_only(self):
+        """
+        Verify that admin can choose to include only the WhatsApp Group link.
+        """
+        mail.outbox = []
+        self.client.force_authenticate(user=self.admin)
+        payload = {
+            "subject": "WhatsApp Group Only Announcement",
+            "message": "Only Group should be present.",
+            "target": "test_self",
+            "include_whatsapp_group": True,
+            "include_whatsapp_channel": False,
+        }
+        res = self.client.post("/api/admin/broadcast-email/", payload, format="json")
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        body = mail.outbox[0].body
+        self.assertIn("https://chat.whatsapp.com/Fq0JocusAOL1PyMi0oZtks", body)
+        self.assertNotIn("https://whatsapp.com/channel/0029Vb8b8zREawdobwEPqI3c", body)
+
+    def test_admin_broadcast_whatsapp_channel_only(self):
+        """
+        Verify that admin can choose to include only the WhatsApp Channel link.
+        """
+        mail.outbox = []
+        self.client.force_authenticate(user=self.admin)
+        payload = {
+            "subject": "WhatsApp Channel Only Announcement",
+            "message": "Only Channel should be present.",
+            "target": "test_self",
+            "include_whatsapp_group": False,
+            "include_whatsapp_channel": True,
+        }
+        res = self.client.post("/api/admin/broadcast-email/", payload, format="json")
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        body = mail.outbox[0].body
+        self.assertNotIn("https://chat.whatsapp.com/Fq0JocusAOL1PyMi0oZtks", body)
+        self.assertIn("https://whatsapp.com/channel/0029Vb8b8zREawdobwEPqI3c", body)
+
+    def test_admin_broadcast_whatsapp_neither(self):
+        """
+        Verify that admin can opt out of both WhatsApp Group and WhatsApp Channel.
+        """
+        mail.outbox = []
+        self.client.force_authenticate(user=self.admin)
+        payload = {
+            "subject": "No WhatsApp Links Announcement",
+            "message": "Neither link should be included.",
+            "target": "test_self",
+            "include_whatsapp_group": False,
+            "include_whatsapp_channel": False,
+        }
+        res = self.client.post("/api/admin/broadcast-email/", payload, format="json")
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        body = mail.outbox[0].body
+        self.assertNotIn("https://chat.whatsapp.com/Fq0JocusAOL1PyMi0oZtks", body)
+        self.assertNotIn("https://whatsapp.com/channel/0029Vb8b8zREawdobwEPqI3c", body)
+
+
