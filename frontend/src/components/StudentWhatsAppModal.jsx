@@ -1,13 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import {
   X,
-  ExternalLink,
   CheckCircle2,
   BellRing,
   Sparkles,
-  BookOpen,
-  ClipboardList,
-  Radio,
+  ArrowRight,
 } from 'lucide-react';
 import WhatsAppIcon from './WhatsAppIcon';
 import { WHATSAPP_GROUP_URL, WHATSAPP_CHANNEL_URL } from '../utils/constants';
@@ -18,17 +15,16 @@ import { WHATSAPP_GROUP_URL, WHATSAPP_CHANNEL_URL } from '../utils/constants';
  * Official notification modal prompting candidates to:
  * 1. Follow the official WhatsApp Channel (Everyone should join!)
  * 2. Join the official WhatsApp Group (If not joined yet)
- * 3. View Candidate Requirements & Documents
- * 4. View "How to Apply for Companies" guide
+ * Clean, focused popup that does not overcrowd with other modals.
  */
 const StudentWhatsAppModal = ({
   isOpen,
   onClose,
-  onOpenGuide,
-  onOpenRequirements,
+  onNext = null,
   user = null,
   whatsappUrl = WHATSAPP_GROUP_URL,
   whatsappChannelUrl = WHATSAPP_CHANNEL_URL,
+  stepIndicator = 'Step 1 of 3',
 }) => {
   const [hasClickedGroup, setHasClickedGroup] = useState(false);
   const [hasClickedChannel, setHasClickedChannel] = useState(false);
@@ -127,7 +123,7 @@ const StudentWhatsAppModal = ({
             onClick={handleDismiss}
             aria-label="Close modal"
             id="close-whatsapp-modal-btn"
-            title="Close modal"
+            title="Close / Cancel"
           >
             <X size={16} />
           </button>
@@ -141,7 +137,7 @@ const StudentWhatsAppModal = ({
           </div>
 
           <div className="student-wa-badge">
-            <Sparkles size={11} /> Official Community &amp; Updates
+            <Sparkles size={11} /> {stepIndicator ? `${stepIndicator} • Official WhatsApp` : 'Official Updates'}
           </div>
 
           <h2 id="student-wa-modal-title" className="student-wa-modal-title" style={{ fontSize: '1.28rem' }}>
@@ -244,51 +240,33 @@ const StudentWhatsAppModal = ({
               </span>
             </button>
 
-            {/* 3. Candidate Requirements & Documents Option */}
-            {onOpenRequirements && (
-              <button
-                type="button"
-                className="student-wa-btn-guide"
-                onClick={() => {
+            {/* 3. Continue / Next: How to Apply Guide */}
+            <button
+              type="button"
+              className="student-wa-btn-guide"
+              onClick={() => {
+                if (onNext) {
+                  onNext();
+                } else {
                   onClose?.();
-                  onOpenRequirements();
-                }}
-                id="wa-modal-candidate-requirements-btn"
-                title="View mandatory document checklist, dress code and entry rules"
-                style={{
-                  backgroundColor: '#fffbeb',
-                  borderColor: '#fde68a',
-                  color: '#92400e',
-                  padding: '0.65rem 1rem',
-                  fontSize: '0.85rem',
-                }}
-              >
-                <ClipboardList size={16} color="#b45309" />
-                <span style={{ flex: 1, textAlign: 'left' }}>Candidate Requirements &amp; Documents</span>
-                <span style={{ fontSize: '0.7rem', fontWeight: 700, color: '#b45309' }}>View Checklist ↗</span>
-              </button>
-            )}
+                }
+              }}
+              id="wa-modal-continue-btn"
+              title="Proceed to How to Apply Guide"
+              style={{
+                backgroundColor: '#0284c7',
+                borderColor: '#0284c7',
+                color: '#ffffff',
+                padding: '0.7rem 1.15rem',
+                fontSize: '0.88rem',
+                fontWeight: 700,
+              }}
+            >
+              <span style={{ flex: 1, textAlign: 'left' }}>Next: How to Apply Guide</span>
+              <ArrowRight size={16} />
+            </button>
 
-            {/* 4. How to Apply for Companies Guide Option */}
-            {onOpenGuide && (
-              <button
-                type="button"
-                className="student-wa-btn-guide"
-                onClick={() => {
-                  onClose?.();
-                  onOpenGuide();
-                }}
-                id="wa-modal-how-to-apply-btn"
-                title="View step-by-step company application walkthrough"
-                style={{ padding: '0.65rem 1rem', fontSize: '0.85rem' }}
-              >
-                <BookOpen size={16} color="#0284c7" />
-                <span style={{ flex: 1, textAlign: 'left' }}>How to Apply for Companies</span>
-                <span style={{ fontSize: '0.7rem', fontWeight: 700, color: '#0284c7' }}>Guide ↗</span>
-              </button>
-            )}
-
-            {/* 5. Already Joined Group / Dismiss Option */}
+            {/* 4. Already Joined Group / Dismiss Option */}
             <button
               type="button"
               className="student-wa-btn-ignore"
@@ -298,7 +276,7 @@ const StudentWhatsAppModal = ({
               style={{ padding: '0.55rem 1rem', fontSize: '0.82rem' }}
             >
               <CheckCircle2 size={14} color="#16a34a" />
-              <span>Already Joined WhatsApp Group • Dismiss</span>
+              <span>Already Joined WhatsApp Group • Close</span>
             </button>
           </div>
 

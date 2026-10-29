@@ -17,53 +17,88 @@ const StudentLayout = () => {
   const [isRequirementsModalOpen, setIsRequirementsModalOpen] = useState(false);
   const [isWhatsAppModalOpen, setIsWhatsAppModalOpen] = useState(false);
   const [isGuideModalOpen, setIsGuideModalOpen] = useState(false);
+  const [isIntroFlow, setIsIntroFlow] = useState(false);
 
-  // Automatically and quickly pop up WhatsApp invitation for students who haven't joined yet
+  // Automatically trigger sequential onboarding flow: WhatsApp -> How to Apply -> Requirements
   useEffect(() => {
     // Only target student candidates
     if (!user || user.role === 'admin' || user.is_staff) return;
 
-    const storageKey = `jobmela_whatsapp_joined_${user.id || user.email || 'student'}`;
-    let hasJoined = false;
-    try {
-      hasJoined = localStorage.getItem(storageKey) === 'true';
-    } catch (e) {
-      hasJoined = false;
-    }
-
-    // If candidate has already joined or marked ignore, do not auto-popup
-    if (hasJoined) return;
-
-    // Check if candidate just logged in or if modal was dismissed for current session
     let justLoggedIn = false;
-    let sessionDismissed = false;
+    let sequenceDismissed = false;
     try {
       justLoggedIn =
         sessionStorage.getItem('jobmela_just_logged_in') === 'true' ||
         Boolean(location.state?.justLoggedIn);
-      sessionDismissed = sessionStorage.getItem('jobmela_wa_session_dismissed') === 'true';
+      sequenceDismissed = sessionStorage.getItem('jobmela_sequence_dismissed') === 'true';
     } catch (e) {
       // ignore storage access errors
     }
 
-    // If candidate just logged in, clear session dismissal to guarantee prompt
+    // If candidate just logged in, reset sequence dismissal to ensure fresh walkthrough
     if (justLoggedIn) {
       try {
         sessionStorage.removeItem('jobmela_just_logged_in');
-        sessionStorage.removeItem('jobmela_wa_session_dismissed');
+        sessionStorage.removeItem('jobmela_sequence_dismissed');
       } catch (e) {}
-      sessionDismissed = false;
+      sequenceDismissed = false;
     }
 
-    // When candidate opens or logs in, pop up quickly (200ms delay for smooth layout mount)
-    if (!sessionDismissed) {
+    // When candidate opens or logs in, initiate sequential popups (250ms delay for layout mount)
+    if (!sequenceDismissed) {
       const timer = setTimeout(() => {
+        setIsIntroFlow(true);
         setIsWhatsAppModalOpen(true);
-      }, 200);
+      }, 250);
 
       return () => clearTimeout(timer);
     }
   }, [user, location.state]);
+
+  // Step 1 -> Step 2: After WhatsApp cancel or close, pop up How to Apply
+  const handleWhatsAppClose = () => {
+    setIsWhatsAppModalOpen(false);
+    if (isIntroFlow) {
+      setTimeout(() => {
+        setIsGuideModalOpen(true);
+      }, 250);
+    }
+  };
+
+  // Step 2 -> Step 3: After How to Apply cancel or close, pop up Candidate Requirements
+  const handleGuideClose = () => {
+    setIsGuideModalOpen(false);
+    if (isIntroFlow) {
+      setTimeout(() => {
+        setIsRequirementsModalOpen(true);
+      }, 250);
+    }
+  };
+
+  // Step 3 Completion: Mark sequence completed
+  const handleRequirementsClose = () => {
+    setIsRequirementsModalOpen(false);
+    setIsIntroFlow(false);
+    try {
+      sessionStorage.setItem('jobmela_sequence_dismissed', 'true');
+    } catch (e) {}
+  };
+
+  // Manual trigger handlers from top banner (open standalone modal without forcing sequence)
+  const handleBannerWhatsAppClick = () => {
+    setIsIntroFlow(false);
+    setIsWhatsAppModalOpen(true);
+  };
+
+  const handleBannerGuideClick = () => {
+    setIsIntroFlow(false);
+    setIsGuideModalOpen(true);
+  };
+
+  const handleBannerRequirementsClick = () => {
+    setIsIntroFlow(false);
+    setIsRequirementsModalOpen(true);
+  };
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', backgroundColor: '#f8fafc' }}>
@@ -128,7 +163,7 @@ const StudentLayout = () => {
               {/* Official WhatsApp Group (Join if Not Joined) */}
               <button
                 type="button"
-                onClick={() => setIsWhatsAppModalOpen(true)}
+                onClick={handleBannerWhatsAppClick}
                 className="student-whatsapp-btn"
                 id="student-banner-whatsapp-btn"
                 title="Click to view official WhatsApp community details"
@@ -140,7 +175,7 @@ const StudentLayout = () => {
 
               <button
                 type="button"
-                onClick={() => setIsRequirementsModalOpen(true)}
+                onClick={handleBannerRequirementsClick}
                 className="requirements-trigger-btn"
                 id="view-job-mela-requirements-btn"
                 title="Click to view all guidelines, documents and dress code"
@@ -152,7 +187,7 @@ const StudentLayout = () => {
 
               <button
                 type="button"
-                onClick={() => setIsGuideModalOpen(true)}
+                onClick={handleBannerGuideClick}
                 className="student-guide-banner-btn"
                 id="student-banner-guide-btn"
                 title="Click to view How to Apply for Companies step-by-step guide"
@@ -175,26 +210,28 @@ const StudentLayout = () => {
 
       <Footer />
 
-      {/* Official Job Mela Requirements Modal (Loaded dynamically from Admin Portal) */}
-      <RequirementsModal
-        isOpen={isRequirementsModalOpen}
-        onClose={() => setIsRequirementsModalOpen(false)}
-      />
-
-      {/* Official Job Mela Student WhatsApp Popup Modal */}
+      {/* 1. Official Job Mela Student WhatsApp Popup Modal (Step 1) */}
       <StudentWhatsAppModal
         isOpen={isWhatsAppModalOpen}
-        onClose={() => setIsWhatsAppModalOpen(false)}
-        onOpenGuide={() => setIsGuideModalOpen(true)}
-        onOpenRequirements={() => setIsRequirementsModalOpen(true)}
+        onClose={handleWhatsAppClose}
+        onNext={handleWhatsAppClose}
         user={user}
+        stepIndicator={isIntroFlow ? 'Step 1 of 3' : null}
       />
 
-      {/* Official Company Application Guide Modal */}
+      {/* 2. Official Company Application Guide Modal (Step 2) */}
       <CompanyApplicationGuideModal
         isOpen={isGuideModalOpen}
-        onClose={() => setIsGuideModalOpen(false)}
-        onOpenRequirements={() => setIsRequirementsModalOpen(true)}
+        onClose={handleGuideClose}
+        onOpenRequirements={handleGuideClose}
+        stepIndicator={isIntroFlow ? 'Step 2 of 3' : null}
+      />
+
+      {/* 3. Official Job Mela Requirements Modal (Step 3) */}
+      <RequirementsModal
+        isOpen={isRequirementsModalOpen}
+        onClose={handleRequirementsClose}
+        stepIndicator={isIntroFlow ? 'Step 3 of 3 • Final Step' : null}
       />
     </div>
   );

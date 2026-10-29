@@ -13,7 +13,7 @@ import {
 } from 'lucide-react';
 import requirementsService from '../services/requirementsService';
 
-const RequirementsModal = ({ isOpen, onClose }) => {
+const RequirementsModal = ({ isOpen, onClose, stepIndicator = null }) => {
   const [requirements, setRequirements] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState('all');
@@ -111,9 +111,26 @@ const RequirementsModal = ({ isOpen, onClose }) => {
               <ClipboardList size={20} />
             </div>
             <div>
-              <h3 style={{ color: '#ffffff', fontSize: '1.15rem', fontWeight: 800, margin: 0 }}>
-                Job Mela 2026 — Candidate Requirements
-              </h3>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                <h3 style={{ color: '#ffffff', fontSize: '1.15rem', fontWeight: 800, margin: 0 }}>
+                  Job Mela 2026 — Candidate Requirements
+                </h3>
+                {stepIndicator && (
+                  <span
+                    style={{
+                      fontSize: '0.68rem',
+                      fontWeight: 800,
+                      backgroundColor: '#f59e0b',
+                      color: '#0f172a',
+                      padding: '2px 7px',
+                      borderRadius: 9999,
+                      textTransform: 'uppercase',
+                    }}
+                  >
+                    {stepIndicator}
+                  </span>
+                )}
+              </div>
               <p style={{ color: '#93c5fd', fontSize: '0.78rem', margin: 0, marginTop: '0.15rem' }}>
                 Official mandatory guidelines, documents &amp; reporting instructions from placement cell
               </p>

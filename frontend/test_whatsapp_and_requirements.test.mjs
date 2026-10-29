@@ -12,12 +12,14 @@ const guideModalFile = path.join(__dirname, 'src', 'components', 'CompanyApplica
 const dashboardFile = path.join(__dirname, 'src', 'pages', 'student', 'StudentDashboardPage.jsx');
 const layoutFile = path.join(__dirname, 'src', 'layouts', 'StudentLayout.jsx');
 const floatingBtnFile = path.join(__dirname, 'src', 'components', 'WhatsAppFloatingButton.jsx');
+const reqModalFile = path.join(__dirname, 'src', 'components', 'RequirementsModal.jsx');
 
 const waModalSrc = fs.readFileSync(waModalFile, 'utf8');
 const guideModalSrc = fs.readFileSync(guideModalFile, 'utf8');
 const dashboardSrc = fs.readFileSync(dashboardFile, 'utf8');
 const layoutSrc = fs.readFileSync(layoutFile, 'utf8');
 const floatingBtnSrc = fs.readFileSync(floatingBtnFile, 'utf8');
+const reqModalSrc = fs.readFileSync(reqModalFile, 'utf8');
 
 test('StudentWhatsAppModal: Has WhatsApp Channel with "Everyone Join" badge', () => {
   assert.ok(waModalSrc.includes('follow-whatsapp-channel-btn'), 'Should have channel button id');
@@ -31,22 +33,14 @@ test('StudentWhatsAppModal: Has WhatsApp Group with "If Not Joined" badge', () =
   assert.ok(waModalSrc.includes('WHATSAPP_GROUP_URL'), 'Should reference WHATSAPP_GROUP_URL');
 });
 
-test('StudentWhatsAppModal: Has Candidate Requirements option', () => {
-  assert.ok(waModalSrc.includes('wa-modal-candidate-requirements-btn'), 'Should have candidate requirements button id');
-  assert.ok(waModalSrc.includes('Candidate Requirements'), 'Should mention Candidate Requirements');
-  assert.ok(waModalSrc.includes('onOpenRequirements'), 'Should call onOpenRequirements');
+test('StudentWhatsAppModal: Dedicated popup (not crowded with embedded requirements)', () => {
+  assert.ok(waModalSrc.includes('wa-modal-continue-btn'), 'Should have continue button id');
+  assert.ok(waModalSrc.includes('Next: How to Apply Guide'), 'Should prompt advance to next popup');
 });
 
-test('CompanyApplicationGuideModal: Has WhatsApp Channel and Group quick options', () => {
-  assert.ok(guideModalSrc.includes('guide-follow-channel-btn'), 'Should have follow channel button');
-  assert.ok(guideModalSrc.includes('guide-join-group-btn'), 'Should have join group button');
-  assert.ok(guideModalSrc.includes('Everyone Should Join'), 'Should state Everyone Should Join');
-  assert.ok(guideModalSrc.includes('If Not Joined'), 'Should state If Not Joined');
-});
-
-test('CompanyApplicationGuideModal: Has Candidate Requirements option', () => {
-  assert.ok(guideModalSrc.includes('guide-view-requirements-btn'), 'Should have view requirements button');
-  assert.ok(guideModalSrc.includes('Candidate Requirements for Job Mela'), 'Should mention Candidate Requirements');
+test('CompanyApplicationGuideModal: Has Next Candidate Requirements action button in footer', () => {
+  assert.ok(guideModalSrc.includes('guide-next-requirements-btn'), 'Should have next requirements button in footer');
+  assert.ok(guideModalSrc.includes('Next: Candidate Requirements'), 'Should state Next: Candidate Requirements');
   assert.ok(guideModalSrc.includes('onOpenRequirements'), 'Should accept onOpenRequirements prop');
 });
 
@@ -61,10 +55,17 @@ test('StudentDashboardPage: Has highlighted hub with WhatsApp Channel, WhatsApp 
   assert.ok(dashboardSrc.includes('RequirementsModal'), 'Dashboard must render RequirementsModal');
 });
 
-test('StudentLayout: Passes onOpenRequirements and renders Channel button in banner', () => {
-  assert.ok(layoutSrc.includes('onOpenRequirements={() => setIsRequirementsModalOpen(true)}'), 'Layout must pass onOpenRequirements');
+test('StudentLayout: Handles sequential flow: WhatsApp cancel/close -> Apply Guide -> Candidate Requirements', () => {
+  assert.ok(layoutSrc.includes('handleWhatsAppClose'), 'Layout must define handleWhatsAppClose');
+  assert.ok(layoutSrc.includes('handleGuideClose'), 'Layout must define handleGuideClose');
+  assert.ok(layoutSrc.includes('setIsGuideModalOpen(true)'), 'Closing WhatsApp must open Guide modal');
+  assert.ok(layoutSrc.includes('setIsRequirementsModalOpen(true)'), 'Closing Guide must open Requirements modal');
   assert.ok(layoutSrc.includes('student-banner-channel-btn'), 'Layout must render WhatsApp Channel in banner');
   assert.ok(layoutSrc.includes('Everyone Join'), 'Banner must indicate Everyone Join');
+});
+
+test('RequirementsModal: Supports step indicator badge', () => {
+  assert.ok(reqModalSrc.includes('stepIndicator'), 'RequirementsModal should support stepIndicator');
 });
 
 test('WhatsAppFloatingButton: Provides both WhatsApp Channel and WhatsApp Group options', () => {

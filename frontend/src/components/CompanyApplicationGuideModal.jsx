@@ -28,6 +28,7 @@ const CompanyApplicationGuideModal = ({
   onClose,
   onOpenRequirements,
   targetCompaniesUrl = '/companies',
+  stepIndicator = 'Step 2 of 3',
 }) => {
   const navigate = useNavigate();
 
@@ -138,7 +139,7 @@ const CompanyApplicationGuideModal = ({
           </button>
 
           <div className="guide-modal-badge">
-            <Sparkles size={14} /> Official Application Walkthrough
+            <Sparkles size={14} /> {stepIndicator ? `${stepIndicator} • Application Walkthrough` : 'Official Application Walkthrough'}
           </div>
 
           <h2 id="guide-modal-title" className="guide-modal-title">
@@ -202,175 +203,6 @@ const CompanyApplicationGuideModal = ({
             })}
           </div>
 
-          {/* Important Quick Options: WhatsApp Channel & Candidate Requirements */}
-          <div
-            style={{
-              margin: '1.25rem 0',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '0.85rem',
-            }}
-          >
-            {/* 1. Official WhatsApp Channel & Group Notice */}
-            <div
-              style={{
-                backgroundColor: '#f0fdf4',
-                border: '1.5px solid #86efac',
-                borderRadius: 12,
-                padding: '1rem 1.15rem',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '0.65rem',
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <WhatsAppIcon size={20} color="#16a34a" />
-                  <span style={{ fontSize: '0.92rem', fontWeight: 800, color: '#065f46' }}>
-                    Official WhatsApp Announcements
-                  </span>
-                </div>
-                <span
-                  style={{
-                    fontSize: '0.7rem',
-                    fontWeight: 800,
-                    backgroundColor: '#075e54',
-                    color: '#ffffff',
-                    padding: '2px 8px',
-                    borderRadius: 9999,
-                    textTransform: 'uppercase',
-                  }}
-                >
-                  Everyone Should Join
-                </span>
-              </div>
-
-              <p style={{ margin: 0, fontSize: '0.82rem', color: '#047857', lineHeight: 1.45 }}>
-                Follow the official <strong>WhatsApp Channel</strong> for live spot vacancy calls, company arrival notices, and interview schedules. Join the <strong>WhatsApp Group</strong> if you haven't joined yet.
-              </p>
-
-              <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap' }}>
-                <a
-                  href={WHATSAPP_CHANNEL_URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="btn btn-sm"
-                  style={{
-                    background: 'linear-gradient(135deg, #075e54 0%, #064e3b 100%)',
-                    color: '#ffffff',
-                    fontWeight: 700,
-                    fontSize: '0.8rem',
-                    padding: '0.45rem 0.95rem',
-                    borderRadius: 8,
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '0.45rem',
-                    textDecoration: 'none',
-                    boxShadow: '0 2px 8px rgba(7, 94, 84, 0.25)',
-                  }}
-                  id="guide-follow-channel-btn"
-                >
-                  <WhatsAppIcon size={15} color="#ffffff" />
-                  <span>Follow WhatsApp Channel (Mandatory)</span>
-                  <ExternalLink size={13} />
-                </a>
-
-                <a
-                  href={WHATSAPP_GROUP_URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="btn btn-sm btn-outline"
-                  style={{
-                    fontSize: '0.8rem',
-                    padding: '0.45rem 0.85rem',
-                    borderRadius: 8,
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '0.4rem',
-                    color: '#15803d',
-                    borderColor: '#86efac',
-                    backgroundColor: '#ffffff',
-                    textDecoration: 'none',
-                  }}
-                  id="guide-join-group-btn"
-                >
-                  <span>Join WhatsApp Group (If Not Joined)</span>
-                  <ExternalLink size={13} />
-                </a>
-              </div>
-            </div>
-
-            {/* 2. Candidate Requirements & Documents Option */}
-            <div
-              style={{
-                backgroundColor: '#fffbeb',
-                border: '1.5px solid #fde68a',
-                borderRadius: 12,
-                padding: '0.95rem 1.15rem',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                flexWrap: 'wrap',
-                gap: '0.75rem',
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', flex: 1, minWidth: 240 }}>
-                <div
-                  style={{
-                    width: 36,
-                    height: 36,
-                    borderRadius: 8,
-                    backgroundColor: '#fef3c7',
-                    color: '#b45309',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    flexShrink: 0,
-                  }}
-                >
-                  <ClipboardList size={20} />
-                </div>
-                <div>
-                  <div style={{ fontSize: '0.88rem', fontWeight: 800, color: '#92400e' }}>
-                    Candidate Requirements for Job Mela
-                  </div>
-                  <div style={{ fontSize: '0.78rem', color: '#b45309', lineHeight: 1.35 }}>
-                    Mandatory 3-5 resume hard copies, photos, marksheets &amp; formal dress code.
-                  </div>
-                </div>
-              </div>
-
-              {onOpenRequirements && (
-                <button
-                  type="button"
-                  className="btn btn-sm"
-                  onClick={() => {
-                    onClose?.();
-                    onOpenRequirements();
-                  }}
-                  style={{
-                    backgroundColor: '#d97706',
-                    color: '#ffffff',
-                    fontWeight: 700,
-                    fontSize: '0.8rem',
-                    padding: '0.45rem 0.95rem',
-                    borderRadius: 8,
-                    border: 'none',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '0.45rem',
-                    cursor: 'pointer',
-                  }}
-                  id="guide-view-requirements-btn"
-                >
-                  <ClipboardList size={15} />
-                  <span>View Requirements Checklist</span>
-                  <ArrowRight size={14} />
-                </button>
-              )}
-            </div>
-          </div>
-
           {/* Verification Tip */}
           <div className="guide-modal-tip-box">
             <CheckCircle2 size={16} color="#059669" />
@@ -380,7 +212,7 @@ const CompanyApplicationGuideModal = ({
           </div>
         </div>
 
-        {/* Modal Footer with Prominent "Go to Companies" Button */}
+        {/* Modal Footer with "Next: Candidate Requirements" or "Go to Companies" Button */}
         <div className="guide-modal-footer">
           <button
             type="button"
@@ -390,16 +222,37 @@ const CompanyApplicationGuideModal = ({
             Close Guide
           </button>
 
-          <button
-            type="button"
-            className="guide-modal-action-btn"
-            onClick={handleGoToCompanies}
-            id="guide-go-to-companies-btn"
-          >
-            <Building2 size={18} />
-            <span>Go to Companies</span>
-            <ArrowRight size={17} />
-          </button>
+          {onOpenRequirements ? (
+            <button
+              type="button"
+              className="guide-modal-action-btn"
+              onClick={() => {
+                onClose?.();
+                onOpenRequirements();
+              }}
+              id="guide-next-requirements-btn"
+              style={{
+                background: 'linear-gradient(135deg, #d97706 0%, #b45309 100%)',
+                color: '#ffffff',
+                border: 'none',
+              }}
+            >
+              <ClipboardList size={18} />
+              <span>Next: Candidate Requirements</span>
+              <ArrowRight size={17} />
+            </button>
+          ) : (
+            <button
+              type="button"
+              className="guide-modal-action-btn"
+              onClick={handleGoToCompanies}
+              id="guide-go-to-companies-btn"
+            >
+              <Building2 size={18} />
+              <span>Go to Companies</span>
+              <ArrowRight size={17} />
+            </button>
+          )}
         </div>
       </div>
     </div>
