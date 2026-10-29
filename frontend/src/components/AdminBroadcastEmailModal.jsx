@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 import { adminService } from '../services/adminService';
 import WhatsAppIcon from './WhatsAppIcon';
-import { WHATSAPP_GROUP_URL } from '../utils/constants';
+import { WHATSAPP_GROUP_URL, WHATSAPP_CHANNEL_URL } from '../utils/constants';
 
 const PRESETS = [
   {
@@ -1182,24 +1182,43 @@ const AdminBroadcastEmailModal = ({ isOpen, onClose }) => {
                         Official Community
                       </span>
                       <h5 style={{ margin: '0.35rem 0 0.25rem', color: '#065f46', fontSize: '0.95rem' }}>
-                        Join TKRCET Job Mela WhatsApp Group
+                        Join TKRCET Job Mela WhatsApp Group &amp; Channel
                       </h5>
                       <p style={{ margin: '0 0 0.65rem', fontSize: '0.78rem', color: '#047857' }}>
-                        Get real-time announcements on company arrivals and interview schedules.
+                        Get real-time announcements on company arrivals, interview schedules, and spot shortlists.
                       </p>
-                      <span
-                        style={{
-                          display: 'inline-block',
-                          background: '#25D366',
-                          color: '#ffffff',
-                          fontWeight: 700,
-                          fontSize: '0.8rem',
-                          padding: '0.4rem 0.95rem',
-                          borderRadius: 6,
-                        }}
-                      >
-                        👉 Join WhatsApp Group Now
-                      </span>
+                      <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '0.5rem' }}>
+                        <span
+                          style={{
+                            display: 'inline-block',
+                            background: '#25D366',
+                            color: '#ffffff',
+                            fontWeight: 700,
+                            fontSize: '0.78rem',
+                            padding: '0.35rem 0.85rem',
+                            borderRadius: 6,
+                          }}
+                        >
+                          👉 Join WhatsApp Group
+                        </span>
+                        <span
+                          style={{
+                            display: 'inline-block',
+                            background: '#075e54',
+                            color: '#ffffff',
+                            fontWeight: 700,
+                            fontSize: '0.78rem',
+                            padding: '0.35rem 0.85rem',
+                            borderRadius: 6,
+                          }}
+                        >
+                          📢 Follow WhatsApp Channel
+                        </span>
+                      </div>
+                      <div style={{ fontSize: '0.72rem', color: '#059669', lineHeight: 1.5, wordBreak: 'break-all' }}>
+                        <div>Group: {WHATSAPP_GROUP_URL}</div>
+                        <div>Channel: {WHATSAPP_CHANNEL_URL}</div>
+                      </div>
                     </div>
                   )}
 
@@ -1255,7 +1274,7 @@ const AdminBroadcastEmailModal = ({ isOpen, onClose }) => {
               }}
             >
               <WhatsAppIcon size={18} color="#25D366" />
-              <span>Include Official WhatsApp Group Invite &amp; Button in Email</span>
+              <span>Include Official WhatsApp Group &amp; Channel Invites in Email</span>
             </label>
           </div>
 

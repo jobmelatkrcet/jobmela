@@ -28,6 +28,7 @@ from .email_broadcast import (
     dispatch_broadcast_emails,
     dispatch_campaign_batch,
     WHATSAPP_GROUP_LINK,
+    WHATSAPP_CHANNEL_LINK,
 )
 from .serializers import (
     AdminStudentListSerializer,
@@ -2000,6 +2001,7 @@ class AdminBroadcastEmailView(APIView):
                 "students_with_applications": students_with_apps,
                 "admin_email": admin_email,
                 "whatsapp_group_link": WHATSAPP_GROUP_LINK,
+                "whatsapp_channel_link": WHATSAPP_CHANNEL_LINK,
                 "smtp_configured": smtp_configured,
                 "default_from_email": default_from,
                 "active_campaign": active_campaign_data,

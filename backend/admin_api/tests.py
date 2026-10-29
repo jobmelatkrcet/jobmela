@@ -5,7 +5,7 @@ from rest_framework import status
 from accounts.models import User
 from companies.models import Company
 from applications.models import Application
-from admin_api.email_broadcast import WHATSAPP_GROUP_LINK
+from admin_api.email_broadcast import WHATSAPP_GROUP_LINK, WHATSAPP_CHANNEL_LINK
 
 
 class AdminBroadcastEmailTests(TestCase):
@@ -63,6 +63,7 @@ class AdminBroadcastEmailTests(TestCase):
         self.assertEqual(data["students_with_applications"], 1)
         self.assertEqual(data["admin_email"], self.admin.email)
         self.assertEqual(data["whatsapp_group_link"], WHATSAPP_GROUP_LINK)
+        self.assertEqual(data["whatsapp_channel_link"], WHATSAPP_CHANNEL_LINK)
 
     def test_admin_broadcast_validation(self):
         self.client.force_authenticate(user=self.admin)
@@ -108,6 +109,7 @@ class AdminBroadcastEmailTests(TestCase):
         # Verify WhatsApp link is embedded in the message
         first_email = mail.outbox[0]
         self.assertIn(WHATSAPP_GROUP_LINK, first_email.body)
+        self.assertIn(WHATSAPP_CHANNEL_LINK, first_email.body)
 
     def test_admin_broadcast_test_to_self(self):
         mail.outbox = []

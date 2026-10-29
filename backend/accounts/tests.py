@@ -97,6 +97,7 @@ class StudentRegistrationTests(TestCase):
         self.assertIn("Priyanka Reddy", welcome_email.body)
         self.assertIn("31 October 2026", welcome_email.body)
         self.assertIn("https://chat.whatsapp.com/Fq0JocusAOL1PyMi0oZtks", welcome_email.body)
+        self.assertIn("https://whatsapp.com/channel/0029Vb8b8zREawdobwEPqI3c", welcome_email.body)
 
     # 3. Successful photo upload using mocked Supabase Storage
     @override_settings(
@@ -1041,6 +1042,9 @@ class RegistrationWelcomeEmailTests(TestCase):
         self.assertEqual(mime, "text/html")
         self.assertIn(whatsapp_link, html_body)
         self.assertIn("Join the Official WhatsApp Group", html_body)
+        channel_link = "https://whatsapp.com/channel/0029Vb8b8zREawdobwEPqI3c"
+        self.assertIn(channel_link, sent_email.body)
+        self.assertIn(channel_link, html_body)
 
     @patch("accounts.views.send_registration_welcome_email")
     def test_registration_succeeds_even_if_email_fails(self, mock_send_email):

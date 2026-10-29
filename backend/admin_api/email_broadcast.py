@@ -9,6 +9,9 @@ logger = logging.getLogger(__name__)
 WHATSAPP_GROUP_LINK = (
     "https://chat.whatsapp.com/Fq0JocusAOL1PyMi0oZtks?s=cl&p=a&mlu=4&ilr=4&iam=2"
 )
+WHATSAPP_CHANNEL_LINK = (
+    "https://whatsapp.com/channel/0029Vb8b8zREawdobwEPqI3c"
+)
 
 
 def build_broadcast_html(
@@ -17,6 +20,7 @@ def build_broadcast_html(
     message_text,
     include_whatsapp=True,
     whatsapp_url=WHATSAPP_GROUP_LINK,
+    whatsapp_channel_url=WHATSAPP_CHANNEL_LINK,
 ):
     """
     Renders an official responsive HTML email template for TKRCET Job Mela 2026 announcements.
@@ -40,20 +44,30 @@ def build_broadcast_html(
     whatsapp_section = ""
     if include_whatsapp:
         safe_wa_url = escape(whatsapp_url or WHATSAPP_GROUP_LINK)
+        safe_channel_url = escape(whatsapp_channel_url or WHATSAPP_CHANNEL_LINK)
         whatsapp_section = f"""
         <div style="margin: 28px 0; background: linear-gradient(135deg, #ecfdf5 0%, #f0fdf4 100%); border: 1.5px solid #86efac; border-radius: 12px; padding: 20px 22px; text-align: center; box-shadow: 0 4px 12px rgba(34, 197, 94, 0.08);">
           <div style="display: inline-block; background-color: #22c55e; color: #ffffff; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px; padding: 3px 10px; border-radius: 9999px; margin-bottom: 10px;">
             Official Candidates Community
           </div>
           <h3 style="margin: 0 0 8px 0; color: #065f46; font-size: 18px; font-weight: 700;">
-            Join TKRCET Job Mela WhatsApp Group
+            Join TKRCET Job Mela WhatsApp Group &amp; Channel
           </h3>
           <p style="margin: 0 0 16px 0; font-size: 13.5px; line-height: 1.5; color: #047857;">
             Get real-time announcements on company arrivals, interview call schedules, and spot shortlists directly on your phone.
           </p>
-          <a href="{safe_wa_url}" target="_blank" style="display: inline-block; background: linear-gradient(135deg, #25D366 0%, #16a34a 100%); color: #ffffff !important; text-decoration: none; font-weight: 700; font-size: 14.5px; padding: 11px 26px; border-radius: 8px; box-shadow: 0 4px 10px rgba(37, 211, 102, 0.35);">
-            👉 Join WhatsApp Group Now
-          </a>
+          <div style="text-align: center; margin-bottom: 12px;">
+            <a href="{safe_wa_url}" target="_blank" style="display: inline-block; background: linear-gradient(135deg, #25D366 0%, #16a34a 100%); color: #ffffff !important; text-decoration: none; font-weight: 700; font-size: 14px; padding: 10px 20px; border-radius: 8px; margin: 4px; box-shadow: 0 4px 10px rgba(37, 211, 102, 0.35);">
+              👉 Join WhatsApp Group
+            </a>
+            <a href="{safe_channel_url}" target="_blank" style="display: inline-block; background: linear-gradient(135deg, #075e54 0%, #064e3b 100%); color: #ffffff !important; text-decoration: none; font-weight: 700; font-size: 14px; padding: 10px 20px; border-radius: 8px; margin: 4px; box-shadow: 0 4px 10px rgba(7, 94, 84, 0.35);">
+              📢 Follow WhatsApp Channel
+            </a>
+          </div>
+          <div style="font-size: 12px; color: #059669; margin-top: 10px; line-height: 1.6;">
+            <div><strong>WhatsApp Group:</strong> <a href="{safe_wa_url}" style="color: #047857; word-break: break-all;">{safe_wa_url}</a></div>
+            <div><strong>WhatsApp Channel:</strong> <a href="{safe_channel_url}" style="color: #047857; word-break: break-all;">{safe_channel_url}</a></div>
+          </div>
         </div>
         """
 
@@ -217,7 +231,14 @@ def build_broadcast_html(
     return html
 
 
-def build_broadcast_plain(student_name, subject, message_text, include_whatsapp=True, whatsapp_url=WHATSAPP_GROUP_LINK):
+def build_broadcast_plain(
+    student_name,
+    subject,
+    message_text,
+    include_whatsapp=True,
+    whatsapp_url=WHATSAPP_GROUP_LINK,
+    whatsapp_channel_url=WHATSAPP_CHANNEL_LINK,
+):
     """
     Renders plain text fallback for email clients without HTML support.
     """
@@ -225,9 +246,12 @@ def build_broadcast_plain(student_name, subject, message_text, include_whatsapp=
     if include_whatsapp:
         wa_text = f"""
 --------------------------------------------------
-OFFICIAL CANDIDATES WHATSAPP GROUP:
-Join our WhatsApp group for live company calls and interview updates:
-{whatsapp_url or WHATSAPP_GROUP_LINK}
+OFFICIAL CANDIDATES WHATSAPP COMMUNITY & CHANNELS:
+Join our WhatsApp group and follow our official channel for live company calls and interview updates:
+• WhatsApp Group:
+  {whatsapp_url or WHATSAPP_GROUP_LINK}
+• WhatsApp Channel:
+  {whatsapp_channel_url or WHATSAPP_CHANNEL_LINK}
 --------------------------------------------------
 """
 
@@ -257,6 +281,7 @@ def dispatch_broadcast_emails(
     from_email=None,
     include_whatsapp=True,
     whatsapp_url=WHATSAPP_GROUP_LINK,
+    whatsapp_channel_url=WHATSAPP_CHANNEL_LINK,
     batch_size=50,
 ):
     """
@@ -309,6 +334,7 @@ def dispatch_broadcast_emails(
                 message_text=message_text,
                 include_whatsapp=include_whatsapp,
                 whatsapp_url=whatsapp_url,
+                whatsapp_channel_url=whatsapp_channel_url,
             )
             plain_body = build_broadcast_plain(
                 student_name=full_name,
@@ -316,6 +342,7 @@ def dispatch_broadcast_emails(
                 message_text=message_text,
                 include_whatsapp=include_whatsapp,
                 whatsapp_url=whatsapp_url,
+                whatsapp_channel_url=whatsapp_channel_url,
             )
 
             msg = EmailMultiAlternatives(
@@ -386,6 +413,7 @@ def dispatch_campaign_batch(
     batch_size=50,
     from_email=None,
     whatsapp_url=WHATSAPP_GROUP_LINK,
+    whatsapp_channel_url=WHATSAPP_CHANNEL_LINK,
     max_duration_seconds=22.0,
 ):
     """
@@ -498,6 +526,7 @@ def dispatch_campaign_batch(
                 message_text=campaign.message,
                 include_whatsapp=campaign.include_whatsapp,
                 whatsapp_url=whatsapp_url,
+                whatsapp_channel_url=whatsapp_channel_url,
             )
             plain_body = build_broadcast_plain(
                 student_name=recipient.full_name or "Candidate",
@@ -505,6 +534,7 @@ def dispatch_campaign_batch(
                 message_text=campaign.message,
                 include_whatsapp=campaign.include_whatsapp,
                 whatsapp_url=whatsapp_url,
+                whatsapp_channel_url=whatsapp_channel_url,
             )
 
             msg = EmailMultiAlternatives(
