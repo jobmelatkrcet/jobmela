@@ -71,6 +71,9 @@ const AdminBroadcastEmailModal = ({ isOpen, onClose }) => {
   const [loadingStats, setLoadingStats] = useState(false);
 
   const [target, setTarget] = useState('all_students'); // 'all_students' | 'with_applications' | 'test_self'
+  const [sendScope, setSendScope] = useState('all'); // 'all' | 'custom'
+  const [recipientLimit, setRecipientLimit] = useState(''); // e.g. '50', '100'
+  const [startFrom, setStartFrom] = useState('1'); // 1-indexed start student number, default 1
   const [subject, setSubject] = useState(PRESETS[0].subject);
   const [message, setMessage] = useState(PRESETS[0].message);
   const [includeWhatsapp, setIncludeWhatsapp] = useState(true);
@@ -88,6 +91,9 @@ const AdminBroadcastEmailModal = ({ isOpen, onClose }) => {
       setStatusResult(null);
       setConfirmSendOpen(false);
       setBatchProgress(null);
+      setSendScope('all');
+      setRecipientLimit('');
+      setStartFrom('1');
       stopRequestedRef.current = false;
       fetchStats();
     }
@@ -130,12 +136,28 @@ const AdminBroadcastEmailModal = ({ isOpen, onClose }) => {
 
   if (!isOpen) return null;
 
+  const getAvailableCount = () => {
+    if (loadingStats) return 0;
+    if (!stats) return 0;
+    if (target === 'test_self') return 1;
+    if (target === 'with_applications') return stats.students_with_applications || 0;
+    return stats.students_with_email || stats.total_registered_students || 0;
+  };
+
   const getRecipientCount = () => {
     if (loadingStats) return '...';
     if (!stats) return '...';
     if (target === 'test_self') return 1;
-    if (target === 'with_applications') return stats.students_with_applications || 0;
-    return stats.students_with_email || stats.total_registered_students || 0;
+
+    const available = getAvailableCount();
+    if (sendScope === 'custom' && recipientLimit !== '') {
+      const parsedLimit = parseInt(recipientLimit, 10);
+      const parsedStart = Math.max(1, parseInt(startFrom, 10) || 1);
+      if (isNaN(parsedLimit) || parsedLimit <= 0) return 0;
+      const remainingFromStart = Math.max(0, available - (parsedStart - 1));
+      return Math.min(parsedLimit, remainingFromStart);
+    }
+    return available;
   };
 
   const activeCampaign =
@@ -296,13 +318,20 @@ const AdminBroadcastEmailModal = ({ isOpen, onClose }) => {
 
     try {
       // Step 1: Initial dispatch / create campaign with batch_size: 25
-      let res = await adminService.sendBroadcastEmail({
+      const payload = {
         subject,
         message,
         target,
         include_whatsapp: includeWhatsapp,
         batch_size: 25,
-      });
+      };
+
+      if (sendScope === 'custom' && recipientLimit) {
+        payload.limit = parseInt(recipientLimit, 10);
+        payload.start_from = Math.max(1, parseInt(startFrom, 10) || 1);
+      }
+
+      let res = await adminService.sendBroadcastEmail(payload);
 
       setBatchProgress({
         campaignId: res.campaign_id,
@@ -703,6 +732,273 @@ const AdminBroadcastEmailModal = ({ isOpen, onClose }) => {
             </div>
           </div>
 
+          {/* 2. Recipient Limit & Range Control (How many students to send) */}
+          {target !== 'test_self' && (
+            <div
+              style={{
+                backgroundColor: '#f8fafc',
+                border: '1.5px solid #cbd5e1',
+                borderRadius: 'var(--radius-md)',
+                padding: '0.95rem 1.15rem',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '0.75rem',
+              }}
+            >
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  flexWrap: 'wrap',
+                  gap: '0.5rem',
+                }}
+              >
+                <label
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.45rem',
+                    fontSize: '0.88rem',
+                    fontWeight: 700,
+                    color: 'var(--color-primary-900)',
+                    margin: 0,
+                  }}
+                >
+                  <Users size={16} color="#2563eb" />
+                  <span>How many students do you want to send to?</span>
+                </label>
+
+                {/* Scope Toggle: All vs Custom */}
+                <div
+                  style={{
+                    display: 'inline-flex',
+                    background: '#e2e8f0',
+                    padding: '2px',
+                    borderRadius: 8,
+                    gap: '2px',
+                  }}
+                >
+                  <button
+                    type="button"
+                    id="broadcast-scope-all-btn"
+                    onClick={() => {
+                      setSendScope('all');
+                      setRecipientLimit('');
+                    }}
+                    style={{
+                      border: 'none',
+                      background: sendScope === 'all' ? '#ffffff' : 'transparent',
+                      color: sendScope === 'all' ? '#1e293b' : '#64748b',
+                      fontWeight: sendScope === 'all' ? 700 : 500,
+                      fontSize: '0.8rem',
+                      padding: '0.3rem 0.75rem',
+                      borderRadius: 6,
+                      cursor: 'pointer',
+                      boxShadow: sendScope === 'all' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
+                      transition: 'all 0.15s ease',
+                    }}
+                    disabled={sending}
+                  >
+                    Send to All ({getAvailableCount()})
+                  </button>
+                  <button
+                    type="button"
+                    id="broadcast-scope-custom-btn"
+                    onClick={() => {
+                      setSendScope('custom');
+                      if (!recipientLimit) setRecipientLimit('50');
+                    }}
+                    style={{
+                      border: 'none',
+                      background: sendScope === 'custom' ? '#2563eb' : 'transparent',
+                      color: sendScope === 'custom' ? '#ffffff' : '#64748b',
+                      fontWeight: sendScope === 'custom' ? 700 : 500,
+                      fontSize: '0.8rem',
+                      padding: '0.3rem 0.75rem',
+                      borderRadius: 6,
+                      cursor: 'pointer',
+                      boxShadow: sendScope === 'custom' ? '0 1px 3px rgba(37,99,235,0.3)' : 'none',
+                      transition: 'all 0.15s ease',
+                    }}
+                    disabled={sending}
+                  >
+                    Enter Specific Number / Range
+                  </button>
+                </div>
+              </div>
+
+              {sendScope === 'custom' ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
+                  <div
+                    style={{
+                      display: 'grid',
+                      gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+                      gap: '0.75rem',
+                    }}
+                  >
+                    {/* Custom limit count input */}
+                    <div>
+                      <label
+                        htmlFor="broadcast-limit-input"
+                        style={{
+                          display: 'block',
+                          fontSize: '0.8rem',
+                          fontWeight: 600,
+                          color: '#334155',
+                          marginBottom: '0.25rem',
+                        }}
+                      >
+                        Number of students to send: <span style={{ color: '#dc2626' }}>*</span>
+                      </label>
+                      <input
+                        id="broadcast-limit-input"
+                        type="number"
+                        min="1"
+                        max={getAvailableCount()}
+                        className="form-control"
+                        value={recipientLimit}
+                        onChange={(e) => setRecipientLimit(e.target.value)}
+                        placeholder="e.g. 50, 100, 200..."
+                        style={{ fontSize: '0.88rem', padding: '0.5rem 0.75rem', fontWeight: 600 }}
+                        disabled={sending}
+                      />
+                      <span style={{ fontSize: '0.74rem', color: '#64748b' }}>
+                        Only this exact number of emails will be sent.
+                      </span>
+                    </div>
+
+                    {/* Start from offset input */}
+                    <div>
+                      <label
+                        htmlFor="broadcast-start-from-input"
+                        style={{
+                          display: 'block',
+                          fontSize: '0.8rem',
+                          fontWeight: 600,
+                          color: '#334155',
+                          marginBottom: '0.25rem',
+                        }}
+                      >
+                        Start from candidate #:
+                      </label>
+                      <input
+                        id="broadcast-start-from-input"
+                        type="number"
+                        min="1"
+                        max={getAvailableCount()}
+                        className="form-control"
+                        value={startFrom}
+                        onChange={(e) => setStartFrom(e.target.value)}
+                        placeholder="1"
+                        style={{ fontSize: '0.88rem', padding: '0.5rem 0.75rem' }}
+                        disabled={sending}
+                      />
+                      <span style={{ fontSize: '0.74rem', color: '#64748b' }}>
+                        Default is 1 (starts from the very first candidate).
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Quick chip shortcuts */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', flexWrap: 'wrap' }}>
+                    <span style={{ fontSize: '0.76rem', color: '#64748b', fontWeight: 600 }}>Quick select:</span>
+                    {[25, 50, 100, 250, 500]
+                      .filter((n) => n <= getAvailableCount() || n === 25)
+                      .map((num) => (
+                        <button
+                          key={num}
+                          type="button"
+                          className="btn btn-outline btn-sm"
+                          onClick={() => {
+                            setRecipientLimit(num.toString());
+                            setStartFrom('1');
+                          }}
+                          style={{
+                            fontSize: '0.74rem',
+                            padding: '0.2rem 0.55rem',
+                            borderColor:
+                              recipientLimit === num.toString() && startFrom === '1'
+                                ? '#2563eb'
+                                : '#cbd5e1',
+                            backgroundColor:
+                              recipientLimit === num.toString() && startFrom === '1'
+                                ? '#eff6ff'
+                                : '#ffffff',
+                            color:
+                              recipientLimit === num.toString() && startFrom === '1'
+                                ? '#1d4ed8'
+                                : '#334155',
+                            fontWeight:
+                              recipientLimit === num.toString() && startFrom === '1' ? 700 : 500,
+                          }}
+                          disabled={sending}
+                        >
+                          First {num}
+                        </button>
+                      ))}
+                    <button
+                      type="button"
+                      className="btn btn-outline btn-sm"
+                      onClick={() => {
+                        setSendScope('all');
+                        setRecipientLimit('');
+                        setStartFrom('1');
+                      }}
+                      style={{ fontSize: '0.74rem', padding: '0.2rem 0.55rem' }}
+                      disabled={sending}
+                    >
+                      All ({getAvailableCount()})
+                    </button>
+                  </div>
+
+                  {/* Live dynamic explanation banner */}
+                  <div
+                    style={{
+                      padding: '0.55rem 0.85rem',
+                      borderRadius: 6,
+                      backgroundColor: getRecipientCount() > 0 ? '#ecfdf5' : '#fef2f2',
+                      border: `1px solid ${getRecipientCount() > 0 ? '#a7f3d0' : '#fecaca'}`,
+                      color: getRecipientCount() > 0 ? '#065f46' : '#991b1b',
+                      fontSize: '0.8rem',
+                      lineHeight: 1.45,
+                    }}
+                  >
+                    {getRecipientCount() > 0 ? (
+                      <>
+                        🎯 <strong>Ready to Send:</strong> Email will be dispatched to{' '}
+                        <strong>{getRecipientCount()} candidate{getRecipientCount() === 1 ? '' : 's'}</strong>{' '}
+                        (Candidates <strong>#{Math.max(1, parseInt(startFrom, 10) || 1)}</strong> to{' '}
+                        <strong>
+                          {Math.max(1, parseInt(startFrom, 10) || 1) + getRecipientCount() - 1}
+                        </strong>{' '}
+                        out of {getAvailableCount()} total).
+                      </>
+                    ) : (
+                      <>
+                        ⚠️ <strong>Invalid Count:</strong> Please enter a positive number of candidates to send to.
+                      </>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <div
+                  style={{
+                    fontSize: '0.8rem',
+                    color: '#64748b',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.4rem',
+                  }}
+                >
+                  <span>
+                    ✔ Currently configured to send to <strong>all {getAvailableCount()} registered candidates</strong> in order.
+                  </span>
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Quick Presets */}
           <div>
             <div
@@ -984,8 +1280,16 @@ const AdminBroadcastEmailModal = ({ isOpen, onClose }) => {
               </div>
               <p style={{ margin: 0, fontSize: '0.88rem', color: '#78350f', lineHeight: 1.5 }}>
                 You are about to send this email notification directly to{' '}
-                <strong>{getRecipientCount()} registered participants</strong> in one shot.
-                This action cannot be undone. Are you sure you want to proceed?
+                <strong>{getRecipientCount()} registered participant{getRecipientCount() === 1 ? '' : 's'}</strong>
+                {sendScope === 'custom' && (
+                  <>
+                    {' '}(Candidates <strong>#{Math.max(1, parseInt(startFrom, 10) || 1)}</strong> to{' '}
+                    <strong>
+                      {Math.max(1, parseInt(startFrom, 10) || 1) + getRecipientCount() - 1}
+                    </strong>)
+                  </>
+                )}{' '}
+                in batches. This action cannot be undone. Are you sure you want to proceed?
               </p>
               <div style={{ display: 'flex', gap: '0.65rem', justifyContent: 'flex-end' }}>
                 <button
@@ -998,6 +1302,7 @@ const AdminBroadcastEmailModal = ({ isOpen, onClose }) => {
                 </button>
                 <button
                   type="button"
+                  id="confirm-broadcast-send-btn"
                   onClick={handleExecuteBroadcast}
                   className="btn btn-primary btn-sm"
                   style={{
@@ -1021,7 +1326,12 @@ const AdminBroadcastEmailModal = ({ isOpen, onClose }) => {
             <span>
               Target:{' '}
               <strong style={{ color: 'var(--color-primary-900)' }}>
-                {getRecipientCount()} Recipients
+                {getRecipientCount()} Recipient{getRecipientCount() === 1 ? '' : 's'}
+                {sendScope === 'custom' && getRecipientCount() > 0 && (
+                  <span style={{ fontWeight: 500, color: '#64748b', marginLeft: '0.25rem' }}>
+                    (#{Math.max(1, parseInt(startFrom, 10) || 1)} to #{Math.max(1, parseInt(startFrom, 10) || 1) + getRecipientCount() - 1})
+                  </span>
+                )}
               </strong>
             </span>
           </div>
@@ -1075,6 +1385,7 @@ const AdminBroadcastEmailModal = ({ isOpen, onClose }) => {
             ) : (
               <button
                 type="button"
+                id="broadcast-send-btn"
                 onClick={() => setConfirmSendOpen(true)}
                 className="btn btn-primary btn-sm"
                 style={{
@@ -1085,7 +1396,8 @@ const AdminBroadcastEmailModal = ({ isOpen, onClose }) => {
                   confirmSendOpen ||
                   !subject.trim() ||
                   !message.trim() ||
-                  getRecipientCount() === 0
+                  getRecipientCount() === 0 ||
+                  (sendScope === 'custom' && (!recipientLimit || parseInt(recipientLimit, 10) <= 0))
                 }
               >
                 {sending ? (
@@ -1095,7 +1407,10 @@ const AdminBroadcastEmailModal = ({ isOpen, onClose }) => {
                   </>
                 ) : (
                   <>
-                    <Send size={15} /> Send to All Registered Participants ({getRecipientCount()})
+                    <Send size={15} />{' '}
+                    {sendScope === 'custom' && recipientLimit
+                      ? `Send to Selected ${getRecipientCount()} Participants`
+                      : `Send to All Registered Participants (${getRecipientCount()})`}
                   </>
                 )}
               </button>

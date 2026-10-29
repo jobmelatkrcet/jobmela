@@ -2134,6 +2134,7 @@ class AdminBroadcastEmailView(APIView):
                 .distinct()
                 .exclude(email__isnull=True)
                 .exclude(email__exact="")
+                .order_by("id")
             )
         else:
             target = "all_students"
@@ -2141,16 +2142,85 @@ class AdminBroadcastEmailView(APIView):
                 User.objects.filter(role="student")
                 .exclude(email__isnull=True)
                 .exclude(email__exact="")
+                .order_by("id")
             )
 
-        student_list = list(students_qs.only("id", "email", "full_name"))
-        if not student_list:
+        total_available = students_qs.count()
+        if total_available == 0:
             return Response(
                 {
                     "error": "No registered participants with valid email addresses found for the selected audience."
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )
+
+        # Parse custom recipient count and start offset
+        start_from = None
+        for key in ("start_from", "from_index", "offset_start"):
+            if key in data and data[key] is not None:
+                start_from = data[key]
+                break
+
+        limit = None
+        for key in ("limit", "count", "max_recipients"):
+            if key in data and data[key] is not None:
+                limit = data[key]
+                break
+
+        start_idx = 0
+        if start_from is not None and str(start_from).strip():
+            try:
+                sf_val = int(start_from)
+                if sf_val < 1:
+                    return Response(
+                        {"error": "Starting student number ('start_from') must be 1 or greater."},
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+                if sf_val > total_available:
+                    return Response(
+                        {
+                            "error": f"Starting student number ({sf_val}) exceeds total available candidates ({total_available})."
+                        },
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+                start_idx = sf_val - 1
+            except (ValueError, TypeError):
+                return Response(
+                    {"error": "Starting student number ('start_from') must be a valid integer."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+        if limit is not None and str(limit).strip():
+            try:
+                limit_val = int(limit)
+                if limit_val <= 0:
+                    return Response(
+                        {"error": "Number of students to send ('limit') must be greater than 0."},
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+                students_qs = students_qs[start_idx : start_idx + limit_val]
+            except (ValueError, TypeError):
+                return Response(
+                    {"error": "Number of students to send ('limit') must be a valid integer."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+        elif start_idx > 0:
+            students_qs = students_qs[start_idx:]
+
+        student_list = list(students_qs.only("id", "email", "full_name"))
+        if not student_list:
+            return Response(
+                {
+                    "error": "No candidates found within the specified student range."
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        range_info = (
+            f" (Candidates #{start_idx + 1} to #{start_idx + len(student_list)} of {total_available})"
+            if len(student_list) < total_available
+            else ""
+        )
 
         # Try creating BroadcastCampaign record and batch dispatch
         try:
@@ -2194,9 +2264,9 @@ class AdminBroadcastEmailView(APIView):
             primary_error = errors[0] if (errors and not is_success) else None
 
             if is_completed:
-                human_msg = f"Broadcast successfully sent to {sent_count} of {total_count} registered participants."
+                human_msg = f"Broadcast successfully sent to {sent_count} of {total_count} registered participants{range_info}."
             else:
-                human_msg = f"Batch 1 dispatched: {sent_count} of {total_count} emails delivered ({remaining_count} remaining)."
+                human_msg = f"Batch 1 dispatched: {sent_count} of {total_count} emails delivered ({remaining_count} remaining){range_info}."
 
             return Response(
                 {
@@ -2211,6 +2281,9 @@ class AdminBroadcastEmailView(APIView):
                     "batch_sent": dispatch_result.get("batch_sent", 0),
                     "batch_failed": dispatch_result.get("batch_failed", 0),
                     "status": campaign.status,
+                    "start_from": start_idx + 1,
+                    "limit": len(student_list),
+                    "total_available": total_available,
                     "errors": errors,
                     "error": primary_error,
                     "message": human_msg if is_success else (primary_error or human_msg),
@@ -2239,9 +2312,9 @@ class AdminBroadcastEmailView(APIView):
             primary_error = errors[0] if (errors and not is_success) else None
 
             if sent_count > 0:
-                human_msg = f"Broadcast successfully sent to {sent_count} of {total_count} registered participants."
+                human_msg = f"Broadcast successfully sent to {sent_count} of {total_count} registered participants{range_info}."
             else:
-                human_msg = f"Failed to deliver broadcast emails to {total_count} participants."
+                human_msg = f"Failed to deliver broadcast emails to {total_count} participants{range_info}."
 
             return Response(
                 {
@@ -2256,6 +2329,9 @@ class AdminBroadcastEmailView(APIView):
                     "batch_sent": sent_count,
                     "batch_failed": failed_count,
                     "status": "completed",
+                    "start_from": start_idx + 1,
+                    "limit": len(student_list),
+                    "total_available": total_available,
                     "errors": errors,
                     "error": primary_error,
                     "message": human_msg if is_success else (primary_error or human_msg),

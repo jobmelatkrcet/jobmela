@@ -228,3 +228,82 @@ class AdminBroadcastEmailTests(TestCase):
         campaign.refresh_from_db()
         self.assertEqual(campaign.status, "cancelled")
 
+    def test_admin_broadcast_with_custom_limit(self):
+        """
+        Verify that admin can specify custom student count/limit so only that many emails are sent.
+        """
+        mail.outbox = []
+        self.client.force_authenticate(user=self.admin)
+
+        payload = {
+            "subject": "Limited Announcement to First Student",
+            "message": "Only sending to 1 student from starting.",
+            "target": "all_students",
+            "limit": 1,
+            "start_from": 1,
+        }
+        res = self.client.post("/api/admin/broadcast-email/", payload, format="json")
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        data = res.json()
+        self.assertTrue(data["success"])
+        self.assertEqual(data["sent_count"], 1)
+        self.assertEqual(data["total_recipients"], 1)
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].to, ["student1@gmail.com"])
+
+    def test_admin_broadcast_with_start_from_and_limit(self):
+        """
+        Verify that admin can specify start_from to send from a specific candidate onwards.
+        """
+        mail.outbox = []
+        self.client.force_authenticate(user=self.admin)
+
+        payload = {
+            "subject": "Announcement to Second Student",
+            "message": "Starting from student #2, send 1 student.",
+            "target": "all_students",
+            "start_from": 2,
+            "limit": 1,
+        }
+        res = self.client.post("/api/admin/broadcast-email/", payload, format="json")
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        data = res.json()
+        self.assertTrue(data["success"])
+        self.assertEqual(data["sent_count"], 1)
+        self.assertEqual(data["total_recipients"], 1)
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].to, ["student2@gmail.com"])
+
+    def test_admin_broadcast_limit_and_start_from_validations(self):
+        """
+        Verify input validations for limit and start_from.
+        """
+        self.client.force_authenticate(user=self.admin)
+
+        # limit <= 0
+        res = self.client.post(
+            "/api/admin/broadcast-email/",
+            {"subject": "Valid Subject", "message": "Valid Message Body", "limit": 0},
+            format="json",
+        )
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("limit", res.json()["error"])
+
+        # start_from <= 0
+        res = self.client.post(
+            "/api/admin/broadcast-email/",
+            {"subject": "Valid Subject", "message": "Valid Message Body", "start_from": 0},
+            format="json",
+        )
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("start_from", res.json()["error"])
+
+        # start_from > total available
+        res = self.client.post(
+            "/api/admin/broadcast-email/",
+            {"subject": "Valid Subject", "message": "Valid Message Body", "start_from": 9999},
+            format="json",
+        )
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("exceeds", res.json()["error"])
+
