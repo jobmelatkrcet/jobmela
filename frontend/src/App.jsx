@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { RegistrationModalProvider } from './context/RegistrationModalContext';
 import ProtectedRoute from './components/ProtectedRoute';
+import ErrorBoundary from './components/ErrorBoundary';
 
 // Layouts
 import PublicLayout from './layouts/PublicLayout';
@@ -34,62 +35,64 @@ import StudentCheckInPage from './pages/student/StudentCheckInPage';
 
 function App() {
   return (
-    <AuthProvider>
-      <BrowserRouter>
-        <RegistrationModalProvider>
-        <Routes>
-          {/* Public Routes with standard Layout */}
-          <Route element={<PublicLayout />}>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/about" element={<AboutPage />} />
-            <Route path="/contact" element={<ContactPage />} />
-            <Route path="/posters" element={<PostersPage />} />
-            <Route path="/companies" element={<PublicCompaniesPage />} />
-            <Route path="/login" element={<StudentLoginPage />} />
-            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-            <Route path="/reset-password/:uid/:token" element={<ResetPasswordPage />} />
-            <Route path="/reset-password" element={<ResetPasswordPage />} />
-            <Route path="/register" element={<StudentRegisterPage />} />
-            <Route path="/admin/login" element={<AdminLoginPage />} />
-            <Route path="/checkin/:token" element={<StudentCheckInPage />} />
-          </Route>
+    <ErrorBoundary>
+      <AuthProvider>
+        <BrowserRouter>
+          <RegistrationModalProvider>
+            <Routes>
+              {/* Public Routes with standard Layout */}
+              <Route element={<PublicLayout />}>
+                <Route path="/" element={<HomePage />} />
+                <Route path="/about" element={<AboutPage />} />
+                <Route path="/contact" element={<ContactPage />} />
+                <Route path="/posters" element={<PostersPage />} />
+                <Route path="/companies" element={<PublicCompaniesPage />} />
+                <Route path="/login" element={<StudentLoginPage />} />
+                <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+                <Route path="/reset-password/:uid/:token" element={<ResetPasswordPage />} />
+                <Route path="/reset-password" element={<ResetPasswordPage />} />
+                <Route path="/register" element={<StudentRegisterPage />} />
+                <Route path="/admin/login" element={<AdminLoginPage />} />
+                <Route path="/checkin/:token" element={<StudentCheckInPage />} />
+              </Route>
 
-          {/* Student Protected Routes */}
-          <Route
-            element={
-              <ProtectedRoute requireStudent={true}>
-                <StudentLayout />
-              </ProtectedRoute>
-            }
-          >
-            <Route path="/dashboard" element={<StudentDashboardPage />} />
-            <Route path="/profile" element={<StudentProfilePage />} />
-            <Route path="/my-applications" element={<StudentApplicationsPage />} />
-          </Route>
+              {/* Student Protected Routes */}
+              <Route
+                element={
+                  <ProtectedRoute requireStudent={true}>
+                    <StudentLayout />
+                  </ProtectedRoute>
+                }
+              >
+                <Route path="/dashboard" element={<StudentDashboardPage />} />
+                <Route path="/profile" element={<StudentProfilePage />} />
+                <Route path="/my-applications" element={<StudentApplicationsPage />} />
+              </Route>
 
-          {/* Admin Protected Routes */}
-          <Route
-            element={
-              <ProtectedRoute requireAdmin={true}>
-                <AdminLayout />
-              </ProtectedRoute>
-            }
-          >
-            <Route path="/admin" element={<AdminUnifiedPanelPage />} />
-            <Route path="/admin/dashboard" element={<AdminUnifiedPanelPage initialTab="overview" />} />
-            <Route path="/admin/companies" element={<AdminUnifiedPanelPage initialTab="companies" />} />
-            <Route path="/admin/rooms" element={<AdminUnifiedPanelPage initialTab="rooms" />} />
-            <Route path="/admin/students" element={<AdminUnifiedPanelPage initialTab="students" />} />
-            <Route path="/admin/requirements" element={<AdminUnifiedPanelPage initialTab="requirements" />} />
-            <Route path="/admin/companies/:id" element={<AdminCompanyStudentsPage />} />
-          </Route>
+              {/* Admin Protected Routes */}
+              <Route
+                element={
+                  <ProtectedRoute requireAdmin={true}>
+                    <AdminLayout />
+                  </ProtectedRoute>
+                }
+              >
+                <Route path="/admin" element={<AdminUnifiedPanelPage />} />
+                <Route path="/admin/dashboard" element={<AdminUnifiedPanelPage initialTab="overview" />} />
+                <Route path="/admin/companies" element={<AdminUnifiedPanelPage initialTab="companies" />} />
+                <Route path="/admin/rooms" element={<AdminUnifiedPanelPage initialTab="rooms" />} />
+                <Route path="/admin/students" element={<AdminUnifiedPanelPage initialTab="students" />} />
+                <Route path="/admin/requirements" element={<AdminUnifiedPanelPage initialTab="requirements" />} />
+                <Route path="/admin/companies/:id" element={<AdminCompanyStudentsPage />} />
+              </Route>
 
-          {/* Fallback route */}
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-        </RegistrationModalProvider>
-      </BrowserRouter>
-    </AuthProvider>
+              {/* Fallback route */}
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </RegistrationModalProvider>
+        </BrowserRouter>
+      </AuthProvider>
+    </ErrorBoundary>
   );
 }
 

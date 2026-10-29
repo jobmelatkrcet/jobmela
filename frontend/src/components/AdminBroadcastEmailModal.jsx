@@ -76,6 +76,7 @@ const AdminBroadcastEmailModal = ({ isOpen, onClose }) => {
   const [recipientLimit, setRecipientLimit] = useState(''); // e.g. '50', '100'
   const [startFrom, setStartFrom] = useState('1'); // 1-indexed start student number, default 1
   const [subject, setSubject] = useState(PRESETS[0].subject);
+  const [message, setMessage] = useState(PRESETS[0].message);
   const [includeWhatsappGroup, setIncludeWhatsappGroup] = useState(true);
   const [includeWhatsappChannel, setIncludeWhatsappChannel] = useState(true);
   const includeWhatsapp = includeWhatsappGroup || includeWhatsappChannel;

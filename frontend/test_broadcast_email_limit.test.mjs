@@ -116,4 +116,15 @@ test('AdminBroadcastEmailModal: Has independent checkboxes for WhatsApp Group an
   );
 });
 
+test('AdminBroadcastEmailModal: Defines both subject and message states', () => {
+  assert.ok(
+    modalSource.includes('const [message, setMessage] = useState('),
+    'Modal must have message state defined'
+  );
+  assert.ok(
+    modalSource.includes('const [subject, setSubject] = useState('),
+    'Modal must have subject state defined'
+  );
+});
+
 
