@@ -24,10 +24,15 @@ import {
   FileUp,
   Sparkles,
   AlertCircle,
+  ClipboardList,
+  BellRing,
 } from 'lucide-react';
 import roomService from '../../services/roomService';
 import StudentQRScannerModal from '../../components/StudentQRScannerModal';
 import CompanyApplicationGuideModal from '../../components/CompanyApplicationGuideModal';
+import RequirementsModal from '../../components/RequirementsModal';
+import WhatsAppIcon from '../../components/WhatsAppIcon';
+import { WHATSAPP_GROUP_URL, WHATSAPP_CHANNEL_URL } from '../../utils/constants';
 import StatsCard from '../../components/StatsCard';
 import Alert from '../../components/Alert';
 import ConfirmModal from '../../components/ConfirmModal';
@@ -67,8 +72,9 @@ const StudentDashboardPage = () => {
     location.state?.message ? { type: 'success', message: location.state.message } : null
   );
 
-  // Guide modal state
+  // Guide and Requirements modal state
   const [isGuideModalOpen, setIsGuideModalOpen] = useState(false);
+  const [isRequirementsModalOpen, setIsRequirementsModalOpen] = useState(false);
 
   // Profile documents upload state
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
@@ -378,6 +384,29 @@ const StudentDashboardPage = () => {
               <BookOpen size={17} /> How to Apply Guide
             </button>
 
+            <button
+              type="button"
+              onClick={() => setIsRequirementsModalOpen(true)}
+              className="btn"
+              id="student-dashboard-top-requirements-btn"
+              title="View mandatory document checklist, dress code and entry rules"
+              style={{
+                backgroundColor: 'rgba(245, 158, 11, 0.15)',
+                color: '#f59e0b',
+                border: '1px solid rgba(245, 158, 11, 0.4)',
+                fontWeight: 700,
+                fontSize: '0.88rem',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                padding: '0.6rem 1.15rem',
+                borderRadius: 'var(--radius-md)',
+                cursor: 'pointer',
+              }}
+            >
+              <ClipboardList size={17} /> Requirements Checklist
+            </button>
+
             {profile?.resume ? (
               <a
                 href={getMediaUrl(profile.resume)}
@@ -413,6 +442,363 @@ const StudentDashboardPage = () => {
                 No Resume Attached
               </span>
             )}
+          </div>
+        </div>
+      </div>
+
+      {/* HIGHLIGHTED: Official WhatsApp Channels & Candidate Requirements Hub */}
+      <div
+        className="card"
+        style={{
+          marginBottom: '2rem',
+          padding: '1.4rem 1.6rem',
+          background: 'linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 45%, #eff6ff 100%)',
+          borderRadius: 'var(--radius-lg)',
+          border: '2px solid #86efac',
+          boxShadow: '0 8px 24px -4px rgba(16, 185, 129, 0.18)',
+        }}
+      >
+        {/* Banner Header */}
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            gap: '0.75rem',
+            paddingBottom: '0.9rem',
+            borderBottom: '1.5px solid rgba(16, 185, 129, 0.25)',
+            marginBottom: '1.25rem',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+            <div
+              style={{
+                width: 38,
+                height: 38,
+                borderRadius: '10px',
+                backgroundColor: '#075e54',
+                color: '#ffffff',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: '0 2px 8px rgba(7, 94, 84, 0.3)',
+              }}
+            >
+              <WhatsAppIcon size={22} color="#ffffff" />
+            </div>
+            <div>
+              <h2 style={{ fontSize: '1.2rem', fontWeight: 800, margin: 0, color: '#064e3b' }}>
+                Important Job Mela Announcements &amp; Guidelines
+              </h2>
+              <p style={{ fontSize: '0.82rem', color: '#047857', margin: '0.15rem 0 0', fontWeight: 600 }}>
+                Official Communication Channels &amp; Mandatory Candidate Documents
+              </p>
+            </div>
+          </div>
+
+          <span
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.45rem',
+              padding: '0.35rem 0.85rem',
+              backgroundColor: '#dcfce7',
+              color: '#15803d',
+              border: '1.5px solid #86efac',
+              borderRadius: '9999px',
+              fontSize: '0.78rem',
+              fontWeight: 800,
+              textTransform: 'uppercase',
+              letterSpacing: '0.5px',
+            }}
+          >
+            <span
+              style={{
+                width: 8,
+                height: 8,
+                borderRadius: '50%',
+                backgroundColor: '#22c55e',
+                display: 'inline-block',
+                boxShadow: '0 0 0 2px rgba(34, 197, 94, 0.4)',
+              }}
+            />
+            CRITICAL UPDATES
+          </span>
+        </div>
+
+        {/* 3 Prominent Highlighted Action Cards: Channel, Group, Requirements */}
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+            gap: '1rem',
+          }}
+        >
+          {/* Card 1: Official WhatsApp Channel (EVERYONE JOIN) */}
+          <div
+            style={{
+              backgroundColor: '#ffffff',
+              borderRadius: 12,
+              padding: '1.2rem',
+              border: '2px solid #075e54',
+              boxShadow: '0 4px 14px rgba(7, 94, 84, 0.12)',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'space-between',
+              position: 'relative',
+              overflow: 'hidden',
+            }}
+          >
+            <div
+              style={{
+                position: 'absolute',
+                top: 0,
+                right: 0,
+                backgroundColor: '#075e54',
+                color: '#ffffff',
+                fontSize: '0.68rem',
+                fontWeight: 800,
+                padding: '3px 10px',
+                borderBottomLeftRadius: 8,
+                letterSpacing: '0.4px',
+              }}
+            >
+              EVERYONE SHOULD JOIN
+            </div>
+
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.55rem', marginBottom: '0.5rem', marginTop: '0.2rem' }}>
+                <div
+                  style={{
+                    width: 34,
+                    height: 34,
+                    borderRadius: 8,
+                    backgroundColor: '#e6f7f2',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <WhatsAppIcon size={20} color="#075e54" />
+                </div>
+                <div>
+                  <h3 style={{ fontSize: '1rem', fontWeight: 800, margin: 0, color: '#0f172a' }}>
+                    WhatsApp Channel
+                  </h3>
+                  <span style={{ fontSize: '0.72rem', color: '#075e54', fontWeight: 700 }}>
+                    Mandatory for All Candidates
+                  </span>
+                </div>
+              </div>
+
+              <p style={{ fontSize: '0.83rem', color: '#334155', lineHeight: 1.45, margin: '0.4rem 0 1.1rem' }}>
+                <strong style={{ color: '#064e3b' }}>Everyone should join this channel!</strong> Spot hiring calls, company arrivals, interview room schedules, and immediate announcements are broadcast live here.
+              </p>
+            </div>
+
+            <a
+              href={WHATSAPP_CHANNEL_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              id="dashboard-join-channel-btn"
+              style={{
+                background: 'linear-gradient(135deg, #075e54 0%, #064e3b 100%)',
+                color: '#ffffff',
+                fontWeight: 700,
+                fontSize: '0.88rem',
+                padding: '0.7rem 1rem',
+                borderRadius: 8,
+                textAlign: 'center',
+                textDecoration: 'none',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '0.45rem',
+                boxShadow: '0 3px 10px rgba(7, 94, 84, 0.3)',
+              }}
+            >
+              <WhatsAppIcon size={18} color="#ffffff" />
+              <span>Follow WhatsApp Channel</span>
+              <ExternalLink size={14} />
+            </a>
+          </div>
+
+          {/* Card 2: Official WhatsApp Group (IF NOT JOINED) */}
+          <div
+            style={{
+              backgroundColor: '#ffffff',
+              borderRadius: 12,
+              padding: '1.2rem',
+              border: '2px solid #22c55e',
+              boxShadow: '0 4px 14px rgba(34, 197, 94, 0.1)',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'space-between',
+              position: 'relative',
+              overflow: 'hidden',
+            }}
+          >
+            <div
+              style={{
+                position: 'absolute',
+                top: 0,
+                right: 0,
+                backgroundColor: '#16a34a',
+                color: '#ffffff',
+                fontSize: '0.68rem',
+                fontWeight: 800,
+                padding: '3px 10px',
+                borderBottomLeftRadius: 8,
+                letterSpacing: '0.4px',
+              }}
+            >
+              IF NOT JOINED
+            </div>
+
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.55rem', marginBottom: '0.5rem', marginTop: '0.2rem' }}>
+                <div
+                  style={{
+                    width: 34,
+                    height: 34,
+                    borderRadius: 8,
+                    backgroundColor: '#dcfce7',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <WhatsAppIcon size={20} color="#16a34a" />
+                </div>
+                <div>
+                  <h3 style={{ fontSize: '1rem', fontWeight: 800, margin: 0, color: '#0f172a' }}>
+                    WhatsApp Group
+                  </h3>
+                  <span style={{ fontSize: '0.72rem', color: '#16a34a', fontWeight: 700 }}>
+                    Student Community &amp; Q&amp;A
+                  </span>
+                </div>
+              </div>
+
+              <p style={{ fontSize: '0.83rem', color: '#334155', lineHeight: 1.45, margin: '0.4rem 0 1.1rem' }}>
+                <strong style={{ color: '#15803d' }}>Join if you have not joined yet.</strong> Peer networking and support group. If you already joined previously, please ignore this.
+              </p>
+            </div>
+
+            <a
+              href={WHATSAPP_GROUP_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              id="dashboard-join-group-btn"
+              style={{
+                backgroundColor: '#22c55e',
+                color: '#ffffff',
+                fontWeight: 700,
+                fontSize: '0.88rem',
+                padding: '0.7rem 1rem',
+                borderRadius: 8,
+                textAlign: 'center',
+                textDecoration: 'none',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '0.45rem',
+                boxShadow: '0 3px 10px rgba(34, 197, 94, 0.25)',
+              }}
+            >
+              <WhatsAppIcon size={18} color="#ffffff" />
+              <span>Join WhatsApp Group</span>
+              <ExternalLink size={14} />
+            </a>
+          </div>
+
+          {/* Card 3: Candidate Requirements & Documents Checklist */}
+          <div
+            style={{
+              backgroundColor: '#ffffff',
+              borderRadius: 12,
+              padding: '1.2rem',
+              border: '2px solid #f59e0b',
+              boxShadow: '0 4px 14px rgba(245, 158, 11, 0.1)',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'space-between',
+              position: 'relative',
+              overflow: 'hidden',
+            }}
+          >
+            <div
+              style={{
+                position: 'absolute',
+                top: 0,
+                right: 0,
+                backgroundColor: '#d97706',
+                color: '#ffffff',
+                fontSize: '0.68rem',
+                fontWeight: 800,
+                padding: '3px 10px',
+                borderBottomLeftRadius: 8,
+                letterSpacing: '0.4px',
+              }}
+            >
+              MANDATORY CHECKLIST
+            </div>
+
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.55rem', marginBottom: '0.5rem', marginTop: '0.2rem' }}>
+                <div
+                  style={{
+                    width: 34,
+                    height: 34,
+                    borderRadius: 8,
+                    backgroundColor: '#fef3c7',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <ClipboardList size={20} color="#b45309" />
+                </div>
+                <div>
+                  <h3 style={{ fontSize: '1rem', fontWeight: 800, margin: 0, color: '#0f172a' }}>
+                    Candidate Requirements
+                  </h3>
+                  <span style={{ fontSize: '0.72rem', color: '#b45309', fontWeight: 700 }}>
+                    Documents &amp; Dress Code
+                  </span>
+                </div>
+              </div>
+
+              <p style={{ fontSize: '0.83rem', color: '#334155', lineHeight: 1.45, margin: '0.4rem 0 1.1rem' }}>
+                <strong style={{ color: '#b45309' }}>Mandatory checklist:</strong> 3-5 resume hard copies, passport size photos, educational marksheets, valid photo ID, and formal dress code.
+              </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setIsRequirementsModalOpen(true)}
+              id="dashboard-open-requirements-btn"
+              style={{
+                backgroundColor: '#f59e0b',
+                color: '#0f172a',
+                fontWeight: 800,
+                fontSize: '0.88rem',
+                padding: '0.7rem 1rem',
+                borderRadius: 8,
+                border: 'none',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '0.45rem',
+                boxShadow: '0 3px 10px rgba(245, 158, 11, 0.25)',
+              }}
+            >
+              <ClipboardList size={18} />
+              <span>View Requirements Checklist</span>
+              <ArrowRight size={14} />
+            </button>
           </div>
         </div>
       </div>
@@ -1344,6 +1730,13 @@ const StudentDashboardPage = () => {
       <CompanyApplicationGuideModal
         isOpen={isGuideModalOpen}
         onClose={() => setIsGuideModalOpen(false)}
+        onOpenRequirements={() => setIsRequirementsModalOpen(true)}
+      />
+
+      {/* Official Job Mela Requirements Modal */}
+      <RequirementsModal
+        isOpen={isRequirementsModalOpen}
+        onClose={() => setIsRequirementsModalOpen(false)}
       />
     </div>
   );

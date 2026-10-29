@@ -9,6 +9,7 @@ import WhatsAppFloatingButton from '../components/WhatsAppFloatingButton';
 import WhatsAppIcon from '../components/WhatsAppIcon';
 import StudentWhatsAppModal from '../components/StudentWhatsAppModal';
 import CompanyApplicationGuideModal from '../components/CompanyApplicationGuideModal';
+import { WHATSAPP_CHANNEL_URL } from '../utils/constants';
 
 const StudentLayout = () => {
   const { user } = useAuth();
@@ -79,23 +80,52 @@ const StudentLayout = () => {
               </h1>
             </div>
 
-            {/* Right: Requirements, How to Apply & WhatsApp Quick Action Buttons */}
+            {/* Right: Channel, Group, Requirements, How to Apply Quick Action Buttons */}
             <div
               className="student-banner-right"
               style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', flexWrap: 'wrap' }}
             >
-              <button
-                type="button"
-                onClick={() => setIsGuideModalOpen(true)}
-                className="student-guide-banner-btn"
-                id="student-banner-guide-btn"
-                title="Click to view How to Apply for Companies step-by-step guide"
+              {/* Official WhatsApp Channel (Everyone Should Join) */}
+              <a
+                href={WHATSAPP_CHANNEL_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="student-whatsapp-channel-btn"
+                id="student-banner-channel-btn"
+                title="Follow official WhatsApp Channel - Everyone Should Join"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.45rem',
+                  padding: '0.45rem 0.85rem',
+                  borderRadius: 'var(--radius-md)',
+                  background: 'linear-gradient(135deg, #075e54 0%, #064e3b 100%)',
+                  color: '#ffffff',
+                  fontWeight: 700,
+                  fontSize: '0.82rem',
+                  textDecoration: 'none',
+                  boxShadow: '0 2px 8px rgba(7, 94, 84, 0.35)',
+                  border: '1px solid #10b981',
+                }}
               >
-                <BookOpen size={16} color="#38bdf8" />
-                <span>How to Apply for Companies</span>
-                <span className="student-guide-tag">Guide ↗</span>
-              </button>
+                <WhatsAppIcon size={16} color="#ffffff" />
+                <span>WhatsApp Channel</span>
+                <span
+                  style={{
+                    fontSize: '0.68rem',
+                    fontWeight: 800,
+                    backgroundColor: '#f59e0b',
+                    color: '#0f172a',
+                    padding: '1px 6px',
+                    borderRadius: 9999,
+                    textTransform: 'uppercase',
+                  }}
+                >
+                  Everyone Join ↗
+                </span>
+              </a>
 
+              {/* Official WhatsApp Group (Join if Not Joined) */}
               <button
                 type="button"
                 onClick={() => setIsWhatsAppModalOpen(true)}
@@ -105,7 +135,7 @@ const StudentLayout = () => {
               >
                 <WhatsAppIcon size={16} color="#ffffff" />
                 <span>WhatsApp Group</span>
-                <span className="student-whatsapp-tag">Join Community ↗</span>
+                <span className="student-whatsapp-tag">If Not Joined ↗</span>
               </button>
 
               <button
@@ -118,6 +148,18 @@ const StudentLayout = () => {
                 <ClipboardList size={16} color="#fef08a" />
                 <span>Requirements for Job Mela</span>
                 <span className="requirements-view-tag">View Guidelines ↗</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setIsGuideModalOpen(true)}
+                className="student-guide-banner-btn"
+                id="student-banner-guide-btn"
+                title="Click to view How to Apply for Companies step-by-step guide"
+              >
+                <BookOpen size={16} color="#38bdf8" />
+                <span>How to Apply</span>
+                <span className="student-guide-tag">Guide ↗</span>
               </button>
             </div>
           </div>
@@ -144,6 +186,7 @@ const StudentLayout = () => {
         isOpen={isWhatsAppModalOpen}
         onClose={() => setIsWhatsAppModalOpen(false)}
         onOpenGuide={() => setIsGuideModalOpen(true)}
+        onOpenRequirements={() => setIsRequirementsModalOpen(true)}
         user={user}
       />
 
@@ -151,6 +194,7 @@ const StudentLayout = () => {
       <CompanyApplicationGuideModal
         isOpen={isGuideModalOpen}
         onClose={() => setIsGuideModalOpen(false)}
+        onOpenRequirements={() => setIsRequirementsModalOpen(true)}
       />
     </div>
   );

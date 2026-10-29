@@ -1,23 +1,37 @@
 import React, { useEffect, useState } from 'react';
-import { X, ExternalLink, CheckCircle2, BellRing, Sparkles, BookOpen } from 'lucide-react';
+import {
+  X,
+  ExternalLink,
+  CheckCircle2,
+  BellRing,
+  Sparkles,
+  BookOpen,
+  ClipboardList,
+  Radio,
+} from 'lucide-react';
 import WhatsAppIcon from './WhatsAppIcon';
-import { WHATSAPP_GROUP_URL } from '../utils/constants';
+import { WHATSAPP_GROUP_URL, WHATSAPP_CHANNEL_URL } from '../utils/constants';
 
 /**
  * StudentWhatsAppModal
  * 
- * Compact official notification modal prompting students to join the official
- * WhatsApp group if not joined, dismiss if already joined, and easily view
- * the "How to Apply for Companies" guide.
+ * Official notification modal prompting candidates to:
+ * 1. Follow the official WhatsApp Channel (Everyone should join!)
+ * 2. Join the official WhatsApp Group (If not joined yet)
+ * 3. View Candidate Requirements & Documents
+ * 4. View "How to Apply for Companies" guide
  */
 const StudentWhatsAppModal = ({
   isOpen,
   onClose,
   onOpenGuide,
+  onOpenRequirements,
   user = null,
   whatsappUrl = WHATSAPP_GROUP_URL,
+  whatsappChannelUrl = WHATSAPP_CHANNEL_URL,
 }) => {
-  const [hasClickedJoin, setHasClickedJoin] = useState(false);
+  const [hasClickedGroup, setHasClickedGroup] = useState(false);
+  const [hasClickedChannel, setHasClickedChannel] = useState(false);
 
   // Derive per-student storage key
   const storageKey = user
@@ -46,23 +60,26 @@ const StudentWhatsAppModal = ({
 
   if (!isOpen) return null;
 
-  // Handle clicking "Join WhatsApp Group"
-  const handleJoinClick = () => {
-    setHasClickedJoin(true);
-    // Mark as joined in localStorage
+  // Handle clicking "Follow WhatsApp Channel" (Everyone should join)
+  const handleChannelClick = () => {
+    setHasClickedChannel(true);
+    window.open(whatsappChannelUrl || WHATSAPP_CHANNEL_URL, '_blank', 'noopener,noreferrer');
+  };
+
+  // Handle clicking "Join WhatsApp Group" (If not joined)
+  const handleGroupClick = () => {
+    setHasClickedGroup(true);
     try {
       localStorage.setItem(storageKey, 'true');
     } catch (e) {
       console.warn('Could not save WhatsApp join preference to localStorage', e);
     }
 
-    // Open WhatsApp group link in new tab
-    window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
+    window.open(whatsappUrl || WHATSAPP_GROUP_URL, '_blank', 'noopener,noreferrer');
 
-    // Close modal smoothly after user opens WhatsApp
     setTimeout(() => {
       onClose?.();
-      setHasClickedJoin(false);
+      setHasClickedGroup(false);
     }, 800);
   };
 
@@ -99,8 +116,9 @@ const StudentWhatsAppModal = ({
         aria-modal="true"
         aria-labelledby="student-wa-modal-title"
         id="student-whatsapp-announcement-modal"
+        style={{ maxWidth: 460 }}
       >
-        {/* Compact Header */}
+        {/* Header */}
         <div className="student-wa-modal-header compact-wa-header">
           {/* Close button */}
           <button
@@ -123,50 +141,135 @@ const StudentWhatsAppModal = ({
           </div>
 
           <div className="student-wa-badge">
-            <Sparkles size={11} /> Official Community
+            <Sparkles size={11} /> Official Community &amp; Updates
           </div>
 
-          <h2 id="student-wa-modal-title" className="student-wa-modal-title">
-            Join Official WhatsApp Group
+          <h2 id="student-wa-modal-title" className="student-wa-modal-title" style={{ fontSize: '1.28rem' }}>
+            Official WhatsApp Updates &amp; Links
           </h2>
           <p className="student-wa-modal-subtitle">
-            TKRCET Mega Job Mela 2026 • Real-Time Alerts
+            TKRCET Mega Job Mela 2026 • Live Announcements &amp; Guidance
           </p>
         </div>
 
         {/* Modal Body */}
-        <div className="student-wa-modal-body compact-wa-body">
+        <div className="student-wa-modal-body compact-wa-body" style={{ gap: '0.85rem' }}>
           {/* Main Notice Callout */}
-          <div className="student-wa-callout compact-wa-callout">
-            <div className="student-wa-callout-header">
-              <BellRing size={14} /> Notice for Candidates
+          <div className="student-wa-callout compact-wa-callout" style={{ padding: '0.8rem 1rem' }}>
+            <div className="student-wa-callout-header" style={{ color: '#065f46', marginBottom: '0.45rem' }}>
+              <BellRing size={14} /> Official Instructions for Candidates
             </div>
-            <div className="student-wa-callout-main">
-              Join WhatsApp group if not joined.
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem', fontSize: '0.82rem' }}>
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.45rem' }}>
+                <span style={{ backgroundColor: '#075e54', color: '#ffffff', fontSize: '0.68rem', fontWeight: 800, padding: '1px 6px', borderRadius: 4, marginTop: 1, whiteSpace: 'nowrap' }}>
+                  EVERYONE JOIN
+                </span>
+                <span style={{ color: '#064e3b', lineHeight: 1.35 }}>
+                  <strong>WhatsApp Channel:</strong> Everyone should join this channel for official live vacancy calls and spot announcements.
+                </span>
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.45rem' }}>
+                <span style={{ backgroundColor: '#22c55e', color: '#ffffff', fontSize: '0.68rem', fontWeight: 800, padding: '1px 6px', borderRadius: 4, marginTop: 1, whiteSpace: 'nowrap' }}>
+                  IF NOT JOINED
+                </span>
+                <span style={{ color: '#065f46', lineHeight: 1.35 }}>
+                  <strong>WhatsApp Group:</strong> Join if you haven't joined yet. If you have already joined, please ignore.
+                </span>
+              </div>
             </div>
-            <p className="student-wa-callout-note">
-              👉 If you have <strong>already joined</strong>, please ignore this message.
-            </p>
           </div>
 
           {/* Action Options */}
-          <div className="student-wa-actions">
-            {/* 1. Join WhatsApp Group Button */}
+          <div className="student-wa-actions" style={{ gap: '0.55rem' }}>
+            {/* 1. Official WhatsApp Channel (Everyone should join) */}
             <button
               type="button"
               className="student-wa-btn-join"
-              onClick={handleJoinClick}
-              id="join-whatsapp-group-btn"
-              title="Click to open official WhatsApp group"
+              onClick={handleChannelClick}
+              id="follow-whatsapp-channel-btn"
+              title="Click to follow the official WhatsApp Channel"
+              style={{
+                background: 'linear-gradient(135deg, #075e54 0%, #064e3b 100%)',
+                boxShadow: '0 4px 14px rgba(7, 94, 84, 0.35)',
+                padding: '0.75rem 1.15rem',
+                fontSize: '0.92rem',
+              }}
             >
-              <WhatsAppIcon size={19} color="#ffffff" />
-              <span>
-                {hasClickedJoin ? 'Opening WhatsApp...' : 'Join WhatsApp Group'}
+              <WhatsAppIcon size={18} color="#ffffff" />
+              <span style={{ flex: 1, textAlign: 'left' }}>
+                {hasClickedChannel ? 'Channel Opened' : 'Follow WhatsApp Channel'}
               </span>
-              <ExternalLink size={15} />
+              <span
+                style={{
+                  fontSize: '0.7rem',
+                  fontWeight: 800,
+                  backgroundColor: '#f59e0b',
+                  color: '#0f172a',
+                  padding: '2px 7px',
+                  borderRadius: 9999,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.4px',
+                }}
+              >
+                Everyone Join ↗
+              </span>
             </button>
 
-            {/* 2. How to Apply for Companies Guide Button */}
+            {/* 2. Join WhatsApp Group (If not joined) */}
+            <button
+              type="button"
+              className="student-wa-btn-join"
+              onClick={handleGroupClick}
+              id="join-whatsapp-group-btn"
+              title="Click to open official WhatsApp group"
+              style={{ padding: '0.75rem 1.15rem', fontSize: '0.92rem' }}
+            >
+              <WhatsAppIcon size={18} color="#ffffff" />
+              <span style={{ flex: 1, textAlign: 'left' }}>
+                {hasClickedGroup ? 'Opening Group...' : 'Join WhatsApp Group'}
+              </span>
+              <span
+                style={{
+                  fontSize: '0.7rem',
+                  fontWeight: 700,
+                  backgroundColor: 'rgba(255, 255, 255, 0.25)',
+                  color: '#ffffff',
+                  padding: '2px 7px',
+                  borderRadius: 9999,
+                }}
+              >
+                If Not Joined ↗
+              </span>
+            </button>
+
+            {/* 3. Candidate Requirements & Documents Option */}
+            {onOpenRequirements && (
+              <button
+                type="button"
+                className="student-wa-btn-guide"
+                onClick={() => {
+                  onClose?.();
+                  onOpenRequirements();
+                }}
+                id="wa-modal-candidate-requirements-btn"
+                title="View mandatory document checklist, dress code and entry rules"
+                style={{
+                  backgroundColor: '#fffbeb',
+                  borderColor: '#fde68a',
+                  color: '#92400e',
+                  padding: '0.65rem 1rem',
+                  fontSize: '0.85rem',
+                }}
+              >
+                <ClipboardList size={16} color="#b45309" />
+                <span style={{ flex: 1, textAlign: 'left' }}>Candidate Requirements &amp; Documents</span>
+                <span style={{ fontSize: '0.7rem', fontWeight: 700, color: '#b45309' }}>View Checklist ↗</span>
+              </button>
+            )}
+
+            {/* 4. How to Apply for Companies Guide Option */}
             {onOpenGuide && (
               <button
                 type="button"
@@ -177,27 +280,30 @@ const StudentWhatsAppModal = ({
                 }}
                 id="wa-modal-how-to-apply-btn"
                 title="View step-by-step company application walkthrough"
+                style={{ padding: '0.65rem 1rem', fontSize: '0.85rem' }}
               >
                 <BookOpen size={16} color="#0284c7" />
-                <span>How to Apply for Companies</span>
+                <span style={{ flex: 1, textAlign: 'left' }}>How to Apply for Companies</span>
+                <span style={{ fontSize: '0.7rem', fontWeight: 700, color: '#0284c7' }}>Guide ↗</span>
               </button>
             )}
 
-            {/* 3. Already Joined / Ignore Option */}
+            {/* 5. Already Joined Group / Dismiss Option */}
             <button
               type="button"
               className="student-wa-btn-ignore"
               onClick={handleAlreadyJoined}
               id="already-joined-whatsapp-btn"
               title="Click if you have already joined the WhatsApp group"
+              style={{ padding: '0.55rem 1rem', fontSize: '0.82rem' }}
             >
-              <CheckCircle2 size={15} color="#16a34a" />
-              <span>Already Joined • Ignore This Message</span>
+              <CheckCircle2 size={14} color="#16a34a" />
+              <span>Already Joined WhatsApp Group • Dismiss</span>
             </button>
           </div>
 
           <p className="student-wa-footer-text">
-            Official alerts strictly for Job Mela participants.
+            Official announcements strictly for TKRCET Mega Job Mela 2026 participants.
           </p>
         </div>
       </div>
