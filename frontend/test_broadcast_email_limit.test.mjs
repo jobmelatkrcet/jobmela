@@ -77,3 +77,19 @@ test('AdminBroadcastEmailModal: Dynamic feedback badge and send button reflect s
     'Modal must have broadcast-send-btn'
   );
 });
+
+test('AdminBroadcastEmailModal: Supports vinaybyagari07@gmail.com default testing email and input', () => {
+  assert.ok(
+    modalSource.includes('broadcast-test-email-input'),
+    'Modal must have broadcast-test-email-input for configuring test email'
+  );
+  assert.ok(
+    modalSource.includes('vinaybyagari07@gmail.com'),
+    'Modal must default to vinaybyagari07@gmail.com'
+  );
+  assert.ok(
+    modalSource.includes('test_email: destEmail'),
+    'Modal must forward test_email parameter in test dispatch payload'
+  );
+});
+

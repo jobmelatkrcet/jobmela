@@ -71,6 +71,7 @@ const AdminBroadcastEmailModal = ({ isOpen, onClose }) => {
   const [loadingStats, setLoadingStats] = useState(false);
 
   const [target, setTarget] = useState('all_students'); // 'all_students' | 'with_applications' | 'test_self'
+  const [testEmail, setTestEmail] = useState('vinaybyagari07@gmail.com');
   const [sendScope, setSendScope] = useState('all'); // 'all' | 'custom'
   const [recipientLimit, setRecipientLimit] = useState(''); // e.g. '50', '100'
   const [startFrom, setStartFrom] = useState('1'); // 1-indexed start student number, default 1
@@ -118,6 +119,9 @@ const AdminBroadcastEmailModal = ({ isOpen, onClose }) => {
     try {
       const data = await adminService.getBroadcastEmailStats();
       setStats(data);
+      if (data?.admin_email) {
+        setTestEmail(data.admin_email);
+      }
     } catch (err) {
       console.error('Failed to load broadcast email statistics:', err);
       const errMsg = extractErrorMessage(
@@ -188,6 +192,7 @@ const AdminBroadcastEmailModal = ({ isOpen, onClose }) => {
   };
 
   const handleSendTestToSelf = async () => {
+    const destEmail = (testEmail || stats?.admin_email || 'vinaybyagari07@gmail.com').trim();
     setSending(true);
     setStatusResult(null);
     try {
@@ -195,6 +200,7 @@ const AdminBroadcastEmailModal = ({ isOpen, onClose }) => {
         subject,
         message,
         target: 'test_self',
+        test_email: destEmail,
         include_whatsapp: includeWhatsapp,
       });
       setStatusResult({
@@ -202,12 +208,12 @@ const AdminBroadcastEmailModal = ({ isOpen, onClose }) => {
         title: 'Test Email Dispatched!',
         message:
           res.message ||
-          `Sample preview email sent to your administrator address (${stats?.admin_email || 'admin'}). Check your inbox!`,
+          `Sample preview email sent to ${destEmail}. Check your inbox!`,
       });
     } catch (err) {
       const errorMsg = extractErrorMessage(
         err,
-        'Failed to dispatch test email. Please check your SMTP configuration.'
+        `Failed to dispatch test email to ${destEmail}. Please check your SMTP configuration.`
       );
       setStatusResult({
         type: 'error',
@@ -724,13 +730,68 @@ const AdminBroadcastEmailModal = ({ isOpen, onClose }) => {
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
                   }}
-                  title={stats?.admin_email}
+                  title={testEmail || stats?.admin_email || 'vinaybyagari07@gmail.com'}
                 >
-                  Deliver test sample only to {stats?.admin_email || 'your email'}.
+                  Deliver test sample only to {testEmail || stats?.admin_email || 'vinaybyagari07@gmail.com'}.
                 </span>
               </div>
             </div>
           </div>
+
+          {/* Test Destination Email Input Box (when test_self is active) */}
+          {target === 'test_self' && (
+            <div
+              style={{
+                backgroundColor: '#fffbeb',
+                border: '1.5px solid #fde68a',
+                borderRadius: 'var(--radius-md)',
+                padding: '0.85rem 1.15rem',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '0.45rem',
+              }}
+            >
+              <label
+                htmlFor="broadcast-test-email-input"
+                style={{
+                  fontSize: '0.82rem',
+                  fontWeight: 700,
+                  color: '#92400e',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.45rem',
+                  margin: 0,
+                }}
+              >
+                <Mail size={15} color="#b45309" />
+                <span>Test Email Destination Address:</span>
+              </label>
+              <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                <input
+                  id="broadcast-test-email-input"
+                  type="email"
+                  className="form-control"
+                  value={testEmail}
+                  onChange={(e) => setTestEmail(e.target.value)}
+                  placeholder="vinaybyagari07@gmail.com"
+                  style={{ fontSize: '0.88rem', padding: '0.45rem 0.75rem', fontWeight: 600 }}
+                  disabled={sending}
+                />
+                <button
+                  type="button"
+                  className="btn btn-outline btn-sm"
+                  onClick={() => setTestEmail('vinaybyagari07@gmail.com')}
+                  style={{ fontSize: '0.76rem', whiteSpace: 'nowrap' }}
+                  disabled={sending}
+                >
+                  Reset Default
+                </button>
+              </div>
+              <span style={{ fontSize: '0.74rem', color: '#b45309' }}>
+                Sample preview emails will be dispatched directly to this inbox.
+              </span>
+            </div>
+          )}
 
           {/* 2. Recipient Limit & Range Control (How many students to send) */}
           {target !== 'test_self' && (
@@ -1361,9 +1422,9 @@ const AdminBroadcastEmailModal = ({ isOpen, onClose }) => {
               onClick={handleSendTestToSelf}
               className="btn btn-outline btn-sm"
               disabled={sending || !subject.trim() || !message.trim()}
-              title="Dispatches a sample test email directly to your logged-in administrator email"
+              title={`Dispatches a sample test email directly to ${testEmail || 'vinaybyagari07@gmail.com'}`}
             >
-              <Mail size={15} /> Send Test to Myself
+              <Mail size={15} /> Send Test to ({testEmail || 'vinaybyagari07@gmail.com'})
             </button>
 
             {activeCampaign && !sending && (

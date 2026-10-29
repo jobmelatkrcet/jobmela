@@ -1,4 +1,5 @@
 import io
+import os
 import re
 from datetime import datetime
 from openpyxl import Workbook, load_workbook
@@ -1944,7 +1945,11 @@ class AdminBroadcastEmailView(APIView):
     permission_classes = [IsAdminUserRole]
 
     def get(self, request):
-        admin_email = getattr(request.user, "email", "") or ""
+        admin_email = (
+            getattr(request.user, "email", "")
+            or os.environ.get("TEST_EMAIL", "vinaybyagari07@gmail.com")
+            or "vinaybyagari07@gmail.com"
+        )
         smtp_configured = bool(getattr(settings, "EMAIL_HOST_USER", None))
         default_from = getattr(settings, "DEFAULT_FROM_EMAIL", "")
 
@@ -2093,15 +2098,16 @@ class AdminBroadcastEmailView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        # Target: test_self (Fast single-shot test to administrator's inbox)
+        # Target: test_self (Fast single-shot test to administrator's inbox or custom testing email)
         if target == "test_self":
-            admin_email = request.user.email
-            if not admin_email:
-                return Response(
-                    {"error": "Your administrator account has no email address configured."},
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
-            recipients = [(admin_email, request.user.full_name or "Administrator")]
+            test_email = str(data.get("test_email") or data.get("email") or "").strip()
+            admin_email = (
+                test_email
+                or getattr(request.user, "email", "")
+                or os.environ.get("TEST_EMAIL", "vinaybyagari07@gmail.com")
+                or "vinaybyagari07@gmail.com"
+            )
+            recipients = [(admin_email, getattr(request.user, "full_name", "") or "Administrator")]
             dispatch_result = dispatch_broadcast_emails(
                 subject=subject,
                 message_text=message,
@@ -2117,13 +2123,14 @@ class AdminBroadcastEmailView(APIView):
                     "success": is_success,
                     "target": "test_self",
                     "total_recipients": 1,
+                    "test_email": admin_email,
                     "sent_count": dispatch_result.get("sent_count", 0),
                     "failed_count": dispatch_result.get("failed_count", 0),
                     "errors": errors,
                     "error": primary_error,
                     "message": f"Test email dispatched successfully to {admin_email}."
                     if is_success
-                    else (primary_error or "Failed to deliver test email."),
+                    else (primary_error or f"Failed to deliver test email to {admin_email}."),
                     "timestamp": timezone.now().isoformat(),
                 },
                 status=status.HTTP_200_OK if is_success else status.HTTP_500_INTERNAL_SERVER_ERROR,

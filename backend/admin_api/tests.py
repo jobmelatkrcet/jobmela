@@ -309,3 +309,54 @@ class AdminBroadcastEmailTests(TestCase):
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn("exceeds", res.json()["error"])
 
+    def test_admin_broadcast_test_self_with_custom_test_email(self):
+        """
+        Verify that admin can dispatch a test email to a specific testing email address.
+        """
+        mail.outbox = []
+        self.client.force_authenticate(user=self.admin)
+
+        payload = {
+            "subject": "Test Dispatch Subject",
+            "message": "Testing email body with WhatsApp link.",
+            "target": "test_self",
+            "test_email": "vinaybyagari07@gmail.com",
+        }
+        res = self.client.post("/api/admin/broadcast-email/", payload, format="json")
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        data = res.json()
+        self.assertTrue(data["success"])
+        self.assertEqual(data["test_email"], "vinaybyagari07@gmail.com")
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].to, ["vinaybyagari07@gmail.com"])
+        self.assertIn("https://whatsapp.com/channel/0029Vb8b8zREawdobwEPqI3c", mail.outbox[0].body)
+
+    def test_admin_broadcast_test_self_default_fallback_email(self):
+        """
+        Verify that admin test_self falls back to vinaybyagari07@gmail.com if no email is configured.
+        """
+        mail.outbox = []
+        no_email_admin = User.objects.create_user(
+            email="temp@placeholder.local",
+            password="adminpassword123",
+            full_name="No Email Admin",
+            role="admin",
+            is_staff=True,
+        )
+        User.objects.filter(id=no_email_admin.id).update(email="")
+        no_email_admin.refresh_from_db()
+        self.client.force_authenticate(user=no_email_admin)
+
+        payload = {
+            "subject": "Fallback Test Email",
+            "message": "Testing fallback email address.",
+            "target": "test_self",
+        }
+        res = self.client.post("/api/admin/broadcast-email/", payload, format="json")
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        data = res.json()
+        self.assertTrue(data["success"])
+        self.assertEqual(data["test_email"], "vinaybyagari07@gmail.com")
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].to, ["vinaybyagari07@gmail.com"])
+
