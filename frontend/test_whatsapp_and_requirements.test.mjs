@@ -27,10 +27,10 @@ test('StudentWhatsAppModal: Has WhatsApp Channel with "Everyone Join" badge', ()
   assert.ok(waModalSrc.includes('WHATSAPP_CHANNEL_URL'), 'Should reference WHATSAPP_CHANNEL_URL');
 });
 
-test('StudentWhatsAppModal: Has WhatsApp Group with "If Not Joined" badge', () => {
-  assert.ok(waModalSrc.includes('join-whatsapp-group-btn'), 'Should have group button id');
-  assert.ok(waModalSrc.includes('If Not Joined'), 'Should highlight If Not Joined');
-  assert.ok(waModalSrc.includes('WHATSAPP_GROUP_URL'), 'Should reference WHATSAPP_GROUP_URL');
+test('StudentWhatsAppModal: Does NOT have WhatsApp Group link or group button', () => {
+  assert.ok(!waModalSrc.includes('join-whatsapp-group-btn'), 'Should NOT have group button id');
+  assert.ok(!waModalSrc.includes('WHATSAPP_GROUP_URL'), 'Should NOT reference WHATSAPP_GROUP_URL');
+  assert.ok(!waModalSrc.includes('chat.whatsapp.com'), 'Should NOT contain chat.whatsapp.com');
 });
 
 test('StudentWhatsAppModal: Dedicated popup (not crowded with embedded requirements)', () => {
@@ -44,13 +44,14 @@ test('CompanyApplicationGuideModal: Has Next Candidate Requirements action butto
   assert.ok(guideModalSrc.includes('onOpenRequirements'), 'Should accept onOpenRequirements prop');
 });
 
-test('StudentDashboardPage: Has highlighted hub with WhatsApp Channel, WhatsApp Group, and Requirements', () => {
+test('StudentDashboardPage: Has highlighted hub with WhatsApp Channel and Requirements (no WhatsApp Group)', () => {
   assert.ok(dashboardSrc.includes('dashboard-join-channel-btn'), 'Dashboard must have channel button');
-  assert.ok(dashboardSrc.includes('dashboard-join-group-btn'), 'Dashboard must have group button');
+  assert.ok(!dashboardSrc.includes('dashboard-join-group-btn'), 'Dashboard must NOT have group button');
   assert.ok(dashboardSrc.includes('dashboard-open-requirements-btn'), 'Dashboard must have requirements button');
   assert.ok(dashboardSrc.includes('student-dashboard-top-requirements-btn'), 'Admit card must have requirements button');
   assert.ok(dashboardSrc.includes('EVERYONE SHOULD JOIN'), 'Dashboard must clearly say EVERYONE SHOULD JOIN');
-  assert.ok(dashboardSrc.includes('IF NOT JOINED'), 'Dashboard must clearly say IF NOT JOINED');
+  assert.ok(!dashboardSrc.includes('IF NOT JOINED'), 'Dashboard must NOT have IF NOT JOINED group card');
+  assert.ok(!dashboardSrc.includes('WHATSAPP_GROUP_URL'), 'Dashboard must NOT import WHATSAPP_GROUP_URL');
   assert.ok(dashboardSrc.includes('MANDATORY CHECKLIST'), 'Dashboard must highlight MANDATORY CHECKLIST');
   assert.ok(dashboardSrc.includes('RequirementsModal'), 'Dashboard must render RequirementsModal');
 });
@@ -68,9 +69,9 @@ test('RequirementsModal: Supports step indicator badge', () => {
   assert.ok(reqModalSrc.includes('stepIndicator'), 'RequirementsModal should support stepIndicator');
 });
 
-test('WhatsAppFloatingButton: Provides both WhatsApp Channel and WhatsApp Group options', () => {
+test('WhatsAppFloatingButton: Provides WhatsApp Channel option only (no WhatsApp Group)', () => {
   assert.ok(floatingBtnSrc.includes('WHATSAPP_CHANNEL_URL'), 'Floating button must import WHATSAPP_CHANNEL_URL');
-  assert.ok(floatingBtnSrc.includes('WHATSAPP_GROUP_URL'), 'Floating button must import WHATSAPP_GROUP_URL');
-  assert.ok(floatingBtnSrc.includes('floating-menu-channel-btn'), 'Floating button menu must have channel button');
-  assert.ok(floatingBtnSrc.includes('floating-menu-group-btn'), 'Floating button menu must have group button');
+  assert.ok(!floatingBtnSrc.includes('WHATSAPP_GROUP_URL'), 'Floating button must NOT import WHATSAPP_GROUP_URL');
+  assert.ok(!floatingBtnSrc.includes('floating-menu-group-btn'), 'Floating button menu must NOT have group button');
+  assert.ok(!floatingBtnSrc.includes('chat.whatsapp.com'), 'Floating button must NOT contain chat.whatsapp.com');
 });

@@ -5,7 +5,7 @@ from rest_framework import status
 from accounts.models import User
 from companies.models import Company
 from applications.models import Application
-from admin_api.email_broadcast import WHATSAPP_GROUP_LINK, WHATSAPP_CHANNEL_LINK
+from admin_api.email_broadcast import WHATSAPP_CHANNEL_LINK
 
 
 class AdminBroadcastEmailTests(TestCase):
@@ -62,7 +62,6 @@ class AdminBroadcastEmailTests(TestCase):
         self.assertEqual(data["students_with_email"], 2)
         self.assertEqual(data["students_with_applications"], 1)
         self.assertEqual(data["admin_email"], self.admin.email)
-        self.assertEqual(data["whatsapp_group_link"], WHATSAPP_GROUP_LINK)
         self.assertEqual(data["whatsapp_channel_link"], WHATSAPP_CHANNEL_LINK)
 
     def test_admin_broadcast_validation(self):
@@ -106,9 +105,9 @@ class AdminBroadcastEmailTests(TestCase):
         self.assertIn("student1@gmail.com", recipients)
         self.assertIn("student2@gmail.com", recipients)
 
-        # Verify WhatsApp link is embedded in the message
+        # Verify WhatsApp channel link is embedded in the message and no group link
         first_email = mail.outbox[0]
-        self.assertIn(WHATSAPP_GROUP_LINK, first_email.body)
+        self.assertNotIn("https://chat.whatsapp.com", first_email.body)
         self.assertIn(WHATSAPP_CHANNEL_LINK, first_email.body)
 
     def test_admin_broadcast_test_to_self(self):
@@ -362,7 +361,7 @@ class AdminBroadcastEmailTests(TestCase):
 
     def test_admin_broadcast_whatsapp_group_only(self):
         """
-        Verify that admin can choose to include only the WhatsApp Group link.
+        Verify that WhatsApp group links are never included even if requested.
         """
         mail.outbox = []
         self.client.force_authenticate(user=self.admin)
@@ -376,7 +375,7 @@ class AdminBroadcastEmailTests(TestCase):
         res = self.client.post("/api/admin/broadcast-email/", payload, format="json")
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         body = mail.outbox[0].body
-        self.assertIn("https://chat.whatsapp.com/Fq0JocusAOL1PyMi0oZtks", body)
+        self.assertNotIn("https://chat.whatsapp.com", body)
         self.assertNotIn("https://whatsapp.com/channel/0029Vb8b8zREawdobwEPqI3c", body)
 
     def test_admin_broadcast_whatsapp_channel_only(self):

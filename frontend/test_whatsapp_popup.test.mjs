@@ -11,40 +11,44 @@ const __dirname = path.dirname(__filename);
 const modalPath = path.join(__dirname, 'src', 'components', 'StudentWhatsAppModal.jsx');
 const modalSource = fs.readFileSync(modalPath, 'utf8');
 
-test('WhatsApp Popup Modal: Component exists and has required notice messaging', () => {
+test('WhatsApp Popup Modal: Component exists and has required channel notice messaging', () => {
   assert.ok(fs.existsSync(modalPath), 'StudentWhatsAppModal.jsx must exist');
   assert.match(
     modalSource,
-    /Join WhatsApp group if not joined/i,
-    'Modal must explicitly instruct students to join WhatsApp group if not joined'
+    /WhatsApp Channel/i,
+    'Modal must explicitly instruct students to follow WhatsApp Channel'
   );
   assert.match(
     modalSource,
-    /already joined[\s\S]*?ignore this message/i,
-    'Modal must explicitly indicate to ignore if already joined'
+    /Everyone Join/i,
+    'Modal must highlight Everyone Join for the channel'
+  );
+  assert.ok(
+    !modalSource.includes('chat.whatsapp.com'),
+    'Modal must NOT have WhatsApp group link (chat.whatsapp.com)'
   );
 });
 
-test('WhatsApp Popup Modal: Action buttons provide Join option and Ignore/Already Joined option', () => {
+test('WhatsApp Popup Modal: Action buttons provide Follow Channel and Dismiss option', () => {
   assert.match(
     modalSource,
-    /id=["']join-whatsapp-group-btn["']/,
-    'Modal must have Join WhatsApp Group button'
+    /id=["']follow-whatsapp-channel-btn["']/,
+    'Modal must have Follow WhatsApp Channel button'
   );
   assert.match(
     modalSource,
     /id=["']already-joined-whatsapp-btn["']/,
-    'Modal must have Already Joined / Ignore button'
+    'Modal must have Already Following / Close button'
   );
   assert.match(
     modalSource,
     /localStorage\.setItem\(storageKey,\s*['"]true['"]\)/,
-    'Modal must save joined status to localStorage when student joins or marks already joined'
+    'Modal must save followed status to localStorage when student follows channel'
   );
   assert.match(
     modalSource,
     /window\.open\(/,
-    'Modal must open WhatsApp group link in new window upon clicking join'
+    'Modal must open WhatsApp channel link in new window upon clicking follow'
   );
 });
 
@@ -70,8 +74,8 @@ test('StudentLayout: Mounts StudentWhatsAppModal and triggers quick popup when s
   );
   assert.match(
     layoutSource,
-    /id=["']student-banner-whatsapp-btn["']/,
-    'StudentLayout must offer a banner trigger button to re-access the WhatsApp modal/group'
+    /id=["']student-banner-channel-btn["']/,
+    'StudentLayout must offer a banner trigger button for WhatsApp Channel'
   );
 });
 
@@ -96,10 +100,18 @@ test('StudentLoginPage: Sets login flag so modal pops up quickly upon student lo
 const constantsPath = path.join(__dirname, 'src', 'utils', 'constants.js');
 const constantsSource = fs.readFileSync(constantsPath, 'utf8');
 
-test('Constants: WHATSAPP_GROUP_URL is properly defined and configured', () => {
+test('Constants: WHATSAPP_CHANNEL_URL is configured and WHATSAPP_GROUP_URL is removed', () => {
   assert.match(
     constantsSource,
-    /export\s+const\s+WHATSAPP_GROUP_URL\s*=\s*['"]https:\/\/chat\.whatsapp\.com\/[A-Za-z0-9?=&_-]+['"]/,
-    'WHATSAPP_GROUP_URL must be an exportable valid chat.whatsapp.com URL'
+    /export\s+const\s+WHATSAPP_CHANNEL_URL\s*=\s*['"]https:\/\/whatsapp\.com\/channel\/[A-Za-z0-9_-]+['"]/,
+    'WHATSAPP_CHANNEL_URL must be an exportable valid channel URL'
+  );
+  assert.ok(
+    !constantsSource.includes('WHATSAPP_GROUP_URL'),
+    'WHATSAPP_GROUP_URL must be removed from constants'
+  );
+  assert.ok(
+    !constantsSource.includes('chat.whatsapp.com'),
+    'chat.whatsapp.com must be removed from constants'
   );
 });

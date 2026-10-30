@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 import { adminService } from '../services/adminService';
 import WhatsAppIcon from './WhatsAppIcon';
-import { WHATSAPP_GROUP_URL, WHATSAPP_CHANNEL_URL } from '../utils/constants';
+import { WHATSAPP_CHANNEL_URL } from '../utils/constants';
 
 const PRESETS = [
   {
@@ -32,7 +32,7 @@ Important Event Guidelines:
 3. Dress Code: Formal / professional attire only.
 4. Mandatory Documents: Please bring at least 3-4 printed copies of your resume, 2 passport-size photographs, and photocopies of your educational certificates.
 
-Please join our official WhatsApp group for live company spot announcements, interview round shortlists, and room allocations on the event day.`,
+Please follow our official WhatsApp Channel for live company spot announcements, interview round shortlists, and room allocations on the event day.`,
   },
   {
     title: 'Required Documents Checklist',
@@ -47,22 +47,22 @@ To ensure smooth gate entry and seamless interview coordination at the TKRCET Me
 • Photocopies of educational marksheets (10th / Diploma / Degree / B.Tech)
 • Blue or black ballpoint pens and a writing pad
 
-Join the official WhatsApp group for real-time announcements.`,
+Follow the official WhatsApp Channel for real-time announcements.`,
   },
   {
-    title: 'WhatsApp Group Invitation',
-    subject: 'Important: Join the Official TKRCET Job Mela 2026 WhatsApp Group',
+    title: 'WhatsApp Channel Invitation',
+    subject: 'Important: Follow the Official TKRCET Job Mela 2026 WhatsApp Channel',
     message: `Dear Candidates,
 
-To ensure you receive instant, real-time updates during the TKRCET Mega Job Mela 2026, we have established the official Candidates WhatsApp Community.
+To ensure you receive instant, real-time updates during the TKRCET Mega Job Mela 2026, we have established the official Candidates WhatsApp Channel.
 
-Joining this group will provide you with:
+Following this channel will provide you with:
 • Live company arrival notices and spot interview openings
 • Round-by-round candidate shortlists
 • Specific room and hall ticket coordination
 • Direct helpdesk support on 31 October 2026
 
-Please click the button below to join the WhatsApp group immediately.`,
+Please click the button below to follow the official WhatsApp Channel immediately.`,
   },
 ];
 
@@ -77,9 +77,8 @@ const AdminBroadcastEmailModal = ({ isOpen, onClose }) => {
   const [startFrom, setStartFrom] = useState('1'); // 1-indexed start student number, default 1
   const [subject, setSubject] = useState(PRESETS[0].subject);
   const [message, setMessage] = useState(PRESETS[0].message);
-  const [includeWhatsappGroup, setIncludeWhatsappGroup] = useState(true);
   const [includeWhatsappChannel, setIncludeWhatsappChannel] = useState(true);
-  const includeWhatsapp = includeWhatsappGroup || includeWhatsappChannel;
+  const includeWhatsapp = includeWhatsappChannel;
 
   const [viewTab, setViewTab] = useState('edit'); // 'edit' | 'preview'
   const [sending, setSending] = useState(false);
@@ -97,7 +96,6 @@ const AdminBroadcastEmailModal = ({ isOpen, onClose }) => {
       setSendScope('all');
       setRecipientLimit('');
       setStartFrom('1');
-      setIncludeWhatsappGroup(true);
       setIncludeWhatsappChannel(true);
       stopRequestedRef.current = false;
       fetchStats();
@@ -205,8 +203,7 @@ const AdminBroadcastEmailModal = ({ isOpen, onClose }) => {
         message,
         target: 'test_self',
         test_email: destEmail,
-        include_whatsapp: includeWhatsappGroup || includeWhatsappChannel,
-        include_whatsapp_group: includeWhatsappGroup,
+        include_whatsapp: includeWhatsappChannel,
         include_whatsapp_channel: includeWhatsappChannel,
       });
       setStatusResult({
@@ -334,8 +331,7 @@ const AdminBroadcastEmailModal = ({ isOpen, onClose }) => {
         subject,
         message,
         target,
-        include_whatsapp: includeWhatsappGroup || includeWhatsappChannel,
-        include_whatsapp_group: includeWhatsappGroup,
+        include_whatsapp: includeWhatsappChannel,
         include_whatsapp_channel: includeWhatsappChannel,
         batch_size: 25,
       };
@@ -1227,7 +1223,7 @@ const AdminBroadcastEmailModal = ({ isOpen, onClose }) => {
                     {message || '(No message content entered yet)'}
                   </div>
 
-                  {(includeWhatsappGroup || includeWhatsappChannel) && (
+                  {includeWhatsappChannel && (
                     <div
                       style={{
                         margin: '1.25rem 0',
@@ -1240,7 +1236,7 @@ const AdminBroadcastEmailModal = ({ isOpen, onClose }) => {
                     >
                       <span
                         style={{
-                          background: '#22c55e',
+                          background: '#075e54',
                           color: '#ffffff',
                           fontSize: '0.65rem',
                           fontWeight: 800,
@@ -1248,57 +1244,31 @@ const AdminBroadcastEmailModal = ({ isOpen, onClose }) => {
                           borderRadius: 9999,
                         }}
                       >
-                        Official Community
+                        Official Channel
                       </span>
                       <h5 style={{ margin: '0.35rem 0 0.25rem', color: '#065f46', fontSize: '0.95rem' }}>
-                        {includeWhatsappGroup && includeWhatsappChannel
-                          ? 'Join TKRCET Job Mela WhatsApp Group & Channel'
-                          : includeWhatsappGroup
-                          ? 'Join TKRCET Job Mela WhatsApp Group'
-                          : 'Follow TKRCET Job Mela WhatsApp Channel'}
+                        Follow TKRCET Job Mela WhatsApp Channel
                       </h5>
                       <p style={{ margin: '0 0 0.65rem', fontSize: '0.78rem', color: '#047857' }}>
-                        {includeWhatsappGroup && includeWhatsappChannel
-                          ? 'Get real-time announcements on company arrivals, interview schedules, and spot shortlists.'
-                          : includeWhatsappGroup
-                          ? 'Connect with fellow candidates and receive live interview call updates.'
-                          : 'Stay tuned for official broadcast alerts, schedules, and recruitment shortlists.'}
+                        Stay tuned for official broadcast alerts, schedules, and recruitment shortlists.
                       </p>
                       <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '0.5rem' }}>
-                        {includeWhatsappGroup && (
-                          <span
-                            style={{
-                              display: 'inline-block',
-                              background: '#25D366',
-                              color: '#ffffff',
-                              fontWeight: 700,
-                              fontSize: '0.78rem',
-                              padding: '0.35rem 0.85rem',
-                              borderRadius: 6,
-                            }}
-                          >
-                            👉 Join WhatsApp Group
-                          </span>
-                        )}
-                        {includeWhatsappChannel && (
-                          <span
-                            style={{
-                              display: 'inline-block',
-                              background: '#075e54',
-                              color: '#ffffff',
-                              fontWeight: 700,
-                              fontSize: '0.78rem',
-                              padding: '0.35rem 0.85rem',
-                              borderRadius: 6,
-                            }}
-                          >
-                            📢 Follow WhatsApp Channel
-                          </span>
-                        )}
+                        <span
+                          style={{
+                            display: 'inline-block',
+                            background: '#075e54',
+                            color: '#ffffff',
+                            fontWeight: 700,
+                            fontSize: '0.78rem',
+                            padding: '0.35rem 0.85rem',
+                            borderRadius: 6,
+                          }}
+                        >
+                          📢 Follow WhatsApp Channel
+                        </span>
                       </div>
                       <div style={{ fontSize: '0.72rem', color: '#059669', lineHeight: 1.5, wordBreak: 'break-all' }}>
-                        {includeWhatsappGroup && <div>Group: {WHATSAPP_GROUP_URL}</div>}
-                        {includeWhatsappChannel && <div>Channel: {WHATSAPP_CHANNEL_URL}</div>}
+                        <div>Channel: {WHATSAPP_CHANNEL_URL}</div>
                       </div>
                     </div>
                   )}
@@ -1322,7 +1292,7 @@ const AdminBroadcastEmailModal = ({ isOpen, onClose }) => {
             )}
           </div>
 
-          {/* WhatsApp Community & Channel Inclusions (Independent Checkboxes) */}
+          {/* WhatsApp Channel Inclusion Option */}
           <div
             style={{
               backgroundColor: '#f0fdf4',
@@ -1334,126 +1304,46 @@ const AdminBroadcastEmailModal = ({ isOpen, onClose }) => {
               gap: '0.75rem',
             }}
           >
-            <div
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+              <WhatsAppIcon size={18} color="#16a34a" />
+              <span style={{ fontSize: '0.86rem', fontWeight: 700, color: '#065f46' }}>
+                WhatsApp Channel Inclusion:
+              </span>
+            </div>
+
+            <label
+              htmlFor="include-whatsapp-channel-checkbox"
               style={{
                 display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                flexWrap: 'wrap',
-                gap: '0.4rem',
+                alignItems: 'flex-start',
+                gap: '0.6rem',
+                padding: '0.65rem 0.85rem',
+                backgroundColor: includeWhatsappChannel ? '#ffffff' : 'rgba(255, 255, 255, 0.5)',
+                border: includeWhatsappChannel ? '1.5px solid #075e54' : '1px solid #cbd5e1',
+                borderRadius: 8,
+                cursor: sending ? 'not-allowed' : 'pointer',
+                transition: 'all 0.15s ease',
+                margin: 0,
+                boxShadow: includeWhatsappChannel ? '0 1px 3px rgba(7, 94, 84, 0.15)' : 'none',
               }}
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
-                <WhatsAppIcon size={18} color="#16a34a" />
-                <span style={{ fontSize: '0.86rem', fontWeight: 700, color: '#065f46' }}>
-                  WhatsApp Inclusions (Check whichever is needed):
+              <input
+                id="include-whatsapp-channel-checkbox"
+                type="checkbox"
+                checked={includeWhatsappChannel}
+                onChange={(e) => setIncludeWhatsappChannel(e.target.checked)}
+                style={{ width: 18, height: 18, accentColor: '#075e54', marginTop: 2, cursor: 'pointer' }}
+                disabled={sending}
+              />
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.15rem' }}>
+                <span style={{ fontSize: '0.84rem', fontWeight: 700, color: '#065f46' }}>
+                  📢 Include WhatsApp Channel
+                </span>
+                <span style={{ fontSize: '0.73rem', color: '#047857', lineHeight: 1.35 }}>
+                  Official broadcast channel for candidate alerts, vacancies, and interview updates
                 </span>
               </div>
-              <div style={{ display: 'flex', gap: '0.35rem' }}>
-                <button
-                  type="button"
-                  className="btn btn-outline btn-sm"
-                  onClick={() => {
-                    setIncludeWhatsappGroup(true);
-                    setIncludeWhatsappChannel(true);
-                  }}
-                  style={{ fontSize: '0.72rem', padding: '0.15rem 0.5rem', height: 'auto', background: '#ffffff' }}
-                  disabled={sending}
-                >
-                  Check Both
-                </button>
-                <button
-                  type="button"
-                  className="btn btn-outline btn-sm"
-                  onClick={() => {
-                    setIncludeWhatsappGroup(false);
-                    setIncludeWhatsappChannel(false);
-                  }}
-                  style={{ fontSize: '0.72rem', padding: '0.15rem 0.5rem', height: 'auto', background: '#ffffff' }}
-                  disabled={sending}
-                >
-                  Uncheck Both
-                </button>
-              </div>
-            </div>
-
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
-                gap: '0.65rem',
-              }}
-            >
-              {/* Option 1: WhatsApp Group Checkbox */}
-              <label
-                htmlFor="include-whatsapp-group-checkbox"
-                style={{
-                  display: 'flex',
-                  alignItems: 'flex-start',
-                  gap: '0.6rem',
-                  padding: '0.65rem 0.85rem',
-                  backgroundColor: includeWhatsappGroup ? '#ffffff' : 'rgba(255, 255, 255, 0.5)',
-                  border: includeWhatsappGroup ? '1.5px solid #22c55e' : '1px solid #cbd5e1',
-                  borderRadius: 8,
-                  cursor: sending ? 'not-allowed' : 'pointer',
-                  transition: 'all 0.15s ease',
-                  margin: 0,
-                  boxShadow: includeWhatsappGroup ? '0 1px 3px rgba(34, 197, 94, 0.15)' : 'none',
-                }}
-              >
-                <input
-                  id="include-whatsapp-group-checkbox"
-                  type="checkbox"
-                  checked={includeWhatsappGroup}
-                  onChange={(e) => setIncludeWhatsappGroup(e.target.checked)}
-                  style={{ width: 18, height: 18, accentColor: '#16a34a', marginTop: 2, cursor: 'pointer' }}
-                  disabled={sending}
-                />
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.15rem' }}>
-                  <span style={{ fontSize: '0.84rem', fontWeight: 700, color: '#065f46' }}>
-                    👉 Include WhatsApp Group
-                  </span>
-                  <span style={{ fontSize: '0.73rem', color: '#047857', lineHeight: 1.35 }}>
-                    Interactive discussion group for registered candidates
-                  </span>
-                </div>
-              </label>
-
-              {/* Option 2: WhatsApp Channel Checkbox */}
-              <label
-                htmlFor="include-whatsapp-channel-checkbox"
-                style={{
-                  display: 'flex',
-                  alignItems: 'flex-start',
-                  gap: '0.6rem',
-                  padding: '0.65rem 0.85rem',
-                  backgroundColor: includeWhatsappChannel ? '#ffffff' : 'rgba(255, 255, 255, 0.5)',
-                  border: includeWhatsappChannel ? '1.5px solid #075e54' : '1px solid #cbd5e1',
-                  borderRadius: 8,
-                  cursor: sending ? 'not-allowed' : 'pointer',
-                  transition: 'all 0.15s ease',
-                  margin: 0,
-                  boxShadow: includeWhatsappChannel ? '0 1px 3px rgba(7, 94, 84, 0.15)' : 'none',
-                }}
-              >
-                <input
-                  id="include-whatsapp-channel-checkbox"
-                  type="checkbox"
-                  checked={includeWhatsappChannel}
-                  onChange={(e) => setIncludeWhatsappChannel(e.target.checked)}
-                  style={{ width: 18, height: 18, accentColor: '#075e54', marginTop: 2, cursor: 'pointer' }}
-                  disabled={sending}
-                />
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.15rem' }}>
-                  <span style={{ fontSize: '0.84rem', fontWeight: 700, color: '#064e3b' }}>
-                    📢 Include WhatsApp Channel
-                  </span>
-                  <span style={{ fontSize: '0.73rem', color: '#047857', lineHeight: 1.35 }}>
-                    Official 1-way broadcast channel for spot calls &amp; alerts
-                  </span>
-                </div>
-              </label>
-            </div>
+            </label>
           </div>
 
           {/* Double Confirmation Warning Prompt */}

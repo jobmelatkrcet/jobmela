@@ -115,7 +115,7 @@ const StudentLayout = () => {
               </h1>
             </div>
 
-            {/* Right: Channel, Group, Requirements, How to Apply Quick Action Buttons */}
+            {/* Right: Channel, Requirements, How to Apply Quick Action Buttons */}
             <div
               className="student-banner-right"
               style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', flexWrap: 'wrap' }}
@@ -159,19 +159,6 @@ const StudentLayout = () => {
                   Everyone Join ↗
                 </span>
               </a>
-
-              {/* Official WhatsApp Group (Join if Not Joined) */}
-              <button
-                type="button"
-                onClick={handleBannerWhatsAppClick}
-                className="student-whatsapp-btn"
-                id="student-banner-whatsapp-btn"
-                title="Click to view official WhatsApp community details"
-              >
-                <WhatsAppIcon size={16} color="#ffffff" />
-                <span>WhatsApp Group</span>
-                <span className="student-whatsapp-tag">If Not Joined ↗</span>
-              </button>
 
               <button
                 type="button"

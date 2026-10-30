@@ -32,7 +32,7 @@ import StudentQRScannerModal from '../../components/StudentQRScannerModal';
 import CompanyApplicationGuideModal from '../../components/CompanyApplicationGuideModal';
 import RequirementsModal from '../../components/RequirementsModal';
 import WhatsAppIcon from '../../components/WhatsAppIcon';
-import { WHATSAPP_GROUP_URL, WHATSAPP_CHANNEL_URL } from '../../utils/constants';
+import { WHATSAPP_CHANNEL_URL } from '../../utils/constants';
 import StatsCard from '../../components/StatsCard';
 import Alert from '../../components/Alert';
 import ConfirmModal from '../../components/ConfirmModal';
@@ -527,7 +527,7 @@ const StudentDashboardPage = () => {
           </span>
         </div>
 
-        {/* 3 Prominent Highlighted Action Cards: Channel, Group, Requirements */}
+        {/* Highlighted Action Cards: Channel, Requirements, Guide */}
         <div
           style={{
             display: 'grid',
@@ -624,96 +624,7 @@ const StudentDashboardPage = () => {
             </a>
           </div>
 
-          {/* Card 2: Official WhatsApp Group (IF NOT JOINED) */}
-          <div
-            style={{
-              backgroundColor: '#ffffff',
-              borderRadius: 12,
-              padding: '1.2rem',
-              border: '2px solid #22c55e',
-              boxShadow: '0 4px 14px rgba(34, 197, 94, 0.1)',
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'space-between',
-              position: 'relative',
-              overflow: 'hidden',
-            }}
-          >
-            <div
-              style={{
-                position: 'absolute',
-                top: 0,
-                right: 0,
-                backgroundColor: '#16a34a',
-                color: '#ffffff',
-                fontSize: '0.68rem',
-                fontWeight: 800,
-                padding: '3px 10px',
-                borderBottomLeftRadius: 8,
-                letterSpacing: '0.4px',
-              }}
-            >
-              IF NOT JOINED
-            </div>
-
-            <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.55rem', marginBottom: '0.5rem', marginTop: '0.2rem' }}>
-                <div
-                  style={{
-                    width: 34,
-                    height: 34,
-                    borderRadius: 8,
-                    backgroundColor: '#dcfce7',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
-                >
-                  <WhatsAppIcon size={20} color="#16a34a" />
-                </div>
-                <div>
-                  <h3 style={{ fontSize: '1rem', fontWeight: 800, margin: 0, color: '#0f172a' }}>
-                    WhatsApp Group
-                  </h3>
-                  <span style={{ fontSize: '0.72rem', color: '#16a34a', fontWeight: 700 }}>
-                    Student Community &amp; Q&amp;A
-                  </span>
-                </div>
-              </div>
-
-              <p style={{ fontSize: '0.83rem', color: '#334155', lineHeight: 1.45, margin: '0.4rem 0 1.1rem' }}>
-                <strong style={{ color: '#15803d' }}>Join if you have not joined yet.</strong> Peer networking and support group. If you already joined previously, please ignore this.
-              </p>
-            </div>
-
-            <a
-              href={WHATSAPP_GROUP_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              id="dashboard-join-group-btn"
-              style={{
-                backgroundColor: '#22c55e',
-                color: '#ffffff',
-                fontWeight: 700,
-                fontSize: '0.88rem',
-                padding: '0.7rem 1rem',
-                borderRadius: 8,
-                textAlign: 'center',
-                textDecoration: 'none',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '0.45rem',
-                boxShadow: '0 3px 10px rgba(34, 197, 94, 0.25)',
-              }}
-            >
-              <WhatsAppIcon size={18} color="#ffffff" />
-              <span>Join WhatsApp Group</span>
-              <ExternalLink size={14} />
-            </a>
-          </div>
-
-          {/* Card 3: Candidate Requirements & Documents Checklist */}
+          {/* Card 2: Candidate Requirements & Documents Checklist */}
           <div
             style={{
               backgroundColor: '#ffffff',

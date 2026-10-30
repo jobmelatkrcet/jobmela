@@ -2,10 +2,6 @@
  * Global Constants for TKRCET Job Mela 2026 Platform
  */
 
-// Official WhatsApp Group for Registered Candidates & Participants
-export const WHATSAPP_GROUP_URL =
-  'https://chat.whatsapp.com/Fq0JocusAOL1PyMi0oZtks?s=cl&p=a&mlu=4&ilr=4&iam=2';
-
 // Official WhatsApp Channel for Live Announcements & Updates
 export const WHATSAPP_CHANNEL_URL =
   'https://whatsapp.com/channel/0029Vb8b8zREawdobwEPqI3c';

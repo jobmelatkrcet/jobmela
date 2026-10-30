@@ -96,7 +96,7 @@ class StudentRegistrationTests(TestCase):
         self.assertIn("Registration Confirmed", welcome_email.subject)
         self.assertIn("Priyanka Reddy", welcome_email.body)
         self.assertIn("31 October 2026", welcome_email.body)
-        self.assertIn("https://chat.whatsapp.com/Fq0JocusAOL1PyMi0oZtks", welcome_email.body)
+        self.assertNotIn("https://chat.whatsapp.com", welcome_email.body)
         self.assertIn("https://whatsapp.com/channel/0029Vb8b8zREawdobwEPqI3c", welcome_email.body)
 
     # 3. Successful photo upload using mocked Supabase Storage
@@ -1018,7 +1018,7 @@ class RegistrationWelcomeEmailTests(TestCase):
         }
 
     def test_registration_immediately_dispatches_welcome_email_with_whatsapp_link(self):
-        """Registering a new student dispatches an immediate confirmation email containing the official WhatsApp group link and event details."""
+        """Registering a new student dispatches an immediate confirmation email containing the official WhatsApp Channel link and event details."""
         mail.outbox = []
 
         res = self.client.post(self.register_url, data=self.valid_payload, format="multipart")
@@ -1029,19 +1029,19 @@ class RegistrationWelcomeEmailTests(TestCase):
         self.assertEqual(sent_email.to, ["srikanth.reddy@gmail.com"])
         self.assertIn("Registration Confirmed", sent_email.subject)
 
-        # Check WhatsApp group link in body
-        whatsapp_link = "https://chat.whatsapp.com/Fq0JocusAOL1PyMi0oZtks?s=cl&p=a&mlu=4&ilr=4&iam=2"
-        self.assertIn(whatsapp_link, sent_email.body)
+        # Check WhatsApp group link is NOT in body, only WhatsApp Channel
+        whatsapp_link = "https://chat.whatsapp.com/Fq0JocusAOL1PyMi0oZtks"
+        self.assertNotIn(whatsapp_link, sent_email.body)
         self.assertIn("Srikanth Reddy", sent_email.body)
         self.assertIn("31 October 2026", sent_email.body)
         self.assertIn("CHECKLIST OF DOCUMENTS TO BRING", sent_email.body)
 
-        # Check alternative HTML content has the WhatsApp link and student portal
+        # Check alternative HTML content has the WhatsApp channel and NOT the group
         self.assertTrue(len(sent_email.alternatives) > 0)
         html_body, mime = sent_email.alternatives[0]
         self.assertEqual(mime, "text/html")
-        self.assertIn(whatsapp_link, html_body)
-        self.assertIn("Join the Official WhatsApp Group", html_body)
+        self.assertNotIn(whatsapp_link, html_body)
+        self.assertIn("Follow the Official WhatsApp Channel", html_body)
         channel_link = "https://whatsapp.com/channel/0029Vb8b8zREawdobwEPqI3c"
         self.assertIn(channel_link, sent_email.body)
         self.assertIn(channel_link, html_body)

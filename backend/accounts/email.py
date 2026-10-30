@@ -214,9 +214,6 @@ Website: https://www.tkrcetjobmela.in
         return False, str(exc)
 
 
-WHATSAPP_GROUP_LINK = (
-    "https://chat.whatsapp.com/Fq0JocusAOL1PyMi0oZtks?s=cl&p=a&mlu=4&ilr=4&iam=2"
-)
 WHATSAPP_CHANNEL_LINK = (
     "https://whatsapp.com/channel/0029Vb8b8zREawdobwEPqI3c"
 )
@@ -226,7 +223,7 @@ def send_registration_welcome_email(user):
     """
     Sends an immediate official registration confirmation email to newly registered candidates.
     Includes candidate credentials summary, mandatory event guidelines, documents checklist,
-    reporting schedule, official WhatsApp Group link, and WhatsApp Channel link.
+    reporting schedule, and official WhatsApp Channel link.
     Returns (True, None) on success or (False, error_str) on failure.
     """
     subject = "Registration Confirmed — TKRCET Mega Job Mela 2026"
@@ -258,11 +255,8 @@ CANDIDATE REGISTRATION DETAILS:
 • College / Institution: {safe_college}
 
 --------------------------------------------------
-OFFICIAL CANDIDATES WHATSAPP COMMUNITY & CHANNELS:
-Join our WhatsApp group and follow our official channel now to receive live updates, company arrival notices, interview calls, and spot shortlists during the Job Mela:
-
-• Join Official WhatsApp Group:
-  {WHATSAPP_GROUP_LINK}
+OFFICIAL CANDIDATES WHATSAPP CHANNEL:
+Follow our official WhatsApp channel now to receive live updates, company arrival notices, interview calls, and spot shortlists during the Job Mela:
 
 • Follow Official WhatsApp Channel:
   {WHATSAPP_CHANNEL_LINK}
@@ -513,27 +507,23 @@ Medbowli, Meerpet, Hyderabad
         </table>
       </div>
 
-      <!-- Official WhatsApp Community Callout Box -->
+      <!-- Official WhatsApp Channel Callout Box -->
       <div class="whatsapp-card">
-        <span style="display: inline-block; background-color: #22c55e; color: #ffffff; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px; padding: 3px 10px; border-radius: 9999px;">
-          Mandatory for Candidates
+        <span style="display: inline-block; background-color: #075e54; color: #ffffff; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px; padding: 3px 10px; border-radius: 9999px;">
+          Official Channel
         </span>
         <h3 style="margin: 8px 0 6px; color: #065f46; font-size: 19px; font-weight: 800;">
-          Join the Official WhatsApp Group &amp; Channel
+          Follow the Official WhatsApp Channel
         </h3>
         <p style="margin: 0 0 14px; font-size: 13.5px; line-height: 1.5; color: #047857;">
           Stay informed with real-time company arrivals, interview schedules, round shortlists, and spot allocations during the Job Mela.
         </p>
         <div style="text-align: center; margin-bottom: 12px;">
-          <a href="{WHATSAPP_GROUP_LINK}" target="_blank" class="whatsapp-btn" style="display: inline-block; background: #25D366; color: #ffffff !important; text-decoration: none; font-weight: 700; font-size: 13.5px; padding: 10px 18px; border-radius: 8px; margin: 4px;">
-            &#128073; Join WhatsApp Group
-          </a>
-          <a href="{WHATSAPP_CHANNEL_LINK}" target="_blank" class="whatsapp-btn" style="display: inline-block; background: #075e54; color: #ffffff !important; text-decoration: none; font-weight: 700; font-size: 13.5px; padding: 10px 18px; border-radius: 8px; margin: 4px;">
+          <a href="{WHATSAPP_CHANNEL_LINK}" target="_blank" class="whatsapp-btn" style="display: inline-block; background: #075e54; color: #ffffff !important; text-decoration: none; font-weight: 700; font-size: 14px; padding: 11px 22px; border-radius: 8px; margin: 4px; box-shadow: 0 4px 12px rgba(7, 94, 84, 0.3);">
             &#128227; Follow WhatsApp Channel
           </a>
         </div>
         <div style="margin-top: 10px; font-size: 12px; color: #059669; line-height: 1.6;">
-          <div><strong>WhatsApp Group:</strong> <a href="{WHATSAPP_GROUP_LINK}" style="color: #047857; word-break: break-all;">{WHATSAPP_GROUP_LINK}</a></div>
           <div><strong>WhatsApp Channel:</strong> <a href="{WHATSAPP_CHANNEL_LINK}" style="color: #047857; word-break: break-all;">{WHATSAPP_CHANNEL_LINK}</a></div>
         </div>
       </div>

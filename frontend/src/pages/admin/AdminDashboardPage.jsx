@@ -238,7 +238,7 @@ const AdminDashboardPage = ({ onTabChange }) => {
                   </span>
                 </div>
                 <p style={{ margin: 0, color: '#bfdbfe', fontSize: '0.86rem' }}>
-                  Send schedule updates, gate guidelines, and the official WhatsApp group link to all {dashboard?.total_students || 0} registered candidates in one click.
+                  Send schedule updates, gate guidelines, and the official WhatsApp channel link to all {dashboard?.total_students || 0} registered candidates in one click.
                 </p>
               </div>
             </div>

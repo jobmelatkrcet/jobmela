@@ -15,7 +15,7 @@ import {
   ClipboardList,
 } from 'lucide-react';
 import WhatsAppIcon from './WhatsAppIcon';
-import { WHATSAPP_GROUP_URL, WHATSAPP_CHANNEL_URL } from '../utils/constants';
+import { WHATSAPP_CHANNEL_URL } from '../utils/constants';
 
 /**
  * CompanyApplicationGuideModal
