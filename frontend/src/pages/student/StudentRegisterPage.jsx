@@ -19,9 +19,11 @@ import {
   FileCheck,
   Megaphone,
   PenLine,
+  AlertTriangle,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Alert from '../../components/Alert';
+import RegistrationServerErrorModal from '../../components/RegistrationServerErrorModal';
 
 export const MAX_PHOTO_BYTES = 200 * 1024; // 200 KB (204,800 bytes)
 export const PHOTO_SIZE_ERROR_MESSAGE = 'Photo file size exceeds 200KB limit.';
@@ -184,6 +186,7 @@ export const parseRegistrationError = (err) => {
     return {
       fieldErrors: {},
       generalError: 'Uploaded files are too large. Please ensure photo is under 3 MB, resume is under 3.5 MB, and combined attachments do not exceed 4 MB.',
+      isServerError: true,
     };
   }
 
@@ -196,6 +199,7 @@ export const parseRegistrationError = (err) => {
     return {
       fieldErrors: {},
       generalError: 'Registration request timed out. Please check your internet connection and try again.',
+      isServerError: true,
     };
   }
 
@@ -209,6 +213,7 @@ export const parseRegistrationError = (err) => {
     return {
       fieldErrors: {},
       generalError: 'Unable to connect to the server. Please check your internet connection and try again.',
+      isServerError: true,
     };
   }
 
@@ -220,6 +225,7 @@ export const parseRegistrationError = (err) => {
     return {
       fieldErrors: {},
       generalError: 'Too many registration attempts. Please wait a moment and try again.',
+      isServerError: false,
     };
   }
 
@@ -232,6 +238,7 @@ export const parseRegistrationError = (err) => {
     return {
       fieldErrors: {},
       generalError: `${msg} If the issue persists, contact support at ${SUPPORT_PHONE}.`,
+      isServerError: true,
     };
   }
 
@@ -272,14 +279,26 @@ export const parseRegistrationError = (err) => {
       generalMsg = 'Please correct the errors highlighted below and try again.';
     }
 
-    return { fieldErrors, generalError: generalMsg };
+    const isServer = Boolean(
+      (generalMsg && (generalMsg.toLowerCase().includes('server error') || generalMsg.toLowerCase().includes('unexpected response'))) ||
+      (!hasDuplicateEmail && !hasDuplicateMobile && Object.keys(fieldErrors).length === 0 && generalMsg)
+    );
+
+    return { fieldErrors, generalError: generalMsg, isServerError: isServer };
   }
 
   // 7. Plain text / String error
   if (typeof data === 'string' && data.trim()) {
+    const sanitized = sanitizeErrorMessage(data);
+    const isServer = Boolean(
+      (status && status >= 500) ||
+      sanitized.toLowerCase().includes('server error') ||
+      sanitized.toLowerCase().includes('unexpected response')
+    );
     return {
       fieldErrors: {},
-      generalError: sanitizeErrorMessage(data),
+      generalError: sanitized,
+      isServerError: isServer,
     };
   }
 
@@ -287,6 +306,7 @@ export const parseRegistrationError = (err) => {
   return {
     fieldErrors: {},
     generalError: `Registration could not be completed. Please try again or contact support at ${SUPPORT_PHONE}.`,
+    isServerError: true,
   };
 };
 
@@ -319,6 +339,8 @@ const StudentRegisterPage = () => {
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [generalError, setGeneralError] = useState('');
+  const [showServerErrorModal, setShowServerErrorModal] = useState(false);
+  const [isServerErrorState, setIsServerErrorState] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -486,6 +508,8 @@ const StudentRegisterPage = () => {
     e.preventDefault();
     if (loading) return;
     setGeneralError('');
+    setShowServerErrorModal(false);
+    setIsServerErrorState(false);
 
     if (photoError || resumeError) {
       return;
@@ -569,9 +593,26 @@ const StudentRegisterPage = () => {
       });
     } catch (err) {
       console.error('Registration error:', err);
-      const { fieldErrors, generalError: parsedGeneralError } = parseRegistrationError(err);
+      const { fieldErrors, generalError: parsedGeneralError, isServerError } = parseRegistrationError(err);
       setErrors(fieldErrors);
       setGeneralError(parsedGeneralError);
+
+      const status = err?.response?.status;
+      const isHttpServerError = (status && status >= 500 && status <= 504) || status === 413;
+      const isNetworkOrTimeout =
+        !err?.response ||
+        err?.code === 'ERR_NETWORK' ||
+        err?.code === 'ECONNABORTED' ||
+        err?.code === 'ETIMEDOUT' ||
+        err?.message === 'Network Error' ||
+        Boolean(err?.message && err.message.toLowerCase().includes('timeout'));
+
+      const isServerIssue = Boolean(isServerError || isHttpServerError || isNetworkOrTimeout);
+      setIsServerErrorState(isServerIssue);
+
+      if (isServerIssue) {
+        setShowServerErrorModal(true);
+      }
     } finally {
       setLoading(false);
     }
@@ -596,7 +637,33 @@ const StudentRegisterPage = () => {
         </div>
 
         {generalError && (
-          <Alert type="danger" message={generalError} onClose={() => setGeneralError('')} />
+          <div style={{ marginBottom: '1.25rem' }}>
+            <Alert type="danger" message={generalError} onClose={() => setGeneralError('')} />
+            {isServerErrorState && (
+              <button
+                type="button"
+                onClick={() => setShowServerErrorModal(true)}
+                style={{
+                  marginTop: '0.45rem',
+                  backgroundColor: '#fee2e2',
+                  border: '1px solid #fca5a5',
+                  color: '#991b1b',
+                  borderRadius: '6px',
+                  padding: '0.45rem 0.9rem',
+                  fontSize: '0.84rem',
+                  fontWeight: 600,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.45rem',
+                  cursor: 'pointer',
+                  boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
+                }}
+              >
+                <AlertTriangle size={15} />
+                <span>View Server Instructions (1. Another Mobile/Laptop, 2. File Size 100KB)</span>
+              </button>
+            )}
+          </div>
         )}
 
         <div className="card">
@@ -1176,6 +1243,14 @@ const StudentRegisterPage = () => {
           </div>
         </div>
       </div>
+
+      {/* Registration Server Error Popup Modal */}
+      <RegistrationServerErrorModal
+        isOpen={showServerErrorModal}
+        onClose={() => setShowServerErrorModal(false)}
+        errorMessage={generalError}
+        supportPhone={SUPPORT_PHONE}
+      />
     </div>
   );
 };
